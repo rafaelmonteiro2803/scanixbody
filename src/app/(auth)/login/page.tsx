@@ -50,7 +50,16 @@ function LoginForm() {
 
   async function onSubmit(data: LoginFormData) {
     setServerError(null)
-    const supabase = createClient()
+
+    let supabase: ReturnType<typeof createClient>
+    try {
+      supabase = createClient()
+    } catch {
+      setServerError(
+        'Configuração do servidor incompleta. Contate o administrador.',
+      )
+      return
+    }
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: data.email,
