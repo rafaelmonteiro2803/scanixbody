@@ -19,6 +19,7 @@ import {
   ChevronDown,
   TrendingUp,
   Zap,
+  type LucideIcon,
 } from 'lucide-react';
 import { Button, ScoreRing, ProgressBar, Badge } from '@/components/ui';
 import { ChecklistItem, type ChecklistStatus } from './components/ChecklistItem';
@@ -79,7 +80,7 @@ const MOCK_MACRO_ADJUSTMENTS: MacroAdjustments = {
 
 interface ModuleChecklistConfig {
   module: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   status: ChecklistStatus;
   text: string;
 }
