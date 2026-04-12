@@ -498,7 +498,13 @@ export default function UsuariosPage() {
       <UserForm
         open={formOpen}
         onClose={() => { setFormOpen(false); setEditUser(null) }}
-        onSubmit={editUser ? handleEditUser : handleCreateUser}
+        onSubmit={async (data) => {
+          if (editUser) {
+            await handleEditUser(data as import('@/services/admin.service').UpdateProfileDTO)
+          } else {
+            await handleCreateUser(data as import('@/services/admin.service').CreateUserDTO)
+          }
+        }}
         user={editUser}
       />
 
