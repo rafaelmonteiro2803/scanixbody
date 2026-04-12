@@ -41,10 +41,19 @@ let client: SupabaseClient | undefined
 export function createClient() {
   if (client) return client
 
-  client = createBrowserClient(
-    getEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
-  )
+  // Next.js only inlines NEXT_PUBLIC_ vars when accessed via static dot
+  // notation at build time. Dynamic bracket notation (process.env[key])
+  // resolves to undefined in the browser bundle.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      '[SCANIX BODY] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    )
+  }
+
+  client = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
   return client
 }
