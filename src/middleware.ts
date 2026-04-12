@@ -60,7 +60,16 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // 1. Refresh the session and obtain the validated user.
-  const { response, user } = await updateSession(request)
+  //    Guard against missing env vars or network errors during cold starts.
+  let response: NextResponse
+  let user: Awaited<ReturnType<typeof updateSession>>['user']
+
+  try {
+    ;({ response, user } = await updateSession(request))
+  } catch (err) {
+    console.error('[middleware] updateSession failed – check env vars:', err)
+    return NextResponse.next()
+  }
 
   // 2. Authenticated users hitting /login → redirect to /dashboard.
   if (user && pathname === '/login') {
