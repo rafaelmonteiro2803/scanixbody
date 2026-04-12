@@ -21,7 +21,7 @@ export interface ChecklistItemProps {
 const statusConfig: Record<
   ChecklistStatus,
   {
-    badgeVariant: 'success' | 'warning' | 'danger' | 'default';
+    badgeVariant: 'success' | 'warning' | 'danger' | 'neutral';
     badgeLabel: string;
     borderColor: string;
     bgColor: string;
