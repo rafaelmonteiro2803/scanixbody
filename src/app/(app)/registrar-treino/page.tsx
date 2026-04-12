@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Calendar,
   CheckCircle2,
@@ -89,6 +90,7 @@ function today(): string {
 // ---------------------------------------------------------------------------
 
 export default function RegistrarTreinoPage() {
+  const router = useRouter()
   const [step, setStep] = useState<Step>(1)
   const [workoutDays, setWorkoutDays] = useState<WorkoutDayWithExercises[]>([])
   const [loadingDays, setLoadingDays] = useState(true)
@@ -311,8 +313,7 @@ export default function RegistrarTreinoPage() {
             <Button
               variant="secondary"
               size="md"
-              as="a"
-              href="/historico"
+              onClick={() => router.push('/historico')}
             >
               Ver Histórico
             </Button>
@@ -362,7 +363,7 @@ export default function RegistrarTreinoPage() {
               <p className="text-sm text-text-secondary mb-4">
                 Crie seus dias de treino antes de registrar uma sessão.
               </p>
-              <Button variant="primary" size="sm" as="a" href="/treinos">
+              <Button variant="primary" size="sm" onClick={() => router.push('/treinos')}>
                 Ir para Treinos
               </Button>
             </div>
