@@ -99,6 +99,23 @@ export default function PerfilPage() {
 
   const onChangePassword = async (data: PasswordForm) => {
     setPasswordError(null)
+
+    // Verify current password before allowing the change
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+    if (!authUser?.email) {
+      setPasswordError('Sessão inválida. Faça login novamente.')
+      return
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: authUser.email,
+      password: data.currentPassword,
+    })
+    if (signInError) {
+      setPasswordError('Senha atual incorreta.')
+      return
+    }
+
     const { error } = await supabase.auth.updateUser({ password: data.newPassword })
     if (error) {
       setPasswordError(error.message)
