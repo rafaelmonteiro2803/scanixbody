@@ -3,6 +3,8 @@
  * PUT /api/v1/corpo  – upsert the athlete profile (and optional body segments)
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

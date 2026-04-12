@@ -3,6 +3,8 @@
  * DELETE /api/v1/sessoes/:id  – soft-delete a workout session
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

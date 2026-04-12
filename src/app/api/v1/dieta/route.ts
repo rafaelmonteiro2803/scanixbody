@@ -3,6 +3,8 @@
  * POST /api/v1/dieta        – create a new meal entry
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

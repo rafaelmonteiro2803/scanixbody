@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -27,7 +27,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const nextPath = searchParams.get('next') ?? '/dashboard'
@@ -240,5 +240,13 @@ export default function LoginPage() {
         Acesso restrito a usuários cadastrados pela plataforma.
       </p>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }

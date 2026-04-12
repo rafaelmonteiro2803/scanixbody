@@ -3,6 +3,8 @@
  * POST /api/v1/sessoes  – log a new workout session with PR detection
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,
