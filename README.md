@@ -1,458 +1,421 @@
-# scanixbody
+# SCANIX BODY — Performance Intelligence Platform
 
-Aja como um Product Manager sênior, Arquiteto de Software, Engenheiro de Software full stack, especialista em segurança, modelagem de banco de dados, APIs escaláveis, UX/UI responsiva e front-end moderno.
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?style=flat-square&logo=supabase)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-Sua missão é criar o sistema completo chamado SCANIX BODY, usando como referência obrigatória o HTML base/protótipo já existente. O novo sistema deve preservar 100% dos módulos, regras, cálculos, automações, fluxos, dados, design, cores, ícones, estrutura visual e intenção funcional do protótipo original, evoluindo-o para uma aplicação real, escalável, segura e pronta para virar app no futuro.
+> Plataforma de gestão de performance esportiva e saúde pessoal para atletas de alta performance.
 
-OBJETIVO DO PROJETO
-Criar uma aplicação web responsiva, mobile-first e desktop-ready, com arquitetura limpa, escalável e segura, já preparada para servir de base para um aplicativo mobile que reutilizará os mesmos dados, regras e APIs. O sistema deve rodar com:
-- Front-end moderno
-- Back-end/API
-- Supabase como banco/autenticação/storage
-- GitHub para versionamento
-- Render para deploy
-- Claude Code como motor de geração e evolução do código
+---
 
-DIRETRIZES GERAIS
-1. Preserve integralmente a lógica do protótipo anexo.
-2. Não simplifique módulos existentes.
-3. Não descaracterize visualmente o sistema.
-4. Mantenha a identidade visual dark/athletic/tech do Scanix Body.
-5. Estruture o projeto de forma profissional para crescimento.
-6. Todo código deve ser limpo, modular, tipado quando aplicável, reutilizável e preparado para manutenção.
-7. Separar claramente:
-   - camada de apresentação
-   - componentes reutilizáveis
-   - domínio/regra de negócio
-   - serviços
-   - integrações externas
-   - autenticação/autorização
-   - acesso a dados
-   - observabilidade/logs/erros
-8. Criar arquitetura pronta para API e futura app mobile.
-9. Toda regra de negócio deve ficar fora da camada visual.
-10. Toda comunicação com banco deve ser feita por camada de serviço/repositório.
-11. Aplicar princípios de Clean Code, SOLID, DRY, KISS onde fizer sentido.
-12. Preparar o sistema para internacionalização futura, mas manter pt-BR como padrão inicial.
-13. Criar estrutura que suporte webhooks, jobs assíncronos e integrações futuras.
-14. Criar documentação mínima do projeto e README profissional.
+## O que é o SCANIX BODY
 
-STACK DESEJADA
-Escolha uma stack moderna e coerente, preferencialmente:
-- Front-end: Next.js ou React com TypeScript
-- UI: componentes reutilizáveis + design tokens + Tailwind ou CSS modular bem estruturado
-- Estado: estratégia simples e escalável
-- Validação: schema validation
-- Back-end: rotas server/API handlers ou arquitetura full stack moderna
-- Banco: Supabase Postgres
-- Auth: Supabase Auth
-- Storage: Supabase Storage para arquivos
-- Deploy: Render
-- Versionamento: GitHub
+**SCANIX BODY** é uma aplicação web dark/tech/atlética que centraliza gestão de treinos, nutrição, composição corporal, bioimpedância, exames laboratoriais, medicamentos e análise inteligente em uma única plataforma. Toda a arquitetura foi pensada para escalar para app mobile consumindo as mesmas APIs e regras de negócio.
 
-Se optar por uma stack diferente, explique no README por que ela é superior para este caso.
+---
 
-REFERÊNCIA OBRIGATÓRIA DO PROTÓTIPO
-Considere como obrigatórios os seguintes módulos já existentes no protótipo:
-1. Treinos
-   - cadastro de dias de treino
-   - grupos musculares
-   - cadastro de exercícios
-   - séries
-   - reps alvo
-   - carga
-   - descanso
-   - exclusão
-   - importação de treino por arquivo
-   - cardio vinculado ao contexto do treino
+## Módulos
 
-2. Registrar treino
-   - seleção do dia de treino
-   - seleção de data
-   - início de sessão
-   - preenchimento de séries executadas
-   - peso e repetições por série
-   - salvar sessão
-   - identificar PR quando superar melhor carga anterior
+| Módulo | Descrição |
+|--------|-----------|
+| **Treinos** | Criação de dias de treino, exercícios, séries, cargas e importação por arquivo |
+| **Registrar Treino** | Log de sessões com detecção automática de PR (Personal Record) |
+| **Progresso** | Estatísticas, gráficos de evolução por exercício e volume total |
+| **Histórico** | Sessões registradas com detalhamento e exclusão |
+| **Dieta** | Cadastro manual, análise por IA e importação de plano alimentar |
+| **Corpo & Objetivo** | Composição corporal completa com cálculos (IMC, TMB, TDEE, segmentar) |
+| **Bioimpedância** | Upload de PDF InBody com extração automática via IA |
+| **Medicamentos** | Cadastro de hormônios, peptídeos, suplementos e medicamentos |
+| **Exames** | Importação de laudos com extração de marcadores laboratoriais |
+| **Cardio** | Perfil de cardio (tipo, intensidade, duração, frequência) |
+| **Análise IA** | Score por eixo + recomendações + ajustes de macros e hidratação |
+| **Admin** | CRUD de usuários, perfis, permissões e logs de auditoria |
 
-3. Progresso
-   - estatísticas gerais
-   - sessões registradas
-   - total de séries
-   - volume total
-   - exercícios cadastrados
-   - evolução por exercício
-   - gráfico de melhor carga por data
+---
 
-4. Histórico
-   - lista de treinos registrados
-   - detalhamento por sessão
-   - possibilidade de exclusão
+## Stack
 
-5. Dieta
-   - modo manual
-   - modo análise por IA
-   - modo importação por arquivo
-   - cadastro de refeições
-   - horário
-   - alimentos
-   - cálculo de macros
-   - calorias
-   - proteína
-   - carboidrato
-   - gordura
-   - resumo nutricional
-   - pontos positivos
-   - pontos de melhoria
+| Tecnologia | Propósito | Versão |
+|-----------|-----------|--------|
+| Next.js (App Router) | Framework full-stack com SSR/SSG e API Routes | 14 |
+| TypeScript | Tipagem estática de ponta a ponta | 5.x |
+| Tailwind CSS | Estilização com design tokens | 3.x |
+| Supabase | Banco Postgres, Auth, Storage, RLS | latest |
+| Zustand | Estado global leve e escalável | 4.x |
+| React Hook Form + Zod | Validação de formulários type-safe | latest |
+| Recharts | Gráficos de progresso | 2.x |
+| Lucide React | Ícones | latest |
+| date-fns | Manipulação de datas (pt-BR) | 3.x |
 
-6. Corpo e objetivo
-   - dados pessoais
-   - peso
-   - altura
-   - idade
-   - sexo
-   - composição corporal
-   - percentual de gordura
-   - massa de gordura
-   - massa muscular esquelética
-   - massa magra
-   - água corporal
-   - proteína
-   - minerais
-   - IMC
-   - TMB
-   - gordura visceral
-   - relação cintura-quadril
-   - grau de obesidade
-   - score InBody
-   - peso ideal
-   - massa magra segmentar
-   - gordura segmentar
-   - meta principal
-   - nível de atividade
-   - período
-   - água por dia
-   - sono
-   - qualidade do sono
-   - observações
-   - painel corporal com indicadores calculados
-   - TDEE estimado
-   - leitura do estado corporal
+---
 
-7. Bioimpedância
-   - upload de PDF
-   - extração estruturada de dados via IA
-   - preenchimento automático dos campos do corpo
-   - revisão antes de salvar
+## Arquitetura
 
-8. Medicamentos
-   - cadastro manual
-   - importação por arquivo
-   - categorias: hormônio, peptídeo, suplemento, medicamento, sarm, outro
-   - dose
-   - frequência
-   - via
-   - início
-   - observações
-   - aviso importante no contexto do módulo
+```
+Browser
+  │
+  ├─ Next.js App Router (Server Components / Client Components)
+  │     ├─ (auth)/     → login, primeiro-acesso, recuperar-senha
+  │     └─ (app)/      → todos os módulos + admin
+  │
+  ├─ API Routes /api/v1/
+  │     ├─ treinos, sessoes, corpo, dieta
+  │     ├─ medicamentos, exames, cardio
+  │     ├─ analise-ia, uploads, ai/extract
+  │     └─ admin/usuarios, admin/logs
+  │
+  ├─ Domain Layer (pure TypeScript functions)
+  │     ├─ body-calculations.ts   → IMC, TMB, TDEE, peso ideal
+  │     ├─ workout-calculations.ts → volume, PR detection, progresso
+  │     ├─ nutrition-calculations.ts → macros, metas nutricionais
+  │     └─ ai-scoring.ts          → scores por eixo (0-100)
+  │
+  ├─ Service Layer
+  │     ├─ auth, treinos, corpo, dieta, medicamentos
+  │     ├─ exames, admin, audit, import, ai
+  │
+  └─ Supabase
+        ├─ PostgreSQL (18 tables + RLS)
+        ├─ Auth (magic link + email/password)
+        └─ Storage (bioimpedance, exams, workouts, etc.)
+```
 
-9. Exames
-   - importação de laudo por arquivo
-   - colar texto
-   - extração de marcadores laboratoriais
-   - valor
-   - unidade
-   - referência
-   - status: normal, alto, baixo, crítico
-   - persistência dos exames
-   - exclusão
+---
 
-10. Análise IA
-   - checklist de completude
-   - cruzamento entre treino, dieta, corpo, cardio, medicamentos e exames
-   - geração de score por eixo
-   - score treino
-   - score dieta
-   - score sono
-   - score hidratação
-   - score cardio
-   - score geral
-   - recomendações
-   - ajustes sugeridos de macros, calorias e água
-   - relatório visual consolidado
-   - pronto para impressão/exportação
+## Estrutura de Pastas
 
-11. Cardio
-   - informar se pratica ou não
-   - tipo
-   - intensidade
-   - duração
-   - frequência
-   - momento
-   - objetivo
-   - exibição em banner/resumo
+```
+scanixbody/
+├─ src/
+│   ├─ app/
+│   │   ├─ (auth)/                   # Páginas de autenticação
+│   │   │   ├─ login/
+│   │   │   ├─ primeiro-acesso/
+│   │   │   └─ recuperar-senha/
+│   │   ├─ (app)/                    # Páginas protegidas
+│   │   │   ├─ dashboard/
+│   │   │   ├─ treinos/
+│   │   │   ├─ registrar-treino/
+│   │   │   ├─ progresso/
+│   │   │   ├─ historico/
+│   │   │   ├─ dieta/
+│   │   │   ├─ corpo/
+│   │   │   ├─ bioimpedancia/
+│   │   │   ├─ medicamentos/
+│   │   │   ├─ exames/
+│   │   │   ├─ cardio/
+│   │   │   ├─ analise-ia/
+│   │   │   ├─ perfil/
+│   │   │   ├─ configuracoes/
+│   │   │   └─ admin/
+│   │   │       ├─ usuarios/
+│   │   │       ├─ perfis/
+│   │   │       └─ logs/
+│   │   └─ api/v1/                   # API Routes
+│   │       ├─ treinos/, sessoes/
+│   │       ├─ corpo/, dieta/
+│   │       ├─ medicamentos/, exames/
+│   │       ├─ cardio/, analise-ia/
+│   │       ├─ uploads/, ai/extract/
+│   │       └─ admin/usuarios/, admin/logs/
+│   ├─ components/
+│   │   ├─ ui/                       # Componentes base reutilizáveis
+│   │   │   ├─ Button, Input, Card, Badge, Modal
+│   │   │   ├─ Select, Textarea, Spinner, EmptyState
+│   │   │   ├─ StatCard, ProgressBar, ScoreRing
+│   │   │   ├─ FileUpload, Tabs, Table, Toast
+│   │   │   └─ ConfirmDialog
+│   │   ├─ layout/                   # AppLayout, Sidebar, Header
+│   │   └─ providers/                # AppProviders (client wrappers)
+│   ├─ domain/                       # Regras de negócio puras
+│   │   ├─ body-calculations.ts
+│   │   ├─ workout-calculations.ts
+│   │   ├─ nutrition-calculations.ts
+│   │   └─ ai-scoring.ts
+│   ├─ services/                     # Camada de serviço (Supabase)
+│   │   ├─ auth, treinos, corpo, dieta
+│   │   ├─ medicamentos, exames, admin
+│   │   ├─ audit, import, ai
+│   ├─ hooks/                        # React hooks reutilizáveis
+│   ├─ stores/                       # Zustand global state
+│   ├─ types/                        # Types TypeScript
+│   │   ├─ database.types.ts         # Tipos gerados do Supabase
+│   │   └─ domain.types.ts           # DTOs, enums, tipos de domínio
+│   ├─ validators/                   # Schemas Zod
+│   ├─ lib/
+│   │   ├─ supabase/                 # client, server, middleware
+│   │   ├─ utils.ts
+│   │   ├─ constants.ts
+│   │   └─ api-helpers.ts
+│   └─ styles/globals.css
+├─ supabase/
+│   ├─ migrations/
+│   │   ├─ 001_initial_schema.sql
+│   │   ├─ 002_row_level_security.sql
+│   │   └─ 003_functions_and_triggers.sql
+│   └─ seed.sql
+├─ .env.example
+├─ package.json
+├─ tailwind.config.ts
+├─ next.config.ts
+└─ tsconfig.json
+```
 
-REQUISITO NOVO OBRIGATÓRIO: GESTÃO DE USUÁRIOS E ACESSOS
-Adicionar ao sistema um módulo administrativo profissional que não existe no protótipo original, contendo:
-1. autenticação com usuário e senha
-2. login por credenciais cadastradas no sistema
-3. senha inicial padrão gerada/controlada pelo sistema
-4. troca obrigatória de senha no primeiro acesso para qualquer tipo de usuário
-5. recuperação de senha
-6. sessão segura
-7. logout
-8. bloqueio após tentativas inválidas, se fizer sentido
-9. trilha de auditoria básica de acesso
+---
 
-Criar perfis e papéis:
-- super_admin
-- admin
-- coach
-- operador
-- usuario_final
+## Segurança
 
-Definir claramente:
-- quem acessa tudo
-- quem administra usuários
-- quem edita dados mestres
-- quem visualiza somente seus próprios dados
-- quem pode importar laudos/arquivos
-- quem pode gerar análise IA
-- quem pode excluir dados
-- quem pode consultar dashboards administrativos
+### Row Level Security (RLS)
+Todas as 18 tabelas têm RLS ativo. Os usuários só acessam seus próprios dados.
 
-Criar CRUD completo de:
-- usuários
-- perfis/papéis
-- permissões
-- status de usuário
-- reset de senha administrativo
-- vínculo do usuário com seu próprio perfil esportivo/biológico
+### Controle de Acesso por Papel
 
-REGRAS DE SEGURANÇA E PRIVACIDADE
-1. Aplicar Row Level Security no banco.
-2. Garantir isolamento dos dados por usuário.
-3. Perfis administrativos devem ter privilégios explícitos, nunca implícitos.
-4. Dados sensíveis de saúde devem ser protegidos.
-5. Nunca confiar apenas em validação do front-end.
-6. Validar payloads no servidor.
-7. Criar logs de auditoria para ações críticas.
-8. Sanitizar uploads e entradas.
-9. Preparar limites de tamanho e tipo de arquivos.
-10. Adotar boas práticas de secrets management.
-11. Não expor chaves sensíveis no cliente.
-12. Preparar estrutura para LGPD desde o início.
+| Papel | Acesso |
+|-------|--------|
+| `super_admin` | Acesso total ao sistema, incluindo outros admins |
+| `admin` | Gerencia usuários, vê logs de auditoria, acessa dados de todos |
+| `coach` | Acessa dados de seus alunos vinculados |
+| `operador` | Acesso limitado a operações específicas |
+| `usuario_final` | Apenas seus próprios dados |
 
-ARQUITETURA FUNCIONAL
-Estruture o projeto em grandes áreas:
-- Autenticação e autorização
-- Cadastro e administração
-- Núcleo ScanixBody do usuário
-- Importações e extrações por IA
-- Análise consolidada por IA
-- Relatórios e histórico
-- Configurações
-- Observabilidade e auditoria do sistema
+### Outras medidas
+- Validação de payload no servidor (Zod) em todas as rotas
+- Sanitização de uploads (tipo e tamanho)
+- Logs de auditoria para ações críticas (login, criação, exclusão)
+- Primeiro acesso com troca de senha obrigatória
+- Nunca expõe `SUPABASE_SERVICE_ROLE_KEY` no cliente
 
-ARQUITETURA TÉCNICA
-Criar uma estrutura de pastas profissional.
-Exemplo esperado:
-- app / src
-- components
-- modules
-- services
-- repositories
-- lib
-- hooks
-- types
-- validators
-- styles
-- api
-- auth
-- admin
-- uploads
-- analytics
-- tests
+---
 
-ENTIDADES DE DOMÍNIO QUE DEVEM EXISTIR
-No mínimo, considerar:
-- user
-- profile
-- role
-- permission
-- user_profile_assignment
-- athlete_profile
-- workout_day
-- workout_exercise
-- workout_session
-- workout_session_exercise
-- workout_session_set
-- cardio_plan_or_cardio_profile
-- meal
-- meal_item_text
-- diet_analysis
-- body_assessment
-- body_segment
-- bioimpedance_import
-- medication_entry
-- medication_import
-- exam_report
-- exam_marker
-- ai_analysis_report
-- file_asset
-- audit_log
-- password_reset_or_first_access_control
+## Pré-requisitos
 
-IMPORTAÇÕES E IA
-O sistema deve já nascer com uma camada de integração preparada para IA, mas desacoplada.
-Criar serviços desacoplados para:
-- importar treino de PDF/DOCX/TXT
-- importar dieta
-- importar medicamentos
-- importar exames
-- importar bioimpedância
-- gerar análise consolidada
+- Node.js 18+
+- npm ou yarn
+- Conta no [Supabase](https://supabase.com) (gratuita)
+- Git
 
-Cada serviço deve:
-- aceitar arquivo ou texto
-- normalizar entrada
-- extrair estrutura padronizada
-- validar JSON retornado
-- tratar erro
-- salvar origem e resultado
-- permitir revisão manual antes da confirmação final, quando aplicável
+---
 
-CÁLCULOS E REGRAS DE NEGÓCIO
-Implemente e mantenha as regras do protótipo:
-- IMC
-- classificação de IMC
-- TMB estimada por sexo quando não preenchida
-- TDEE conforme nível de atividade
-- percentual de gordura derivado quando possível
-- cálculo de volume total de treino
-- melhor carga por exercício
-- detecção de PR
-- estimativa de macros por refeição
-- consolidação diária de macros
-- leitura de exames com status
-- consolidação de checklist para análise IA
+## Instalação Local
 
-A camada de regra deve ser separada da UI.
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/rafaelmonteiro2803/scanixbody.git
+cd scanixbody
 
-UX/UI E DESIGN
-Preservar fielmente a identidade visual do protótipo:
-- tema dark
-- base preta/esverdeada
-- acento verde principal
-- tipografia com estilo atlético/tech
-- uso de badges, cards, blocos escuros, contraste alto
-- linguagem visual masculina/fitness/high-performance
-- manter a essência dos ícones já usados no protótipo
-- manter aparência de dashboard operacional e pessoal
+# 2. Instalar dependências
+npm install
 
-Criar design tokens para:
-- cores
-- bordas
-- tipografia
-- espaçamento
-- componentes
-- estados
-- feedback visual
+# 3. Configurar variáveis de ambiente
+cp .env.example .env.local
+# Edite .env.local com suas credenciais do Supabase
+```
 
-RESPONSIVIDADE
-O sistema precisa ser excelente em:
-- mobile
-- tablet
-- desktop
+---
 
-Como ele vai virar app depois, a experiência mobile deve nascer bem resolvida:
-- navegação clara
-- componentes tocáveis
-- formulários amigáveis
-- tabelas adaptadas
-- cards responsivos
-- fluxo de upload amigável
-- boa performance em telas menores
+## Configuração do Supabase
 
-MÓDULOS ADICIONAIS QUE UM SISTEMA REAL DEVE TER
-Além do protótipo, adicionar na criação:
-1. Dashboard inicial por perfil
-2. Página de login
-3. Primeiro acesso / troca de senha
-4. Meu perfil
-5. Administração de usuários
-6. Administração de perfis e permissões
-7. Central de arquivos/importações
-8. Histórico de análises IA
-9. Configurações do sistema
-10. Logs/auditoria para admin
-11. Tratamento de erros e estados vazios
-12. Páginas de fallback e empty states
-13. Política básica de retenção de dados e exclusão lógica, quando fizer sentido
+### 1. Criar projeto
 
-PRONTA PARA VIRAR APP
-Toda modelagem e APIs devem ser construídas para futuro consumo por:
-- app mobile
-- webhook
-- integrações externas
-- automações futuras
+Acesse [app.supabase.com](https://app.supabase.com), crie um projeto e anote:
+- **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+- **Anon Key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- **Service Role Key** → `SUPABASE_SERVICE_ROLE_KEY` (apenas servidor)
 
-Portanto:
-- criar endpoints consistentes
-- usar contratos claros
-- evitar acoplamento com o front
-- separar domínio e interface
-- prever versionamento de API
-- preparar upload de arquivo e retorno estruturado
-- prever notificações futuras
+### 2. Executar migrations
 
-ENTREGAS ESPERADAS
-Quero que você gere:
-1. a estrutura completa do projeto
-2. o código-base do sistema
-3. os módulos principais implementados
-4. a camada de autenticação/autorização
-5. o CRUD administrativo de usuários e perfis
-6. os schemas e tipos
-7. os serviços de integração com Supabase
-8. a camada de importação/IA desacoplada
-9. as páginas/telas principais
-10. componentes reutilizáveis
-11. README completo com:
-   - stack
-   - arquitetura
-   - como rodar local
-   - como configurar Supabase
-   - como publicar no Render
-   - como usar GitHub
-12. arquivo .env.example
-13. seeds iniciais
-14. instruções de deploy
-15. instruções para evolução futura para mobile
+**Via Supabase CLI:**
+```bash
+# Instalar CLI
+npm install -g supabase
 
-CRITÉRIOS DE QUALIDADE
-- código organizado
-- sem gambiarra
-- sem lógica crítica escondida na view
-- nomes consistentes
-- boa legibilidade
-- separação de responsabilidades
-- segurança adequada
-- dados sensíveis protegidos
-- pronto para escala moderada
-- pronto para manutenção profissional
+# Login
+supabase login
 
-IMPORTANTE
-Antes de gerar código:
-1. leia o protótipo como contrato funcional
-2. mapeie módulos, entidades, fluxos e regras
-3. proponha a arquitetura final
-4. só então gere o projeto
+# Linkar ao projeto
+supabase link --project-ref SEU_PROJECT_REF
 
-Quero a resposta organizada em:
-1. visão de produto
-2. arquitetura proposta
-3. estrutura de pastas
-4. modelagem funcional
-5. plano de implementação por fases
-6. geração do código inicial do projeto
+# Aplicar migrations
+supabase db push
+```
+
+**Via Dashboard SQL Editor:**
+Execute os arquivos na ordem:
+1. `supabase/migrations/001_initial_schema.sql`
+2. `supabase/migrations/002_row_level_security.sql`
+3. `supabase/migrations/003_functions_and_triggers.sql`
+4. `supabase/seed.sql` (opcional — cria usuário admin de teste)
+
+### 3. Configurar Storage
+
+No dashboard Supabase → Storage, crie os buckets:
+- `bioimpedance` (privado)
+- `exams` (privado)
+- `workouts` (privado)
+- `diets` (privado)
+- `medications` (privado)
+- `avatars` (público)
+
+### 4. Configurar Auth
+
+Em Authentication → Settings:
+- **Site URL:** `http://localhost:3000` (dev) ou sua URL de produção
+- **Redirect URLs:** adicionar `http://localhost:3000/auth/callback`
+- Email templates: personalize como desejar
+
+---
+
+## Rodando Localmente
+
+```bash
+npm run dev
+```
+
+Acesse: [http://localhost:3000](http://localhost:3000)
+
+**Usuário admin de teste** (após rodar o seed):
+- Email: `admin@scanixbody.com`
+- Senha: Ver `supabase/seed.sql` (troque após primeiro login)
+
+---
+
+## Variáveis de Ambiente
+
+| Variável | Obrigatória | Descrição |
+|----------|-------------|-----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Sim | URL do projeto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Sim | Chave pública anônima |
+| `SUPABASE_SERVICE_ROLE_KEY` | Sim | Chave de serviço (apenas servidor) |
+| `NEXT_PUBLIC_APP_URL` | Sim | URL base da aplicação |
+| `OPENAI_API_KEY` | Não | Habilita extração real com IA (sem esta chave, usa dados mock) |
+
+---
+
+## Deploy no Render
+
+### 1. Preparar repositório
+
+```bash
+git add .
+git commit -m "feat: initial production build"
+git push origin main
+```
+
+### 2. Criar Web Service no Render
+
+1. Acesse [render.com](https://render.com) → New → Web Service
+2. Conecte seu repositório GitHub
+3. Configure:
+   - **Runtime:** Node
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `npm start`
+   - **Node Version:** 18
+
+### 3. Variáveis de ambiente
+
+Em Environment Variables do Render, adicione todas as variáveis do `.env.example`.
+
+### 4. Deploy automático
+
+Após a configuração, todo push na `main` fará deploy automático.
+
+---
+
+## Regras de Negócio Implementadas
+
+### Cálculos Corporais (`domain/body-calculations.ts`)
+- **IMC** = peso(kg) / altura(m)²  com 6 faixas de classificação
+- **TMB** = fórmula revisada de Harris-Benedict (Roza & Shizgal 1984) separada por sexo
+- **TDEE** = TMB × multiplicador de atividade (1.2 a 1.9)
+- **Peso ideal** = fórmula de Devine por sexo
+- **Água diária** = peso × 35 ml
+- **Relação cintura-quadril** com classificação por sexo
+
+### Treinos (`domain/workout-calculations.ts`)
+- **Volume** = soma de (peso × reps) por série
+- **PR Detection** = comparação com melhor carga histórica (peso-first, reps como tiebreaker)
+- **Progressão** = histórico ordenado por data para gráfico
+
+### Nutrição (`domain/nutrition-calculations.ts`)
+- **Metas de macros** por objetivo (perda, ganho, manutenção)
+- **Validação nutricional** com tolerância ±15% e piso de 40g gordura
+
+### Scores IA (`domain/ai-scoring.ts`)
+- 6 scores (0-100) com deduções graduais (não binárias)
+- Score geral ponderado: treino 30%, dieta 30%, sono 20%, hidratação 10%, cardio 10%
+- Checklist por módulo com priorização
+
+---
+
+## Evolução para App Mobile
+
+A arquitetura já foi construída para suportar app mobile nativo:
+
+### 1. O que é reaproveitável
+- Toda camada de domínio (`src/domain/`) — TypeScript puro, zero dependências web
+- Todos os tipos (`src/types/`) — compartilháveis via pacote npm
+- Toda a API (`/api/v1/`) — REST padrão, consumível por qualquer cliente
+- Auth Supabase — funciona identicamente no mobile
+
+### 2. Roadmap mobile
+```
+1. Criar projeto Expo/React Native
+   npx create-expo-app scanixbody-mobile --template
+
+2. Instalar Supabase
+   npm install @supabase/supabase-js
+
+3. Apontar para o mesmo projeto Supabase
+   (mesmo SUPABASE_URL e ANON_KEY)
+
+4. Criar pacote shared para os tipos
+   packages/shared/src/types/
+   packages/shared/src/domain/
+
+5. Consumir mesma /api/v1 ou direto via Supabase client
+```
+
+### 3. Considerações
+- **Storage:** Usar `supabase.storage` com signed URLs no mobile
+- **Auth:** `supabase.auth.signInWithPassword()` funciona igual
+- **Deep links:** Configurar redirects para o app mobile no Supabase Auth
+
+---
+
+## Desenvolvimento
+
+### Scripts disponíveis
+
+```bash
+npm run dev          # Servidor de desenvolvimento
+npm run build        # Build de produção
+npm run start        # Iniciar build de produção
+npm run lint         # ESLint
+npm run type-check   # TypeScript check sem emitir
+```
+
+### Convenções de branch
+
+- `feature/nome-da-feature`
+- `fix/descricao-do-bug`
+- `chore/tarefa-de-manutencao`
+
+### Código
+
+- Prettier + ESLint pré-configurados
+- TypeScript strict mode
+- Toda regra de negócio em `src/domain/` — nunca na view
+- Toda comunicação com banco via `src/services/`
+- Validação Zod em todos os formulários e rotas API
+
+---
+
+## Licença
+
+MIT — veja [LICENSE](LICENSE)
+
+---
+
+*SCANIX BODY — Feito para quem leva performance a sério.*
