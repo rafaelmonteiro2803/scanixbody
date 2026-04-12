@@ -14,6 +14,7 @@ import {
 } from '@/lib/api-helpers'
 import { saveAthleteProfileSchema } from '@/validators/corpo.validator'
 import corpoService from '@/services/corpo.service'
+import type { BodySegment } from '@/services/corpo.service'
 import type { AuthContext } from '@/lib/api-helpers'
 
 // ---------------------------------------------------------------------------
@@ -103,7 +104,7 @@ export const PUT = withAuth(async (request: NextRequest, ctx: AuthContext) => {
     )
 
     // Upsert body segments if provided
-    let segments = []
+    let segments: BodySegment[] = []
     if (bodySegments && bodySegments.length > 0) {
       const segmentInputs = bodySegments.map((s) => ({
         segment: s.segment,

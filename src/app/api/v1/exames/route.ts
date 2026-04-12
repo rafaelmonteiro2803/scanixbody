@@ -17,6 +17,7 @@ import {
   listExamReportsQuerySchema,
 } from '@/validators/exames.validator'
 import examesService from '@/services/exames.service'
+import type { ExamMarker } from '@/services/exames.service'
 import type { AuthContext } from '@/lib/api-helpers'
 
 // ---------------------------------------------------------------------------
@@ -93,7 +94,7 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
     })
 
     // Save markers if provided
-    let markers = []
+    let markers: ExamMarker[] = []
     if (input!.markers && input!.markers.length > 0) {
       const markerInputs = input!.markers.map((m) => ({
         marker_name: m.markerName,
