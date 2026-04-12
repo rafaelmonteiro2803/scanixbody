@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import corpoService from '@/services/corpo.service';
 import { BodyProfileForm } from './components/BodyProfileForm';
 import type { AthleteProfilesRow, BodySegmentsRow } from '@/types/database.types';
+import type { ActivityLevel } from '@/types/domain.types';
 
 // ── Server Action ─────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ async function saveBodyProfile(data: Record<string, unknown>) {
     visceral_fat: profileData.visceral_fat as number | null,
     inbody_score: profileData.inbody_score as number | null,
     goal: profileData.goal as string | null,
-    activity_level: profileData.activity_level as typeof profileData.activity_level,
+    activity_level: profileData.activity_level as ActivityLevel | null,
     water_per_day: profileData.water_per_day as number | null,
     sleep_hours: profileData.sleep_hours as number | null,
     notes: profileData.notes as string | null,
