@@ -9,8 +9,6 @@
  * server-side code.
  */
 
-'use server'
-
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { generatePassword } from '@/lib/utils'
 import { AUDIT_ACTIONS, AUDIT_RESOURCES } from '@/lib/constants'
