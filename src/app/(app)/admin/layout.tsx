@@ -25,13 +25,14 @@ export default async function AdminLayout({
     redirect('/login')
   }
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('role, full_name')
     .eq('user_id', user.id)
     .single()
 
-  const role = (profile?.role ?? 'usuario_final') as UserRole
+  const profile = profileData as { role: UserRole; full_name: string | null } | null
+  const role = profile?.role ?? ('usuario_final' as UserRole)
 
   if (!ADMIN_ROLES.has(role)) {
     redirect('/dashboard')

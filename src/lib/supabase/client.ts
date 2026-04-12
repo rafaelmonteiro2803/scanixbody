@@ -8,7 +8,6 @@
  */
 
 import { createBrowserClient } from '@supabase/ssr'
-import type { Database } from '@/types/database.types'
 
 // ---------------------------------------------------------------------------
 // Environment guards
@@ -28,7 +27,9 @@ function getEnv(key: string): string {
 // Singleton
 // ---------------------------------------------------------------------------
 
-let client: ReturnType<typeof createBrowserClient<Database>> | undefined
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseClient = ReturnType<typeof createBrowserClient>
+let client: SupabaseClient | undefined
 
 /**
  * Returns (or lazily creates) the browser-side Supabase client.
@@ -40,7 +41,7 @@ let client: ReturnType<typeof createBrowserClient<Database>> | undefined
 export function createClient() {
   if (client) return client
 
-  client = createBrowserClient<Database>(
+  client = createBrowserClient(
     getEnv('NEXT_PUBLIC_SUPABASE_URL'),
     getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
   )

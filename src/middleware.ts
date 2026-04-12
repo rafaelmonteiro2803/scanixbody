@@ -14,7 +14,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { createServerClient } from '@supabase/ssr'
-import type { Database } from '@/types/database.types'
 
 // ---------------------------------------------------------------------------
 // Route classification helpers
@@ -81,7 +80,7 @@ export async function middleware(request: NextRequest) {
     try {
       // Re-use the same Supabase URL / key from env (middleware context has no
       // cookies() helper, so we build a minimal client directly).
-      const supabase = createServerClient<Database>(
+      const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
