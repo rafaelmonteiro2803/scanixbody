@@ -141,11 +141,11 @@ function safeNum(v: unknown): number | null {
   return isNaN(n) ? null : n;
 }
 
-function getBMIBadgeColor(classification: string): 'success' | 'warning' | 'danger' | 'default' {
+function getBMIBadgeColor(classification: string): 'success' | 'warning' | 'danger' | 'neutral' {
   if (classification === 'Normal') return 'success';
   if (classification === 'Sobrepeso') return 'warning';
   if (classification.startsWith('Obesidade')) return 'danger';
-  return 'default';
+  return 'neutral';
 }
 
 function getVisceralColor(val: number): string {
@@ -299,7 +299,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
     inbody_score: inbody_score_val,
     ideal_weight: idealWeight,
     goal: watch('goal') ?? null,
-    activity_level: (activity_level as typeof initialProfile.activity_level) ?? null,
+    activity_level: (activity_level as ActivityLevel | null) ?? null,
     sleep_hours: sleep_hours_val,
     sleep_quality: null,
     water_per_day: water_per_day_val,
