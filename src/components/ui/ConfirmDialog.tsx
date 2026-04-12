@@ -82,12 +82,11 @@ export function ConfirmDialog({
   // ── Body scroll lock ─────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (isOpen) {
-      const prev = document.body.style.overflow
-      document.body.style.overflow = 'hidden'
-      return () => {
-        document.body.style.overflow = prev
-      }
+    if (!isOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
     }
   }, [isOpen])
 
