@@ -6,8 +6,6 @@
  * activity trail is maintained in the `audit_logs` table.
  */
 
-'use server'
-
 import { createClient } from '@/lib/supabase/server'
 import type { AuditLogsRow } from '@/types/database.types'
 

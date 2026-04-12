@@ -5,8 +5,6 @@
  * lab marker values.
  */
 
-'use server'
-
 import { createClient } from '@/lib/supabase/server'
 import { AUDIT_ACTIONS, AUDIT_RESOURCES } from '@/lib/constants'
 import auditService from '@/services/audit.service'
