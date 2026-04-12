@@ -137,11 +137,11 @@ function PriorityBadge({ priority }: { priority: 'Alta' | 'Média' | 'Baixa' }) 
   const config = {
     Alta: { variant: 'danger' as const, icon: <AlertTriangle className="w-3 h-3" /> },
     Média: { variant: 'warning' as const, icon: <ChevronUp className="w-3 h-3" /> },
-    Baixa: { variant: 'default' as const, icon: <ChevronDown className="w-3 h-3" /> },
+    Baixa: { variant: 'neutral' as const, icon: <ChevronDown className="w-3 h-3" /> },
   };
   const { variant, icon } = config[priority];
   return (
-    <Badge variant={variant} size="sm" leftIcon={icon}>
+    <Badge variant={variant} size="sm" icon={icon}>
       {priority}
     </Badge>
   );

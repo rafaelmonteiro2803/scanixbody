@@ -91,7 +91,7 @@ const INITIAL_PAST_IMPORTS: PastImport[] = [
 // ── Status Badge ──────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: BioimpedanceStatus }) {
-  const map: Record<BioimpedanceStatus, { variant: 'success' | 'warning' | 'danger' | 'default'; label: string }> = {
+  const map: Record<BioimpedanceStatus, { variant: 'success' | 'warning' | 'danger' | 'neutral'; label: string }> = {
     confirmed: { variant: 'success', label: 'Confirmado' },
     pending: { variant: 'warning', label: 'Pendente' },
     reviewed: { variant: 'warning', label: 'Revisado' },
