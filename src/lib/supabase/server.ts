@@ -12,7 +12,6 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import type { Database } from '@/types/database.types'
 
 // ---------------------------------------------------------------------------
 // Environment guards
@@ -39,7 +38,7 @@ function getEnv(key: string): string {
 export async function createClient() {
   const cookieStore = await cookies()
 
-  return createServerClient<Database>(
+  return createServerClient(
     getEnv('NEXT_PUBLIC_SUPABASE_URL'),
     getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
     {
@@ -80,7 +79,7 @@ export async function createAdminClient() {
     )
   }
 
-  return createServerClient<Database>(
+  return createServerClient(
     getEnv('NEXT_PUBLIC_SUPABASE_URL'),
     serviceRoleKey,
     {

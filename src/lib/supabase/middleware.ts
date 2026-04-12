@@ -12,7 +12,6 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import type { Database } from '@/types/database.types'
 
 // ---------------------------------------------------------------------------
 // Environment guards
@@ -43,7 +42,7 @@ export async function updateSession(request: NextRequest) {
   // Start with a pass-through response; headers are added below as needed.
   let supabaseResponse = NextResponse.next({ request })
 
-  const supabase = createServerClient<Database>(
+  const supabase = createServerClient(
     getEnv('NEXT_PUBLIC_SUPABASE_URL'),
     getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
     {
