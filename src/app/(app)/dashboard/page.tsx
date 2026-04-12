@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/utils'
+import type { UserRole } from '@/types/database.types'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -235,7 +236,7 @@ export default async function DashboardPage() {
   ])
 
   // Type-assert query results (Supabase client is untyped without generated types)
-  const profile = profileRaw as { full_name: string | null; role: string; status: string } | null
+  const profile = profileRaw as { full_name: string | null; role: UserRole; status: string } | null
   const athleteProfile = athleteProfileRaw as {
     weight: number | null; body_fat_percentage: number | null; bmi: number | null
     skeletal_muscle_mass: number | null; tdee: number | null; goal: string | null
