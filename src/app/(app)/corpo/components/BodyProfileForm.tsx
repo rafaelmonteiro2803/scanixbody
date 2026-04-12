@@ -334,7 +334,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="80"
-            rightElement={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
             error={errors.weight?.message}
             {...register('weight')}
           />
@@ -343,7 +343,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="1"
             placeholder="175"
-            rightElement={<span className="text-xs text-[#666] pr-3">cm</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">cm</span>}
             error={errors.height?.message}
             {...register('height')}
           />
@@ -352,7 +352,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="1"
             placeholder="30"
-            rightElement={<span className="text-xs text-[#666] pr-3">anos</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">anos</span>}
             error={errors.age?.message}
             {...register('age')}
           />
@@ -404,7 +404,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="18.5"
-            rightElement={<span className="text-xs text-[#666] pr-3">%</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">%</span>}
             error={errors.body_fat_percentage?.message}
             {...register('body_fat_percentage')}
           />
@@ -413,7 +413,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="15.2"
-            rightElement={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
             error={errors.fat_mass?.message}
             {...register('fat_mass')}
           />
@@ -422,7 +422,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="35.4"
-            rightElement={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
             error={errors.skeletal_muscle_mass?.message}
             {...register('skeletal_muscle_mass')}
           />
@@ -431,7 +431,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="64.8"
-            rightElement={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
             error={errors.lean_mass?.message}
             {...register('lean_mass')}
           />
@@ -440,7 +440,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="47.4"
-            rightElement={<span className="text-xs text-[#666] pr-3">L</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">L</span>}
             error={errors.body_water?.message}
             {...register('body_water')}
           />
@@ -449,7 +449,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="12.6"
-            rightElement={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
             error={errors.protein_mass?.message}
             {...register('protein_mass')}
           />
@@ -458,7 +458,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.1"
             placeholder="3.8"
-            rightElement={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
             error={errors.minerals_mass?.message}
             {...register('minerals_mass')}
           />
@@ -499,7 +499,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
               min="1"
               max="20"
               placeholder="8"
-              rightElement={<span className="text-xs text-[#666] pr-3">1–20</span>}
+              suffix={<span className="text-xs text-[#666] pr-3">1–20</span>}
               error={errors.visceral_fat?.message}
               {...register('visceral_fat')}
             />
@@ -522,7 +522,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             type="number"
             step="0.5"
             placeholder="85"
-            rightElement={<span className="text-xs text-[#666] pr-3">cm</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">cm</span>}
             error={errors.waist?.message}
             {...register('waist')}
           />
@@ -534,7 +534,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
               type="number"
               step="0.5"
               placeholder="96"
-              rightElement={<span className="text-xs text-[#666] pr-3">cm</span>}
+              suffix={<span className="text-xs text-[#666] pr-3">cm</span>}
               error={errors.hip?.message}
               {...register('hip')}
             />
@@ -555,7 +555,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
               min="0"
               max="100"
               placeholder="80"
-              rightElement={<span className="text-xs text-[#666] pr-3">/ 100</span>}
+              suffix={<span className="text-xs text-[#666] pr-3">/ 100</span>}
               error={errors.inbody_score?.message}
               {...register('inbody_score')}
             />
@@ -611,7 +611,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             min="1"
             max="104"
             placeholder="12"
-            rightElement={<span className="text-xs text-[#666] pr-3">semanas</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">semanas</span>}
             error={errors.goal_period_weeks?.message}
             {...register('goal_period_weeks')}
           />
@@ -621,7 +621,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
               type="number"
               step="50"
               placeholder={suggestedWater?.toString() ?? '2800'}
-              rightElement={<span className="text-xs text-[#666] pr-3">ml</span>}
+              suffix={<span className="text-xs text-[#666] pr-3">ml</span>}
               helperText={suggestedWater ? `Sugerido: ${suggestedWater} ml (peso × 35 ml)` : undefined}
               error={errors.water_per_day?.message}
               {...register('water_per_day')}
@@ -634,7 +634,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
             min="0"
             max="24"
             placeholder="8"
-            rightElement={<span className="text-xs text-[#666] pr-3">h/noite</span>}
+            suffix={<span className="text-xs text-[#666] pr-3">h/noite</span>}
             error={errors.sleep_hours?.message}
             {...register('sleep_hours')}
           />
@@ -676,7 +676,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
                   type="number"
                   step="0.1"
                   placeholder="0.0"
-                  rightElement={<span className="text-xs text-[#666] pr-2">kg</span>}
+                  suffix={<span className="text-xs text-[#666] pr-2">kg</span>}
                   size="sm"
                   error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_lean`]?.message}
                   {...register(`seg_${seg.key}_lean` as keyof FormValues)}
@@ -686,7 +686,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
                   type="number"
                   step="0.1"
                   placeholder="0.0"
-                  rightElement={<span className="text-xs text-[#666] pr-2">kg</span>}
+                  suffix={<span className="text-xs text-[#666] pr-2">kg</span>}
                   size="sm"
                   error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_fat`]?.message}
                   {...register(`seg_${seg.key}_fat` as keyof FormValues)}

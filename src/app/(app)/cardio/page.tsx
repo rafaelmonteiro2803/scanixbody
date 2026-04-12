@@ -377,8 +377,8 @@ export default function CardioPage() {
                     min="1"
                     max="600"
                     placeholder="30"
-                    leftElement={<Timer className="w-4 h-4 text-[#666]" />}
-                    rightElement={<span className="text-xs text-[#666] pr-3">minutos</span>}
+                    prefix={<Timer className="w-4 h-4 text-[#666]" />}
+                    suffix={<span className="text-xs text-[#666] pr-3">minutos</span>}
                     error={errors.duration_minutes?.message}
                     {...register('duration_minutes')}
                   />
@@ -389,8 +389,8 @@ export default function CardioPage() {
                     min="1"
                     max="14"
                     placeholder="3"
-                    leftElement={<BarChart2 className="w-4 h-4 text-[#666]" />}
-                    rightElement={<span className="text-xs text-[#666] pr-3">vezes/sem.</span>}
+                    prefix={<BarChart2 className="w-4 h-4 text-[#666]" />}
+                    suffix={<span className="text-xs text-[#666] pr-3">vezes/sem.</span>}
                     error={errors.frequency_per_week?.message}
                     {...register('frequency_per_week')}
                   />
