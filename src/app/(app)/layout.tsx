@@ -28,11 +28,18 @@ export default async function AppRootLayout({
   }
 
   // Fetch profile for shell personalisation (name, avatar, role)
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('full_name, avatar_url, role, status')
     .eq('user_id', user.id)
     .single()
+
+  const profile = profileData as {
+    full_name: string | null
+    avatar_url: string | null
+    role: string
+    status: string
+  } | null
 
   // Guard: first_access users must complete onboarding
   // (middleware already handles this, but we defensively guard here too)

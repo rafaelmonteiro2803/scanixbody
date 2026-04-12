@@ -193,10 +193,10 @@ export default async function DashboardPage() {
 
   // Parallel data fetching
   const [
-    { data: profile },
-    { data: athleteProfile },
+    { data: profileRaw },
+    { data: athleteProfileRaw },
     { data: recentSessions },
-    { data: latestAiReport },
+    { data: latestAiReportRaw },
     { count: totalSessions },
   ] = await Promise.all([
     supabase
@@ -234,9 +234,21 @@ export default async function DashboardPage() {
       .is('deleted_at', null),
   ])
 
+  // Type-assert query results (Supabase client is untyped without generated types)
+  const profile = profileRaw as { full_name: string | null; role: string; status: string } | null
+  const athleteProfile = athleteProfileRaw as {
+    weight: number | null; body_fat_percentage: number | null; bmi: number | null
+    skeletal_muscle_mass: number | null; tdee: number | null; goal: string | null
+    activity_level: string | null
+  } | null
+  const latestAiReport = latestAiReportRaw as {
+    score_overall: number | null; score_training: number | null
+    score_diet: number | null; generated_at: string
+  } | null
+
   const firstName = profile?.full_name?.split(' ')[0] ?? 'Atleta'
   const isProfileComplete = !!athleteProfile?.weight && !!athleteProfile?.body_fat_percentage
-  const lastSession = recentSessions?.[0]
+  const lastSession = recentSessions?.[0] as { id: string; session_date: string; workout_days: { name: string } | null } | undefined
   const aiScore = latestAiReport?.score_overall
 
   // Compute total volume (approximate from session count × avg session volume)
