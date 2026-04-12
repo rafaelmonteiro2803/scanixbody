@@ -268,9 +268,9 @@ export type UpdateExerciseDTO = Partial<Omit<CreateExerciseDTO, 'workout_day_id'
 export interface LogSessionDTO {
   workout_day_id: string;
   session_date: string;
-  started_at?: string;
-  finished_at?: string;
-  notes?: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  notes?: string | null;
   exercises: LogSessionExerciseDTO[];
 }
 
@@ -286,14 +286,14 @@ export interface LogSessionExerciseDTO {
 export interface CreateMealDTO {
   meal_date: string;
   meal_name: string;
-  time?: string;
-  calories?: number;
-  protein_g?: number;
-  carbs_g?: number;
-  fat_g?: number;
-  items?: string;
-  source?: MealSource;
-  notes?: string;
+  time?: string | null;
+  calories?: number | null;
+  protein_g?: number | null;
+  carbs_g?: number | null;
+  fat_g?: number | null;
+  items?: string | null;
+  source?: MealSource | null;
+  notes?: string | null;
 }
 
 /** Update an existing meal (all fields optional) */
@@ -301,31 +301,31 @@ export type UpdateMealDTO = Partial<CreateMealDTO>;
 
 /** Create or update an athlete profile */
 export interface CreateAthleteProfileDTO {
-  weight?: number;
-  height?: number;
-  age?: number;
-  sex?: Sex;
-  body_fat_percentage?: number;
-  fat_mass?: number;
-  skeletal_muscle_mass?: number;
-  lean_mass?: number;
-  body_water?: number;
-  protein_mass?: number;
-  minerals_mass?: number;
-  bmi?: number;
-  bmr?: number;
-  visceral_fat?: number;
-  waist_hip_ratio?: number;
-  obesity_grade?: string;
-  inbody_score?: number;
-  ideal_weight?: number;
-  goal?: string;
-  activity_level?: ActivityLevel;
-  sleep_hours?: number;
-  sleep_quality?: number;
-  water_per_day?: number;
-  notes?: string;
-  tdee?: number;
+  weight?: number | null;
+  height?: number | null;
+  age?: number | null;
+  sex?: Sex | null;
+  body_fat_percentage?: number | null;
+  fat_mass?: number | null;
+  skeletal_muscle_mass?: number | null;
+  lean_mass?: number | null;
+  body_water?: number | null;
+  protein_mass?: number | null;
+  minerals_mass?: number | null;
+  bmi?: number | null;
+  bmr?: number | null;
+  visceral_fat?: number | null;
+  waist_hip_ratio?: number | null;
+  obesity_grade?: string | null;
+  inbody_score?: number | null;
+  ideal_weight?: number | null;
+  goal?: string | null;
+  activity_level?: ActivityLevel | null;
+  sleep_hours?: number | null;
+  sleep_quality?: number | null;
+  water_per_day?: number | null;
+  notes?: string | null;
+  tdee?: number | null;
 }
 
 /** Update an athlete profile (all fields optional) */
@@ -334,12 +334,12 @@ export type UpdateAthleteProfileDTO = Partial<CreateAthleteProfileDTO>;
 /** Create or update a cardio profile */
 export interface CreateCardioProfileDTO {
   practices: boolean;
-  type?: string;
-  intensity?: CardioIntensity;
-  duration_minutes?: number;
-  frequency_per_week?: number;
-  timing?: string;
-  goal?: string;
+  type?: string | null;
+  intensity?: CardioIntensity | null;
+  duration_minutes?: number | null;
+  frequency_per_week?: number | null;
+  timing?: string | null;
+  goal?: string | null;
 }
 
 /** Update a cardio profile (all fields optional) */
@@ -349,12 +349,12 @@ export type UpdateCardioProfileDTO = Partial<CreateCardioProfileDTO>;
 export interface CreateMedicationEntryDTO {
   name: string;
   category: MedicationCategory;
-  dose?: string;
-  frequency?: string;
-  route?: string;
-  start_date?: string;
-  notes?: string;
-  source?: MedicationSource;
+  dose?: string | null;
+  frequency?: string | null;
+  route?: string | null;
+  start_date?: string | null;
+  notes?: string | null;
+  source?: MedicationSource | null;
 }
 
 /** Update a medication entry (all fields optional) */
@@ -372,10 +372,10 @@ export interface CreateExamReportDTO {
 export interface CreateExamMarkerDTO {
   exam_report_id: string;
   marker_name: string;
-  value?: string;
-  unit?: string;
-  reference_range?: string;
-  status?: ExamMarkerStatus;
+  value?: string | null;
+  unit?: string | null;
+  reference_range?: string | null;
+  status?: ExamMarkerStatus | null;
 }
 
 /** Create a bioimpedance import record */
