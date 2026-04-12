@@ -3,6 +3,8 @@
  * DELETE /api/v1/medicamentos/:id  – soft-delete a medication entry
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

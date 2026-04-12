@@ -3,6 +3,8 @@
  * DELETE /api/v1/dieta/:id  – soft-delete a meal entry
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

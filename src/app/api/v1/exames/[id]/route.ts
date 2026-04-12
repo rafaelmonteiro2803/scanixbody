@@ -3,6 +3,8 @@
  * DELETE /api/v1/exames/:id  – soft-delete an exam report
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

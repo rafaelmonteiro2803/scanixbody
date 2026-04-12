@@ -3,6 +3,8 @@
  * POST /api/v1/medicamentos  – create a new medication entry
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

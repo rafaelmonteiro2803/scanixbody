@@ -3,6 +3,8 @@
  * POST /api/v1/treinos  – create a new workout day
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

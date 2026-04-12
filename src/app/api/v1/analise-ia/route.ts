@@ -10,6 +10,8 @@
  *   5. Return the saved report
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,

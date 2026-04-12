@@ -3,6 +3,8 @@
  * POST /api/v1/exames  – create a new exam report with markers
  */
 
+export const dynamic = 'force-dynamic'
+
 import { NextRequest } from 'next/server'
 import {
   withAuth,
