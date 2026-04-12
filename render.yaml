@@ -5,8 +5,11 @@ services:
     region: ohio
     plan: free
 
-    # Usa Yarn explicitamente; remove package-lock.json residual antes de instalar
-    buildCommand: "rm -f package-lock.json && yarn install --frozen-lockfile=false && yarn build"
+    runtime: node
+    nodeVersion: "20"
+
+    # yarn.lock commitado — usa --frozen-lockfile para garantir reprodutibilidade
+    buildCommand: "yarn install --frozen-lockfile && yarn build"
     startCommand: "yarn start"
 
     # Cache do Next.js entre deploys (elimina o aviso "No build cache found")
