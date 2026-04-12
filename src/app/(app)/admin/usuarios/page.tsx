@@ -362,7 +362,7 @@ export default function UsuariosPage() {
               <tbody>
                 {users.map((user, idx) => {
                   const name = user.profile?.full_name ?? null
-                  const role = user.profile?.role ?? 'usuario_final'
+                  const role = (user.profile?.role ?? 'usuario_final') as UserRole
                   const status = user.profile?.status ?? 'inactive'
                   const isBlocked = status === 'blocked'
                   const initials = getInitials(name, user.email)

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AppLayout from '@/components/layout/AppLayout'
+import type { UserRole } from '@/types/database.types'
 
 // ── App Route Group Layout ────────────────────────────────────────────────────
 //
@@ -37,7 +38,7 @@ export default async function AppRootLayout({
   const profile = profileData as {
     full_name: string | null
     avatar_url: string | null
-    role: string
+    role: UserRole
     status: string
   } | null
 
