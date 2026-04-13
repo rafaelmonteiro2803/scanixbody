@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Lock, Shield, Calendar, LogIn, Trash2, Camera, CheckCircle } from 'lucide-react'
+import { User, Lock, Shield, Calendar, LogIn, Trash2, CheckCircle } from 'lucide-react'
 import { Card, CardHeader, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -52,7 +52,7 @@ const ROLE_VARIANTS: Record<string, 'danger' | 'warning' | 'info' | 'success' | 
 
 export default function PerfilPage() {
   const supabase = createClient()
-  const [profile, setProfile] = useState<{ full_name: string; role: string; status: string; created_at: string } | null>(null)
+  const [profile, setProfile] = useState<{ full_name: string; role: string; status: string; created_at: string; phone?: string | null } | null>(null)
   const [user, setUser] = useState<{ email: string; last_sign_in_at?: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [profileSaved, setProfileSaved] = useState(false)
@@ -73,13 +73,13 @@ export default function PerfilPage() {
 
         const { data: prof } = await supabase
           .from('profiles')
-          .select('full_name, role, status, created_at')
+          .select('full_name, role, status, created_at, phone')
           .eq('user_id', authUser.id)
           .single()
 
         if (prof) {
           setProfile(prof)
-          profileForm.reset({ full_name: prof.full_name ?? '' })
+          profileForm.reset({ full_name: prof.full_name ?? '', phone: prof.phone ?? '' })
         }
       } finally {
         setLoading(false)
@@ -91,8 +91,11 @@ export default function PerfilPage() {
   const onSaveProfile = async (data: ProfileForm) => {
     const { data: { user: authUser } } = await supabase.auth.getUser()
     if (!authUser) return
-    await supabase.from('profiles').update({ full_name: data.full_name }).eq('user_id', authUser.id)
-    setProfile(prev => prev ? { ...prev, full_name: data.full_name } : null)
+    await supabase
+      .from('profiles')
+      .update({ full_name: data.full_name, phone: data.phone || null })
+      .eq('user_id', authUser.id)
+    setProfile(prev => prev ? { ...prev, full_name: data.full_name, phone: data.phone || null } : null)
     setProfileSaved(true)
     setTimeout(() => setProfileSaved(false), 3000)
   }
@@ -249,6 +252,12 @@ export default function PerfilPage() {
               </ul>
             </div>
 
+            <Input
+              label="Senha atual"
+              type="password"
+              {...passwordForm.register('currentPassword')}
+              error={passwordForm.formState.errors.currentPassword?.message}
+            />
             <Input
               label="Senha nova"
               type="password"
