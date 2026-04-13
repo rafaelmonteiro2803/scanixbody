@@ -342,6 +342,9 @@ ALTER TABLE athlete_profiles
   ADD CONSTRAINT athlete_profiles_sex_check
   CHECK (sex IN ('male','female','other','M','F'));
 
+-- activity_level is NOT NULL in migration but nullable in TS type / service layer
+ALTER TABLE athlete_profiles ALTER COLUMN activity_level DROP NOT NULL;
+
 
 -- =============================================================================
 -- ALTER COLUMN TYPES
