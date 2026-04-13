@@ -66,6 +66,10 @@ const NAV_ITEMS = [
   { href: '/progresso', icon: TrendingUp,      label: 'Progresso' },
 ]
 
+const ADMIN_NAV_ITEMS = [
+  { href: '/admin/usuarios', icon: Settings, label: 'Administração' },
+]
+
 // ── Sidebar Logo ──────────────────────────────────────────────────────────────
 
 function SidebarLogo({ collapsed }: { collapsed: boolean }) {
@@ -181,6 +185,7 @@ function Sidebar({
   }
 
   const displayName = user.fullName?.split(' ')[0] ?? user.email.split('@')[0]
+  const isAdmin = user.role === 'admin' || user.role === 'super_admin'
   const initials = user.fullName
     ? user.fullName.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
     : user.email[0].toUpperCase()
@@ -203,6 +208,9 @@ function Sidebar({
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2" aria-label="Navegação principal">
         {NAV_ITEMS.map(item => (
+          <NavItem key={item.href} item={item} collapsed={collapsed} onClick={isMobile ? onClose : undefined} />
+        ))}
+        {isAdmin && ADMIN_NAV_ITEMS.map(item => (
           <NavItem key={item.href} item={item} collapsed={collapsed} onClick={isMobile ? onClose : undefined} />
         ))}
       </nav>
