@@ -167,13 +167,13 @@ function getWHRBadgeColor(classification: string): 'success' | 'warning' | 'dang
 
 function SectionHeading({ icon, title, number }: { icon: React.ReactNode; title: string; number: number }) {
   return (
-    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#2a2a2a]">
+    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-border">
       <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-[#00ff88]/10 flex-shrink-0">
         <span className="text-[#00ff88] text-xs font-bold">{number}</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-[#00ff88] flex-shrink-0">{icon}</span>
-        <h3 className="text-sm font-bold text-white uppercase tracking-widest">{title}</h3>
+        <h3 className="text-sm font-bold text-text-title uppercase tracking-widest">{title}</h3>
       </div>
     </div>
   );
@@ -183,11 +183,11 @@ function SectionHeading({ icon, title, number }: { icon: React.ReactNode; title:
 
 function CalcField({ label, value, unit }: { label: string; value: React.ReactNode; unit?: string }) {
   return (
-    <div className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-3 py-2.5">
-      <p className="text-2xs text-[#666] uppercase tracking-wider mb-1">{label}</p>
+    <div className="rounded-lg bg-background border border-border px-3 py-2.5">
+      <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">{label}</p>
       <div className="flex items-baseline gap-1">
         <span className="text-lg font-bold text-[#00ff88] font-mono">{value}</span>
-        {unit && <span className="text-xs text-[#666]">{unit}</span>}
+        {unit && <span className="text-xs text-text-muted">{unit}</span>}
       </div>
     </div>
   );
@@ -333,7 +333,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
       {/* ── SECTION 1: DADOS PESSOAIS ── */}
-      <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
+      <div className="rounded-xl bg-background-card border border-border p-5">
         <SectionHeading number={1} icon={<User className="w-4 h-4" />} title="Dados Pessoais" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="sm:col-span-2 lg:col-span-3">
@@ -349,7 +349,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="80"
-            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
             error={errors.weight?.message}
             {...register('weight')}
           />
@@ -358,7 +358,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="1"
             placeholder="175"
-            suffix={<span className="text-xs text-[#666] pr-3">cm</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">cm</span>}
             error={errors.height?.message}
             {...register('height')}
           />
@@ -367,14 +367,14 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="1"
             placeholder="30"
-            suffix={<span className="text-xs text-[#666] pr-3">anos</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">anos</span>}
             error={errors.age?.message}
             {...register('age')}
           />
 
           {/* Sex radio */}
           <div className="sm:col-span-2 lg:col-span-3">
-            <label className="block text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
               Sexo biológico
             </label>
             <Controller
@@ -389,7 +389,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                         'flex items-center gap-2.5 px-4 py-2.5 rounded-xl border cursor-pointer transition-all duration-150',
                         field.value === opt.value
                           ? 'border-[#00ff88] bg-[#00ff88]/10 text-[#00ff88]'
-                          : 'border-[#2a2a2a] bg-[#0a0a0a] text-[#a0a0a0] hover:border-[#3a3a3a]',
+                          : 'border-border bg-background text-text-secondary hover:border-border-strong',
                       )}
                     >
                       <input
@@ -411,7 +411,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       </div>
 
       {/* ── SECTION 2: COMPOSIÇÃO CORPORAL ── */}
-      <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
+      <div className="rounded-xl bg-background-card border border-border p-5">
         <SectionHeading number={2} icon={<Weight className="w-4 h-4" />} title="Composição Corporal" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Input
@@ -419,7 +419,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="18.5"
-            suffix={<span className="text-xs text-[#666] pr-3">%</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">%</span>}
             error={errors.body_fat_percentage?.message}
             {...register('body_fat_percentage')}
           />
@@ -428,7 +428,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="15.2"
-            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
             error={errors.fat_mass?.message}
             {...register('fat_mass')}
           />
@@ -437,7 +437,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="35.4"
-            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
             error={errors.skeletal_muscle_mass?.message}
             {...register('skeletal_muscle_mass')}
           />
@@ -446,7 +446,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="64.8"
-            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
             error={errors.lean_mass?.message}
             {...register('lean_mass')}
           />
@@ -455,7 +455,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="47.4"
-            suffix={<span className="text-xs text-[#666] pr-3">L</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">L</span>}
             error={errors.body_water?.message}
             {...register('body_water')}
           />
@@ -464,7 +464,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="12.6"
-            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
             error={errors.protein_mass?.message}
             {...register('protein_mass')}
           />
@@ -473,7 +473,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="3.8"
-            suffix={<span className="text-xs text-[#666] pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
             error={errors.minerals_mass?.message}
             {...register('minerals_mass')}
           />
@@ -481,13 +481,13 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       </div>
 
       {/* ── SECTION 3: ÍNDICES E MARCADORES ── */}
-      <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
+      <div className="rounded-xl bg-background-card border border-border p-5">
         <SectionHeading number={3} icon={<TrendingUp className="w-4 h-4" />} title="Índices e Marcadores" />
 
         {/* Calculated Fields Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-          <div className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] px-3 py-2.5">
-            <p className="text-2xs text-[#666] uppercase tracking-wider mb-1">IMC</p>
+          <div className="rounded-lg bg-background border border-border px-3 py-2.5">
+            <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">IMC</p>
             <div className="flex items-baseline gap-1">
               <span className="text-lg font-bold text-[#00ff88] font-mono">
                 {bmi !== null ? bmi.toFixed(1) : '—'}
@@ -514,7 +514,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               min="1"
               max="20"
               placeholder="8"
-              suffix={<span className="text-xs text-[#666] pr-3">1–20</span>}
+              suffix={<span className="text-xs text-text-muted pr-3">1–20</span>}
               error={errors.visceral_fat?.message}
               {...register('visceral_fat')}
             />
@@ -537,7 +537,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.5"
             placeholder="85"
-            suffix={<span className="text-xs text-[#666] pr-3">cm</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">cm</span>}
             error={errors.waist?.message}
             {...register('waist')}
           />
@@ -549,13 +549,13 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               type="number"
               step="0.5"
               placeholder="96"
-              suffix={<span className="text-xs text-[#666] pr-3">cm</span>}
+              suffix={<span className="text-xs text-text-muted pr-3">cm</span>}
               error={errors.hip?.message}
               {...register('hip')}
             />
             {whr !== null && whrClass && (
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs text-[#666]">C/Q: <span className="text-white font-semibold">{whr.toFixed(2)}</span></span>
+                <span className="text-xs text-text-muted">C/Q: <span className="text-text-title font-semibold">{whr.toFixed(2)}</span></span>
                 <Badge variant={getWHRBadgeColor(whrClass)} size="sm">{whrClass}</Badge>
               </div>
             )}
@@ -570,7 +570,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               min="0"
               max="100"
               placeholder="80"
-              suffix={<span className="text-xs text-[#666] pr-3">/ 100</span>}
+              suffix={<span className="text-xs text-text-muted pr-3">/ 100</span>}
               error={errors.inbody_score?.message}
               {...register('inbody_score')}
             />
@@ -590,7 +590,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       </div>
 
       {/* ── SECTION 4: META E ESTILO DE VIDA ── */}
-      <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
+      <div className="rounded-xl bg-background-card border border-border p-5">
         <SectionHeading number={4} icon={<Target className="w-4 h-4" />} title="Meta e Estilo de Vida" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Controller
@@ -626,7 +626,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             min="1"
             max="104"
             placeholder="12"
-            suffix={<span className="text-xs text-[#666] pr-3">semanas</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">semanas</span>}
             error={errors.goal_period_weeks?.message}
             {...register('goal_period_weeks')}
           />
@@ -636,7 +636,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               type="number"
               step="50"
               placeholder={suggestedWater?.toString() ?? '2800'}
-              suffix={<span className="text-xs text-[#666] pr-3">ml</span>}
+              suffix={<span className="text-xs text-text-muted pr-3">ml</span>}
               helperText={suggestedWater ? `Sugerido: ${suggestedWater} ml (peso × 35 ml)` : undefined}
               error={errors.water_per_day?.message}
               {...register('water_per_day')}
@@ -649,7 +649,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             min="0"
             max="24"
             placeholder="8"
-            suffix={<span className="text-xs text-[#666] pr-3">h/noite</span>}
+            suffix={<span className="text-xs text-text-muted pr-3">h/noite</span>}
             error={errors.sleep_hours?.message}
             {...register('sleep_hours')}
           />
@@ -679,11 +679,11 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       </div>
 
       {/* ── SECTION 5: ANÁLISE SEGMENTAR ── */}
-      <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
+      <div className="rounded-xl bg-background-card border border-border p-5">
         <SectionHeading number={5} icon={<Ruler className="w-4 h-4" />} title="Análise Segmentar" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {SEGMENT_CONFIG.map((seg) => (
-            <div key={seg.key} className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] p-3">
+            <div key={seg.key} className="rounded-lg bg-background border border-border p-3">
               <p className="text-xs font-bold text-[#00ff88] uppercase tracking-wider mb-3">{seg.label}</p>
               <div className="space-y-2">
                 <Input
@@ -691,7 +691,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                   type="number"
                   step="0.1"
                   placeholder="0.0"
-                  suffix={<span className="text-xs text-[#666] pr-2">kg</span>}
+                  suffix={<span className="text-xs text-text-muted pr-2">kg</span>}
                   size="sm"
                   error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_lean`]?.message}
                   {...register(`seg_${seg.key}_lean` as keyof FormValues)}
@@ -701,7 +701,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                   type="number"
                   step="0.1"
                   placeholder="0.0"
-                  suffix={<span className="text-xs text-[#666] pr-2">kg</span>}
+                  suffix={<span className="text-xs text-text-muted pr-2">kg</span>}
                   size="sm"
                   error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_fat`]?.message}
                   {...register(`seg_${seg.key}_fat` as keyof FormValues)}
@@ -713,37 +713,37 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       </div>
 
       {/* ── SECTION 6: PAINEL CORPORAL ── */}
-      <div className="rounded-xl bg-[#1e1e1e] border border-[#00ff88]/20 p-5">
+      <div className="rounded-xl bg-background-card border border-[#00ff88]/20 p-5">
         <SectionHeading number={6} icon={<Zap className="w-4 h-4" />} title="Painel Corporal" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] p-4 text-center">
+          <div className="rounded-lg bg-background border border-border p-4 text-center">
             <Zap className="w-5 h-5 text-[#00ff88] mx-auto mb-1" />
-            <p className="text-2xs text-[#666] uppercase tracking-wider mb-1">TDEE</p>
+            <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">TDEE</p>
             <p className="text-2xl font-black text-[#00ff88] font-mono">
               {tdee !== null ? tdee.toLocaleString('pt-BR') : '—'}
             </p>
-            <p className="text-xs text-[#666]">kcal / dia</p>
+            <p className="text-xs text-text-muted">kcal / dia</p>
           </div>
-          <div className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] p-4 text-center">
+          <div className="rounded-lg bg-background border border-border p-4 text-center">
             <Droplets className="w-5 h-5 text-[#00d4ff] mx-auto mb-1" />
-            <p className="text-2xs text-[#666] uppercase tracking-wider mb-1">Água recomendada</p>
+            <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">Água recomendada</p>
             <p className="text-2xl font-black text-[#00d4ff] font-mono">
               {suggestedWater !== null ? suggestedWater.toLocaleString('pt-BR') : '—'}
             </p>
-            <p className="text-xs text-[#666]">ml / dia</p>
+            <p className="text-xs text-text-muted">ml / dia</p>
           </div>
-          <div className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] p-4 text-center">
+          <div className="rounded-lg bg-background border border-border p-4 text-center">
             <Activity className="w-5 h-5 text-[#ffaa00] mx-auto mb-1" />
-            <p className="text-2xs text-[#666] uppercase tracking-wider mb-1">IMC atual</p>
+            <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">IMC atual</p>
             <p className="text-2xl font-black text-[#ffaa00] font-mono">
               {bmi !== null ? bmi.toFixed(1) : '—'}
             </p>
-            <p className="text-xs text-[#666]">{bmiClass ?? '—'}</p>
+            <p className="text-xs text-text-muted">{bmiClass ?? '—'}</p>
           </div>
         </div>
-        <div className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] p-4">
-          <p className="text-2xs text-[#666] uppercase tracking-wider mb-2">Estado Corporal</p>
-          <p className="text-sm text-[#a0a0a0] leading-relaxed">{bodyStateNarrative}</p>
+        <div className="rounded-lg bg-background border border-border p-4">
+          <p className="text-2xs text-text-muted uppercase tracking-wider mb-2">Estado Corporal</p>
+          <p className="text-sm text-text-secondary leading-relaxed">{bodyStateNarrative}</p>
         </div>
       </div>
 

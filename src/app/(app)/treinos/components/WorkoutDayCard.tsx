@@ -56,7 +56,7 @@ function ExerciseRow({
   onDelete: (id: string) => void
 }) {
   return (
-    <div className="group flex items-center gap-3 rounded-lg bg-[#0a0a0a] border border-border px-4 py-3 transition-colors hover:border-border-strong">
+    <div className="group flex items-center gap-3 rounded-lg bg-background border border-border px-4 py-3 transition-colors hover:border-border-strong">
       {/* Order bullet */}
       <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
         <Dumbbell className="w-3 h-3 text-primary" />
@@ -64,7 +64,7 @@ function ExerciseRow({
 
       {/* Name + notes */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white truncate">{exercise.name}</p>
+        <p className="text-sm font-semibold text-text-title truncate">{exercise.name}</p>
         {exercise.notes && (
           <p className="text-xs text-text-muted truncate mt-0.5">{exercise.notes}</p>
         )}
@@ -132,7 +132,7 @@ export function WorkoutDayCard({
   const [expanded, setExpanded] = useState(exerciseCount === 0)
 
   return (
-    <div className="rounded-xl border border-border bg-[#161616] overflow-hidden transition-all duration-200 hover:border-border-strong">
+    <div className="rounded-xl border border-border bg-background-card overflow-hidden transition-all duration-200 hover:border-border-strong">
       {/* Card Header */}
       <div className="px-5 py-4">
         <div className="flex items-start gap-4">
@@ -143,7 +143,7 @@ export function WorkoutDayCard({
 
           {/* Title + badges */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-white leading-tight truncate">
+            <h3 className="text-base font-bold text-text-title leading-tight truncate">
               {day.name}
             </h3>
 
@@ -207,7 +207,7 @@ export function WorkoutDayCard({
             </button>
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-white hover:bg-surface-2 transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-title hover:bg-surface-2 transition-colors"
               aria-label={expanded ? 'Recolher exercícios' : 'Expandir exercícios'}
               aria-expanded={expanded}
             >

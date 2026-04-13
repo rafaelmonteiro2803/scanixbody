@@ -83,17 +83,17 @@ function RedefinirSenhaForm() {
   if (sessionError) {
     return (
       <div className="w-full animate-slide-up">
-        <div className="rounded-2xl border border-[#ff4444]/20 bg-[#111111] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+        <div className="rounded-2xl border border-[#ff4444]/20 bg-background-secondary p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-[#ff4444]/30 bg-[#ff4444]/10">
             <AlertCircle className="h-8 w-8 text-[#ff4444]" />
           </div>
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-2xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.02em' }}
           >
             Link inválido
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-[#666666]">{sessionError}</p>
+          <p className="mt-3 text-sm leading-relaxed text-text-muted">{sessionError}</p>
           <button
             onClick={() => router.push('/recuperar-senha')}
             className="mt-6 text-sm font-medium text-[#00ff88] hover:text-[#00e67a] transition-colors"
@@ -108,17 +108,17 @@ function RedefinirSenhaForm() {
   if (success) {
     return (
       <div className="w-full animate-scale-in">
-        <div className="rounded-2xl border border-[#00ff88]/20 bg-[#111111] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+        <div className="rounded-2xl border border-[#00ff88]/20 bg-background-secondary p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-[#00ff88]/30 bg-[#00ff88]/10">
             <CheckCircle2 className="h-8 w-8 text-[#00ff88]" />
           </div>
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-2xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.02em' }}
           >
             Senha redefinida!
           </h2>
-          <p className="mt-3 text-sm text-[#666666]">
+          <p className="mt-3 text-sm text-text-muted">
             Sua senha foi atualizada. Redirecionando para o login…
           </p>
         </div>
@@ -136,19 +136,19 @@ function RedefinirSenhaForm() {
 
   return (
     <div className="w-full animate-slide-up">
-      <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+      <div className="rounded-2xl border border-border bg-background-secondary p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
         {/* Header */}
         <div className="mb-7 flex flex-col items-start gap-1">
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-[#00ff88]/20 bg-[#00ff88]/10">
             <Lock className="h-5 w-5 text-[#00ff88]" />
           </div>
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-2xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.02em' }}
           >
             Criar nova senha
           </h2>
-          <p className="text-sm text-[#666666]">
+          <p className="text-sm text-text-muted">
             Escolha uma senha forte para sua conta.
           </p>
         </div>
@@ -156,24 +156,24 @@ function RedefinirSenhaForm() {
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
           {/* Nova senha */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-sm font-medium text-[#a0a0a0]">
+            <label htmlFor="password" className="text-sm font-medium text-text-secondary">
               Nova senha
             </label>
             <div
               className={`relative flex h-11 items-center rounded-xl border transition-all duration-150 ${
                 errors.password
                   ? 'border-[#ff4444] bg-[#ff4444]/5'
-                  : 'border-[#2a2a2a] bg-[#0a0a0a] focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
+                  : 'border-border bg-background focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
               }`}
             >
-              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-[#444444]" aria-hidden />
+              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-text-faint" aria-hidden />
               <input
                 id="password"
                 type="password"
                 autoComplete="new-password"
                 placeholder="••••••••"
                 {...register('password')}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#444444] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-text-title placeholder:text-text-faint focus:outline-none"
               />
             </div>
             {errors.password && (
@@ -183,24 +183,24 @@ function RedefinirSenhaForm() {
 
           {/* Confirmar senha */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="confirmPassword" className="text-sm font-medium text-[#a0a0a0]">
+            <label htmlFor="confirmPassword" className="text-sm font-medium text-text-secondary">
               Confirmar nova senha
             </label>
             <div
               className={`relative flex h-11 items-center rounded-xl border transition-all duration-150 ${
                 errors.confirmPassword
                   ? 'border-[#ff4444] bg-[#ff4444]/5'
-                  : 'border-[#2a2a2a] bg-[#0a0a0a] focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
+                  : 'border-border bg-background focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
               }`}
             >
-              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-[#444444]" aria-hidden />
+              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-text-faint" aria-hidden />
               <input
                 id="confirmPassword"
                 type="password"
                 autoComplete="new-password"
                 placeholder="••••••••"
                 {...register('confirmPassword')}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#444444] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-text-title placeholder:text-text-faint focus:outline-none"
               />
             </div>
             {errors.confirmPassword && (
@@ -209,7 +209,7 @@ function RedefinirSenhaForm() {
           </div>
 
           {/* Requisitos */}
-          <p className="text-xs text-[#444444]">
+          <p className="text-xs text-text-faint">
             Mínimo 8 caracteres · Uma maiúscula · Um número · Um caractere especial
           </p>
 

@@ -97,9 +97,9 @@ const ROLE_META: Record<UserRole, {
   operator: {
     label: 'Operador',
     description: 'Acesso operacional básico, pode gerenciar dados próprios e visualizar informações limitadas.',
-    color: 'text-[#aaa]',
-    bg: 'bg-[#444]/20',
-    border: 'border-[#444]/30',
+    color: 'text-text-secondary',
+    bg: 'bg-surface-2',
+    border: 'border-border',
   },
   usuario_final: {
     label: 'Usuário Final',
@@ -125,10 +125,10 @@ export default function PerfisPage() {
 
       {/* ── Header ── */}
       <div>
-        <h2 className="text-xl font-black tracking-[0.15em] text-white uppercase">
+        <h2 className="text-xl font-black tracking-[0.15em] text-text-title uppercase">
           PERFIS & PERMISSÕES
         </h2>
-        <p className="mt-0.5 text-xs text-[#666]">
+        <p className="mt-0.5 text-xs text-text-muted">
           Visualize as permissões de cada cargo no sistema
         </p>
       </div>
@@ -136,9 +136,9 @@ export default function PerfisPage() {
       {/* ── Info banner ── */}
       <div className="flex items-start gap-3 rounded-xl border border-[#00ff88]/10 bg-[#00ff88]/5 px-4 py-3">
         <Info className="w-4 h-4 text-[#00ff88] flex-shrink-0 mt-0.5" />
-        <p className="text-xs text-[#888] leading-relaxed">
+        <p className="text-xs text-text-secondary leading-relaxed">
           As permissões são aplicadas via Row Level Security (RLS) no Supabase e refletem o que
-          cada cargo pode fazer. O cargo <strong className="text-white">Super Admin</strong> não
+          cada cargo pode fazer. O cargo <strong className="text-text-title">Super Admin</strong> não
           pode ser modificado. Para alterar permissões de outros cargos, edite as políticas RLS
           diretamente no painel do Supabase.
         </p>
@@ -159,7 +159,7 @@ export default function PerfisPage() {
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff88]',
                 isSelected
                   ? `${m.bg} ${m.border} shadow-[0_0_16px_rgba(0,0,0,0.5)]`
-                  : 'bg-[#111] border-[#1e1e1e] hover:border-[#2a2a2a] hover:-translate-y-0.5',
+                  : 'bg-background-secondary border-border-subtle hover:border-border hover:-translate-y-0.5',
               ].join(' ')}
             >
               {/* Lock icon for super_admin */}
@@ -176,7 +176,7 @@ export default function PerfisPage() {
 
               {/* Label */}
               <div>
-                <p className={`text-sm font-bold ${isSelected ? m.color : 'text-white'}`}>
+                <p className={`text-sm font-bold ${isSelected ? m.color : 'text-text-title'}`}>
                   {m.label}
                 </p>
               </div>
@@ -206,32 +206,32 @@ export default function PerfisPage() {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm text-[#888]">{meta.description}</p>
+            <p className="mt-1 text-sm text-text-secondary">{meta.description}</p>
           </div>
         </div>
       </div>
 
       {/* ── Permission matrix ── */}
-      <div className="rounded-2xl border border-[#1e1e1e] bg-[#111] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#1e1e1e] flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white">
+      <div className="rounded-2xl border border-border-subtle bg-background-secondary overflow-hidden">
+        <div className="px-5 py-4 border-b border-border-subtle flex items-center justify-between">
+          <h3 className="text-sm font-bold text-text-title">
             Matriz de Permissões —{' '}
             <span className={meta.color}>{meta.label}</span>
           </h3>
-          <span className="text-xs text-[#444]">Somente leitura</span>
+          <span className="text-xs text-text-faint">Somente leitura</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#161616]">
-                <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[#444] w-40 min-w-[140px]">
+              <tr className="border-b border-border-subtle">
+                <th className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-faint w-40 min-w-[140px]">
                   Recurso
                 </th>
                 {ACTIONS.map((a) => (
                   <th
                     key={a}
-                    className="px-3 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-[#444] min-w-[80px]"
+                    className="px-3 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-text-faint min-w-[80px]"
                   >
                     {a}
                   </th>
@@ -243,12 +243,12 @@ export default function PerfisPage() {
                 <tr
                   key={resource}
                   className={[
-                    'border-b border-[#0d0d0d] transition-colors hover:bg-[#161616]',
-                    idx % 2 !== 0 ? 'bg-[#0d0d0d]/40' : '',
+                    'border-b border-border-subtle transition-colors hover:bg-background-card',
+                    idx % 2 !== 0 ? 'bg-background/40' : '',
                   ].join(' ')}
                 >
                   <td className="px-5 py-3.5">
-                    <span className="text-xs font-semibold text-[#aaa]">{resource}</span>
+                    <span className="text-xs font-semibold text-text-secondary">{resource}</span>
                   </td>
                   {ACTIONS.map((action) => {
                     const allowed = matrix[resource]?.[action] ?? false
@@ -266,7 +266,7 @@ export default function PerfisPage() {
       </div>
 
       {/* ── Legend ── */}
-      <div className="flex flex-wrap items-center gap-5 text-xs text-[#555]">
+      <div className="flex flex-wrap items-center gap-5 text-xs text-text-muted">
         <div className="flex items-center gap-2">
           <PermissionCell allowed={true} />
           <span>Permitido</span>
@@ -304,8 +304,8 @@ function PermissionCell({ allowed, locked }: { allowed: boolean; locked?: boolea
   }
 
   return (
-    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-[#222]">
-      <span className="w-1 h-0.5 rounded-full bg-[#333]" />
+    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-border">
+      <span className="w-1 h-0.5 rounded-full bg-surface-3" />
     </span>
   )
 }

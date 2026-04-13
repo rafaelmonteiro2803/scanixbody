@@ -49,7 +49,7 @@ interface StatCardProps {
 function StatCard({ label, value, icon, accent }: StatCardProps) {
   return (
     <div
-      className={`rounded-xl border bg-[#161616] p-4 flex flex-col gap-3 ${
+      className={`rounded-xl border bg-background-card p-4 flex flex-col gap-3 ${
         accent ? 'border-primary/30' : 'border-border'
       }`}
     >
@@ -63,7 +63,7 @@ function StatCard({ label, value, icon, accent }: StatCardProps) {
       <div>
         <p
           className={`text-2xl font-black font-heading tracking-tight ${
-            accent ? 'text-primary' : 'text-white'
+            accent ? 'text-primary' : 'text-text-title'
           }`}
         >
           {value}
@@ -87,7 +87,7 @@ function CustomTooltip({ active, payload, label }: {
 
   const entry = payload[0]
   return (
-    <div className="rounded-lg border border-border bg-[#161616] shadow-card-lg px-3 py-2.5 text-xs">
+    <div className="rounded-lg border border-border bg-background-card shadow-card-lg px-3 py-2.5 text-xs">
       <p className="text-text-muted mb-1">{formatDate(label ?? '', 'dd/MM/yyyy')}</p>
       <p className="font-bold text-primary">{entry.payload.label ?? `${entry.value} kg`}</p>
     </div>
@@ -198,11 +198,11 @@ export default function ProgressoPage() {
   // ── Render ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div>
-          <h1 className="font-heading text-3xl font-black tracking-tight text-white">
+          <h1 className="font-heading text-3xl font-black tracking-tight text-text-title">
             PROGRESSO
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
@@ -252,20 +252,20 @@ export default function ProgressoPage() {
 
             {/* Chart section */}
             {rawData.length === 0 ? (
-              <div className="rounded-xl border border-border bg-[#161616] p-16 text-center">
+              <div className="rounded-xl border border-border bg-background-card p-16 text-center">
                 <Dumbbell className="w-12 h-12 text-text-muted mx-auto mb-4" />
-                <p className="font-semibold text-white mb-1">Sem dados de progresso ainda</p>
+                <p className="font-semibold text-text-title mb-1">Sem dados de progresso ainda</p>
                 <p className="text-sm text-text-secondary">
                   Registre suas sessões de treino para visualizar a evolução das cargas.
                 </p>
               </div>
             ) : (
-              <div className="rounded-xl border border-border bg-[#161616] p-5 space-y-5">
+              <div className="rounded-xl border border-border bg-background-card p-5 space-y-5">
                 {/* Chart header */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex items-center gap-2 flex-1">
                     <TrendingUp className="w-4 h-4 text-primary" />
-                    <h2 className="font-bold text-white text-sm">Evolução de Carga</h2>
+                    <h2 className="font-bold text-text-title text-sm">Evolução de Carga</h2>
                   </div>
                   <div className="w-full sm:w-64">
                     <Select
@@ -363,8 +363,8 @@ export default function ProgressoPage() {
 
             {/* All exercises list */}
             {exerciseHistories.length > 0 && (
-              <div className="rounded-xl border border-border bg-[#161616] p-5">
-                <h2 className="font-bold text-white text-sm mb-4 flex items-center gap-2">
+              <div className="rounded-xl border border-border bg-background-card p-5">
+                <h2 className="font-bold text-text-title text-sm mb-4 flex items-center gap-2">
                   <Dumbbell className="w-4 h-4 text-primary" />
                   Resumo por Exercício
                 </h2>
@@ -377,11 +377,11 @@ export default function ProgressoPage() {
                     return (
                       <div
                         key={history.exercise_name}
-                        className="flex items-center justify-between gap-3 rounded-lg bg-[#0a0a0a] border border-border px-4 py-3 hover:border-border-strong transition-colors cursor-pointer"
+                        className="flex items-center justify-between gap-3 rounded-lg bg-background border border-border px-4 py-3 hover:border-border-strong transition-colors cursor-pointer"
                         onClick={() => setSelectedExercise(history.exercise_name)}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-white truncate">
+                          <p className="text-sm font-semibold text-text-title truncate">
                             {history.exercise_name}
                           </p>
                           <p className="text-xs text-text-muted mt-0.5">

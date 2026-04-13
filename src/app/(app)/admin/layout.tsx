@@ -39,19 +39,19 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       {/* Admin section header */}
-      <div className="border-b border-[#1f1f1f] bg-[#0f0f0f]">
+      <div className="border-b border-border-subtle bg-background">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 py-3 text-xs">
             <Link
               href="/dashboard"
-              className="text-[#666] hover:text-[#00ff88] transition-colors duration-150"
+              className="text-text-muted hover:text-[#00ff88] transition-colors duration-150"
             >
               Dashboard
             </Link>
-            <span className="text-[#333]">/</span>
+            <span className="text-text-faint">/</span>
             <span className="text-[#00ff88] font-semibold tracking-widest uppercase text-[10px]">
               Administração
             </span>
@@ -60,10 +60,10 @@ export default async function AdminLayout({
           {/* Page title */}
           <div className="flex items-center justify-between pb-4">
             <div>
-              <h1 className="text-xl font-black tracking-[0.2em] text-white uppercase">
+              <h1 className="text-xl font-black tracking-[0.2em] text-text-title uppercase">
                 ADMINISTRAÇÃO
               </h1>
-              <p className="text-xs text-[#666] mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 Painel de controle do sistema
               </p>
             </div>

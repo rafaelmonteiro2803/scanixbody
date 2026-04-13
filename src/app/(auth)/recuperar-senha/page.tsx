@@ -68,7 +68,7 @@ export default function RecuperarSenhaPage() {
   if (submitted) {
     return (
       <div className="w-full animate-scale-in">
-        <div className="rounded-2xl border border-[#00ff88]/20 bg-[#111111] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+        <div className="rounded-2xl border border-[#00ff88]/20 bg-background-secondary p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
           {/* Icon */}
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-[#00ff88]/30 bg-[#00ff88]/10">
             <CheckCircle2 className="h-8 w-8 text-[#00ff88]" />
@@ -76,25 +76,25 @@ export default function RecuperarSenhaPage() {
 
           {/* Heading */}
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-2xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.02em' }}
           >
             E-mail enviado!
           </h2>
 
           {/* Body */}
-          <p className="mt-3 text-sm leading-relaxed text-[#666666]">
+          <p className="mt-3 text-sm leading-relaxed text-text-muted">
             Se uma conta existir para{' '}
-            <span className="font-medium text-[#a0a0a0]">{submittedEmail}</span>,
+            <span className="font-medium text-text-secondary">{submittedEmail}</span>,
             você receberá um link de recuperação em breve.
           </p>
 
-          <p className="mt-2 text-xs text-[#444444]">
+          <p className="mt-2 text-xs text-text-faint">
             Verifique também a caixa de spam ou lixo eletrônico.
           </p>
 
           {/* Divider */}
-          <div className="my-6 h-px bg-[#1e1e1e]" />
+          <div className="my-6 h-px bg-background-card" />
 
           {/* Back link */}
           <Link
@@ -114,7 +114,7 @@ export default function RecuperarSenhaPage() {
   return (
     <div className="w-full animate-slide-up">
       {/* Card */}
-      <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+      <div className="rounded-2xl border border-border bg-background-secondary p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
 
         {/* Header */}
         <div className="mb-7 flex flex-col items-start gap-1">
@@ -122,12 +122,12 @@ export default function RecuperarSenhaPage() {
             <Mail className="h-5 w-5 text-[#00ff88]" />
           </div>
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-2xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.02em' }}
           >
             Recuperar senha
           </h2>
-          <p className="text-sm leading-relaxed text-[#666666]">
+          <p className="text-sm leading-relaxed text-text-muted">
             Informe o e-mail cadastrado e enviaremos um link para você criar uma
             nova senha.
           </p>
@@ -148,7 +148,7 @@ export default function RecuperarSenhaPage() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="email"
-              className="text-sm font-medium text-[#a0a0a0]"
+              className="text-sm font-medium text-text-secondary"
             >
               E-mail cadastrado
             </label>
@@ -156,10 +156,10 @@ export default function RecuperarSenhaPage() {
               className={`relative flex h-11 items-center rounded-xl border transition-all duration-150 ${
                 errors.email
                   ? 'border-[#ff4444] bg-[#ff4444]/5 focus-within:ring-1 focus-within:ring-[#ff4444]'
-                  : 'border-[#2a2a2a] bg-[#0a0a0a] focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
+                  : 'border-border bg-background focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
               }`}
             >
-              <Mail className="ml-3 h-4 w-4 flex-shrink-0 text-[#444444]" aria-hidden />
+              <Mail className="ml-3 h-4 w-4 flex-shrink-0 text-text-faint" aria-hidden />
               <input
                 id="email"
                 type="email"
@@ -167,7 +167,7 @@ export default function RecuperarSenhaPage() {
                 autoCapitalize="off"
                 placeholder="seu@email.com"
                 {...register('email')}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#444444] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-text-title placeholder:text-text-faint focus:outline-none"
               />
             </div>
             {errors.email && (
@@ -200,16 +200,16 @@ export default function RecuperarSenhaPage() {
 
         {/* Divider */}
         <div className="mt-7 flex items-center gap-3">
-          <div className="h-px flex-1 bg-[#1e1e1e]" />
-          <span className="text-xs text-[#444444]">ou</span>
-          <div className="h-px flex-1 bg-[#1e1e1e]" />
+          <div className="h-px flex-1 bg-background-card" />
+          <span className="text-xs text-text-faint">ou</span>
+          <div className="h-px flex-1 bg-background-card" />
         </div>
 
         {/* Back to login */}
         <div className="mt-5 text-center">
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#666666] transition-colors hover:text-[#a0a0a0]"
+            className="inline-flex items-center gap-2 text-sm font-medium text-text-muted transition-colors hover:text-text-secondary"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para o login

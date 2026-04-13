@@ -86,14 +86,14 @@ function DeleteConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-[#161616] shadow-card-xl p-6 space-y-4">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-background-card shadow-card-xl p-6 space-y-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10">
             <AlertCircle className="h-5 w-5 text-red-400" />
           </div>
           <div>
-            <h3 className="font-bold text-white">Excluir exame?</h3>
-            <p className="text-sm text-white/50 mt-0.5">
+            <h3 className="font-bold text-text-title">Excluir exame?</h3>
+            <p className="text-sm text-text-secondary mt-0.5">
               Este relatório e todos os seus marcadores serão removidos.
             </p>
           </div>
@@ -237,19 +237,19 @@ function ImportSection({
   return (
     <div className="space-y-5">
       {/* Date + file upload */}
-      <div className="rounded-xl border border-border bg-[#161616] p-5 space-y-4">
+      <div className="rounded-xl border border-border bg-background-card p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-text-title flex items-center gap-2">
             <Upload className="w-4 h-4 text-[#00ff88]" />
             Importar arquivo de exame
           </h3>
           <div className="flex items-center gap-2">
-            <label className="text-xs text-white/40">Data do exame:</label>
+            <label className="text-xs text-text-muted">Data do exame:</label>
             <input
               type="date"
               value={reportDate}
               onChange={(e) => setReportDate(e.target.value)}
-              className="text-xs bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-[#00ff88]/50"
+              className="text-xs bg-surface-1 border border-border rounded-lg px-2 py-1.5 text-text-title focus:outline-none focus:border-[#00ff88]/50"
             />
           </div>
         </div>
@@ -268,12 +268,12 @@ function ImportSection({
       {/* Or paste text */}
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
-        <span className="text-xs text-white/30 font-medium">OU</span>
+        <span className="text-xs text-text-faint font-medium">OU</span>
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      <div className="rounded-xl border border-border bg-[#161616] p-5 space-y-3">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+      <div className="rounded-xl border border-border bg-background-card p-5 space-y-3">
+        <h3 className="text-sm font-semibold text-text-title flex items-center gap-2">
           <Clipboard className="w-4 h-4 text-[#00ff88]" />
           Colar texto do laudo
         </h3>
@@ -302,7 +302,7 @@ function ImportSection({
         <div className="rounded-xl border border-[#00ff88]/20 bg-[#00ff88]/5 p-6 flex flex-col items-center gap-3">
           <Spinner size="md" />
           <p className="text-sm text-[#00ff88]/80">Analisando laudo com IA...</p>
-          <p className="text-xs text-white/35 text-center">
+          <p className="text-xs text-text-muted text-center">
             Identificando marcadores, valores e faixas de referência
           </p>
         </div>
@@ -338,17 +338,17 @@ function ImportSection({
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-white/8">
-                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                <tr className="border-b border-border-subtle">
+                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint">
                     Marcador
                   </th>
-                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint">
                     Valor
                   </th>
-                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint">
                     Referência
                   </th>
-                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint">
                     Status
                   </th>
                   <th className="px-4 py-2.5 w-8" />
@@ -357,14 +357,14 @@ function ImportSection({
               <tbody className="divide-y divide-white/5">
                 {extracted.map((m, i) => (
                   <tr key={i} className="hover:bg-white/3 transition-colors">
-                    <td className="px-4 py-3 text-sm font-medium text-white">
+                    <td className="px-4 py-3 text-sm font-medium text-text-title">
                       {m.marker_name}
                     </td>
-                    <td className="px-4 py-3 text-sm font-mono text-white/90">
+                    <td className="px-4 py-3 text-sm font-mono text-text-title/90">
                       {m.value}{' '}
-                      <span className="text-xs text-white/40">{m.unit}</span>
+                      <span className="text-xs text-text-muted">{m.unit}</span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-white/40 font-mono">
+                    <td className="px-4 py-3 text-xs text-text-muted font-mono">
                       {m.reference_range}
                     </td>
                     <td className="px-4 py-3">
@@ -373,7 +373,7 @@ function ImportSection({
                         onChange={(e) =>
                           updateMarkerStatus(i, e.target.value as ExamMarkerStatus)
                         }
-                        className="text-xs bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-[#00ff88]/50"
+                        className="text-xs bg-surface-1 border border-border rounded-lg px-2 py-1 text-text-title focus:outline-none focus:border-[#00ff88]/50"
                       >
                         <option value="normal">Normal</option>
                         <option value="alto">Alto</option>
@@ -385,7 +385,7 @@ function ImportSection({
                       <button
                         type="button"
                         onClick={() => removeMarker(i)}
-                        className="w-6 h-6 flex items-center justify-center rounded text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="w-6 h-6 flex items-center justify-center rounded text-text-faint hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -452,7 +452,7 @@ function ReportCard({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-[#161616] overflow-hidden">
+    <div className="rounded-xl border border-border bg-background-card overflow-hidden">
       {/* Report header */}
       <div
         className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/[0.03] transition-colors select-none"
@@ -463,15 +463,15 @@ function ReportCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white truncate">
+          <p className="text-sm font-semibold text-text-title truncate">
             Exame {initialReport.source === 'file' ? 'importado' : 'colado'}
           </p>
           <div className="flex items-center gap-3 mt-0.5">
-            <span className="flex items-center gap-1 text-[11px] text-white/40">
+            <span className="flex items-center gap-1 text-[11px] text-text-muted">
               <CalendarDays className="w-3 h-3" />
               {formattedDate}
             </span>
-            <span className="flex items-center gap-1 text-[11px] text-white/30">
+            <span className="flex items-center gap-1 text-[11px] text-text-faint">
               <Hash className="w-3 h-3" />
               {expanded && markers.length > 0 ? markers.length : '—'} marcadores
             </span>
@@ -485,45 +485,45 @@ function ReportCard({
               e.stopPropagation();
               onDelete(initialReport.id);
             }}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-text-faint hover:text-red-400 hover:bg-red-500/10 transition-colors"
             aria-label="Excluir relatório"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
           {expanded ? (
-            <ChevronUp className="w-4 h-4 text-white/30" />
+            <ChevronUp className="w-4 h-4 text-text-faint" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-white/30" />
+            <ChevronDown className="w-4 h-4 text-text-faint" />
           )}
         </div>
       </div>
 
       {/* Expanded markers */}
       {expanded && (
-        <div className="border-t border-white/5">
+        <div className="border-t border-border-subtle">
           {loadingMarkers ? (
             <div className="flex items-center justify-center py-8">
               <Spinner size="sm" label="Carregando marcadores..." />
             </div>
           ) : markers.length === 0 ? (
-            <p className="text-center text-sm text-white/30 py-6">
+            <p className="text-center text-sm text-text-faint py-6">
               Nenhum marcador registrado.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                  <tr className="border-b border-border-subtle">
+                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint">
                       Marcador
                     </th>
-                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint">
                       Valor
                     </th>
-                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30 hidden sm:table-cell">
+                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint hidden sm:table-cell">
                       Referência
                     </th>
-                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30">
+                    <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-text-faint">
                       Status
                     </th>
                   </tr>
@@ -601,15 +601,15 @@ export default function ExamesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-heading text-3xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-3xl font-black tracking-tight text-text-title">
               EXAMES
             </h1>
-            <p className="mt-1 text-sm text-white/40">
+            <p className="mt-1 text-sm text-text-muted">
               Laudos laboratoriais e marcadores sanguíneos
             </p>
           </div>
@@ -637,7 +637,7 @@ export default function ExamesPage() {
         {/* Import section */}
         {showImport && (
           <div className="rounded-xl border border-[#00ff88]/20 bg-[#00ff88]/3 p-5">
-            <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-text-title mb-4 flex items-center gap-2">
               <Upload className="w-5 h-5 text-[#00ff88]" />
               Importar Novo Exame
             </h2>
@@ -652,7 +652,7 @@ export default function ExamesPage() {
 
         {/* Past reports */}
         <div>
-          <h2 className="text-sm font-semibold text-white/50 uppercase tracking-widest mb-4">
+          <h2 className="text-sm font-semibold text-text-secondary uppercase tracking-widest mb-4">
             Histórico de Relatórios
           </h2>
 

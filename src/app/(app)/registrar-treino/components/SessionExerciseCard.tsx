@@ -39,7 +39,7 @@ export function SessionExerciseCard({
 
   return (
     <div
-      className={`rounded-xl border bg-[#161616] overflow-hidden transition-all duration-200 ${
+      className={`rounded-xl border bg-background-card overflow-hidden transition-all duration-200 ${
         hasPR ? 'border-primary/50 shadow-[0_0_16px_rgba(0,255,136,0.08)]' : 'border-border'
       }`}
     >
@@ -50,7 +50,7 @@ export function SessionExerciseCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-sm font-bold text-white leading-tight">{exercise.name}</h3>
+            <h3 className="text-sm font-bold text-text-title leading-tight">{exercise.name}</h3>
             {hasPR && (
               <Badge variant="success" size="sm" icon={<Trophy className="w-3 h-3" />}>
                 PR
@@ -108,7 +108,7 @@ export function SessionExerciseCard({
                 onChange={(e) =>
                   onSetChange(exercise.id, set.setNumber, 'weight', e.target.value)
                 }
-                className={`w-full h-9 rounded-lg border bg-[#0a0a0a] px-3 text-sm text-white placeholder:text-text-muted outline-none transition-colors focus:border-primary ${
+                className={`w-full h-9 rounded-lg border bg-background px-3 text-sm text-text-title placeholder:text-text-muted outline-none transition-colors focus:border-primary ${
                   set.isPR ? 'border-primary/40' : 'border-border'
                 }`}
                 min={0}
@@ -124,7 +124,7 @@ export function SessionExerciseCard({
                 onChange={(e) =>
                   onSetChange(exercise.id, set.setNumber, 'reps', e.target.value)
                 }
-                className={`w-full h-9 rounded-lg border bg-[#0a0a0a] px-3 text-sm text-white placeholder:text-text-muted outline-none transition-colors focus:border-primary ${
+                className={`w-full h-9 rounded-lg border bg-background px-3 text-sm text-text-title placeholder:text-text-muted outline-none transition-colors focus:border-primary ${
                   set.isPR ? 'border-primary/40' : 'border-border'
                 }`}
                 min={0}

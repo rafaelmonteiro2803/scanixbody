@@ -184,7 +184,7 @@ export function UserForm({ open, onClose, user, onSubmit }: UserFormProps) {
                 <p className="text-xs text-[#00ff88]/80 font-medium mb-0.5">
                   Senha gerada automaticamente
                 </p>
-                <p className="text-xs text-[#555]">
+                <p className="text-xs text-text-muted">
                   Uma senha segura será criada e exibida após a criação. O usuário será marcado
                   como{' '}
                   <span className="text-yellow-400 font-semibold">1º Acesso</span> e deverá

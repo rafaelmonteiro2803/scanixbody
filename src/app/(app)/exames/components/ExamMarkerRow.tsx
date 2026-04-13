@@ -59,26 +59,26 @@ export function ExamMarkerRow({ marker, isEven = false }: ExamMarkerRowProps) {
   return (
     <tr
       className={cn(
-        'border-b border-white/5 transition-colors',
+        'border-b border-border-subtle transition-colors',
         isEven ? 'bg-white/[0.01]' : '',
         'hover:bg-white/[0.04]',
       )}
     >
       {/* Marker name */}
-      <td className="px-4 py-3 text-sm font-medium text-white">
+      <td className="px-4 py-3 text-sm font-medium text-text-title">
         {marker.marker_name}
       </td>
 
       {/* Value */}
-      <td className="px-4 py-3 text-sm font-mono font-semibold text-white/90">
+      <td className="px-4 py-3 text-sm font-mono font-semibold text-text-title/90">
         {marker.value ?? '—'}
         {marker.unit && (
-          <span className="ml-1 text-xs font-normal text-white/40">{marker.unit}</span>
+          <span className="ml-1 text-xs font-normal text-text-muted">{marker.unit}</span>
         )}
       </td>
 
       {/* Reference range */}
-      <td className="px-4 py-3 text-xs text-white/40 font-mono">
+      <td className="px-4 py-3 text-xs text-text-muted font-mono">
         {marker.reference_range ?? '—'}
       </td>
 
@@ -106,7 +106,7 @@ export function ExamMarkerRow({ marker, isEven = false }: ExamMarkerRowProps) {
             {cfg.label}
           </span>
         ) : (
-          <span className="text-xs text-white/25">—</span>
+          <span className="text-xs text-text-faint">—</span>
         )}
       </td>
     </tr>

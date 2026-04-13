@@ -26,7 +26,7 @@ export default function AdminSubNav() {
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff88]',
               isActive
                 ? 'text-[#00ff88] border-[#00ff88]'
-                : 'text-[#888] border-transparent hover:text-white hover:border-[#333]',
+                : 'text-text-secondary border-transparent hover:text-text-title hover:border-border',
             ].join(' ')}
           >
             {item.label}

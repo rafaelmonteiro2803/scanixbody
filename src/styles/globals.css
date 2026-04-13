@@ -87,6 +87,13 @@
   --shell-accent-subtle:   rgba(0,255,136,0.70);
   --shell-status-text:     #333333;
   --shell-status-year:     #2a2a2a;
+
+  /* Surface elevations (dark default) */
+  --color-surface-1: rgba(255,255,255,0.03);
+  --color-surface-2: rgba(255,255,255,0.06);
+  --color-surface-3: rgba(255,255,255,0.09);
+  --color-surface-4: rgba(255,255,255,0.12);
+  --color-border-strong: #3a3a3a;
 }
 
 /* ── Light theme overrides ── */
@@ -125,6 +132,13 @@ html.light {
   --shell-accent-subtle:   rgba(5,150,105,0.70);
   --shell-status-text:     #94a3b8;
   --shell-status-year:     #cbd5e1;
+
+  /* Surface elevations (light overrides) */
+  --color-surface-1: rgba(0,0,0,0.02);
+  --color-surface-2: rgba(0,0,0,0.05);
+  --color-surface-3: rgba(0,0,0,0.08);
+  --color-surface-4: rgba(0,0,0,0.12);
+  --color-border-strong: #94a3b8;
 }
 
 /* ============================================================

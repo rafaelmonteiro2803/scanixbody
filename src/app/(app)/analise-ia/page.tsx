@@ -182,16 +182,16 @@ export default function AnaliseIAPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-[#2a2a2a] bg-[#161616] px-4 sm:px-6 py-4">
+      <div className="border-b border-border bg-background-card px-4 sm:px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-black text-white uppercase tracking-widest font-display flex items-center gap-2">
+            <h1 className="text-xl font-black text-text-title uppercase tracking-widest font-display flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-[#00ff88]" />
               ANÁLISE IA
             </h1>
-            <p className="text-xs text-[#666] mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               Diagnóstico completo com inteligência artificial
             </p>
           </div>
@@ -206,7 +206,7 @@ export default function AnaliseIAPage() {
         {/* ── SECTION 1: CHECKLIST ── */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+            <h2 className="text-sm font-bold text-text-title uppercase tracking-widest flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-[#00ff88]" />
               Checklist de Completude
             </h2>
@@ -226,12 +226,12 @@ export default function AnaliseIAPage() {
           </div>
 
           {/* Completeness bar */}
-          <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-4">
+          <div className="rounded-xl bg-background-card border border-border p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider">
+              <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
                 Completude do perfil
               </span>
-              <span className="text-sm font-bold text-white">{completeness}%</span>
+              <span className="text-sm font-bold text-text-title">{completeness}%</span>
             </div>
             <ProgressBar
               value={completeness}
@@ -240,7 +240,7 @@ export default function AnaliseIAPage() {
               size="md"
               showLabel={false}
             />
-            <p className="text-xs text-[#666] mt-2">
+            <p className="text-xs text-text-muted mt-2">
               {completeCount} de {MODULE_CHECKLIST.length} módulos completos.
               {completeness < 100 && ' Complete todos os módulos para uma análise mais precisa.'}
             </p>
@@ -249,12 +249,12 @@ export default function AnaliseIAPage() {
 
         {/* ── SECTION 2: SCORES ── */}
         <section>
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 mb-4">
+          <h2 className="text-sm font-bold text-text-title uppercase tracking-widest flex items-center gap-2 mb-4">
             <Zap className="w-4 h-4 text-[#00ff88]" />
             Scores de Desempenho
           </h2>
 
-          <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-6">
+          <div className="rounded-xl bg-background-card border border-border p-6">
             {/* Overall score centered */}
             <div className="flex justify-center mb-6">
               <ScoreRing
@@ -267,7 +267,7 @@ export default function AnaliseIAPage() {
             </div>
 
             {/* Individual scores */}
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 border-t border-[#2a2a2a] pt-6">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 border-t border-border pt-6">
               {SCORE_RINGS.map((ring) => (
                 <div key={ring.key} className="flex justify-center">
                   <ScoreRing
@@ -284,20 +284,20 @@ export default function AnaliseIAPage() {
 
         {/* ── SECTION 3: GENERATE ── */}
         <section>
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 mb-4">
+          <h2 className="text-sm font-bold text-text-title uppercase tracking-widest flex items-center gap-2 mb-4">
             <Sparkles className="w-4 h-4 text-[#00ff88]" />
             Gerar Análise
           </h2>
 
-          <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-6 text-center">
+          <div className="rounded-xl bg-background-card border border-border p-6 text-center">
             {analysisState === 'idle' && (
               <div className="space-y-4">
                 <div className="w-16 h-16 rounded-full bg-[#00ff88]/10 flex items-center justify-center mx-auto">
                   <Sparkles className="w-8 h-8 text-[#00ff88]" />
                 </div>
                 <div>
-                  <p className="text-base font-bold text-white">Pronto para analisar</p>
-                  <p className="text-sm text-[#666] mt-1 max-w-md mx-auto">
+                  <p className="text-base font-bold text-text-title">Pronto para analisar</p>
+                  <p className="text-sm text-text-muted mt-1 max-w-md mx-auto">
                     Nossa IA irá processar todos os seus dados — treinos, dieta, corpo, cardio,
                     medicamentos e exames — para gerar um relatório completo e personalizado.
                   </p>
@@ -320,8 +320,8 @@ export default function AnaliseIAPage() {
                   <Sparkles className="w-8 h-8 text-[#00ff88] animate-pulse" />
                 </div>
                 <div>
-                  <p className="text-base font-bold text-white">Analisando seus dados...</p>
-                  <p className="text-sm text-[#666] mt-1">
+                  <p className="text-base font-bold text-text-title">Analisando seus dados...</p>
+                  <p className="text-sm text-text-muted mt-1">
                     Processando treinos, dieta, composição corporal e mais
                   </p>
                 </div>
@@ -348,7 +348,7 @@ export default function AnaliseIAPage() {
                   ].map((step, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs">
                       <Loader2 className="w-3.5 h-3.5 text-[#00ff88] animate-spin flex-shrink-0" />
-                      <span className="text-[#a0a0a0]">{step}</span>
+                      <span className="text-text-secondary">{step}</span>
                     </div>
                   ))}
                 </div>
@@ -360,8 +360,8 @@ export default function AnaliseIAPage() {
                 <div className="w-14 h-14 rounded-full bg-[#00ff88]/10 flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-7 h-7 text-[#00ff88]" />
                 </div>
-                <p className="text-base font-bold text-white">Análise concluída!</p>
-                <p className="text-sm text-[#666]">
+                <p className="text-base font-bold text-text-title">Análise concluída!</p>
+                <p className="text-sm text-text-muted">
                   Veja os resultados detalhados abaixo
                 </p>
                 <Button
@@ -380,7 +380,7 @@ export default function AnaliseIAPage() {
         {/* ── SECTION 4: RECOMMENDATIONS ── */}
         {analysisState === 'done' && result && (
           <section>
-            <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 mb-4">
+            <h2 className="text-sm font-bold text-text-title uppercase tracking-widest flex items-center gap-2 mb-4">
               <TrendingUp className="w-4 h-4 text-[#00ff88]" />
               Recomendações
             </h2>
@@ -395,11 +395,11 @@ export default function AnaliseIAPage() {
                       'rounded-xl border p-4 flex items-start gap-3',
                       priority === 'Alta' ? 'border-[#ff4444]/20 bg-[#ff4444]/5' :
                       priority === 'Média' ? 'border-[#ffaa00]/20 bg-[#ffaa00]/5' :
-                      'border-[#2a2a2a] bg-[#161616]',
+                      'border-border bg-background-card',
                     )}
                   >
                     <div className="flex-shrink-0 mt-0.5">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#0a0a0a] text-white text-xs font-bold border border-[#2a2a2a]">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-background text-text-title text-xs font-bold border border-border">
                         {i + 1}
                       </span>
                     </div>
@@ -407,7 +407,7 @@ export default function AnaliseIAPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <PriorityBadge priority={priority} />
                       </div>
-                      <p className="text-sm text-[#a0a0a0] leading-relaxed">{rec}</p>
+                      <p className="text-sm text-text-secondary leading-relaxed">{rec}</p>
                     </div>
                   </div>
                 );
@@ -415,8 +415,8 @@ export default function AnaliseIAPage() {
             </div>
 
             {/* Ajustes Sugeridos */}
-            <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
-              <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+            <div className="rounded-xl bg-background-card border border-border p-5">
+              <h3 className="text-xs font-bold text-text-title uppercase tracking-widest mb-4 flex items-center gap-2">
                 <Zap className="w-3.5 h-3.5 text-[#00ff88]" />
                 Ajustes Sugeridos
               </h3>
@@ -430,13 +430,13 @@ export default function AnaliseIAPage() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] p-3 text-center"
+                    className="rounded-lg bg-background border border-border p-3 text-center"
                   >
-                    <p className="text-2xs text-[#666] uppercase tracking-wider mb-1">{item.label}</p>
+                    <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">{item.label}</p>
                     <p className="text-lg font-black" style={{ color: item.color }}>
                       {item.value?.toLocaleString('pt-BR') ?? '—'}
                     </p>
-                    <p className="text-2xs text-[#666]">{item.unit}/dia</p>
+                    <p className="text-2xs text-text-muted">{item.unit}/dia</p>
                   </div>
                 ))}
               </div>
@@ -448,7 +448,7 @@ export default function AnaliseIAPage() {
         {analysisState === 'done' && result && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+              <h2 className="text-sm font-bold text-text-title uppercase tracking-widest flex items-center gap-2">
                 <Download className="w-4 h-4 text-[#00ff88]" />
                 Relatório
               </h2>

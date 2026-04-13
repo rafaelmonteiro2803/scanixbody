@@ -118,7 +118,7 @@ export function MedicationCard({
     <div
       className={cn(
         'relative rounded-xl border transition-all duration-200 group',
-        'bg-[#161616] hover:border-white/15',
+        'bg-background-card hover:border-white/15',
         cfg.border,
       )}
     >
@@ -140,7 +140,7 @@ export function MedicationCard({
             </div>
 
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-white leading-tight truncate">
+              <h3 className="text-sm font-semibold text-text-title leading-tight truncate">
                 {medication.name}
               </h3>
               <span
@@ -164,7 +164,7 @@ export function MedicationCard({
               size="xs"
               onClick={() => onEdit(medication)}
               aria-label={`Editar ${medication.name}`}
-              className="text-white/40 hover:text-white hover:bg-white/10"
+              className="text-text-muted hover:text-text-title hover:bg-surface-2"
             >
               <Pencil className="w-3.5 h-3.5" />
             </Button>
@@ -202,8 +202,8 @@ export function MedicationCard({
 
         {/* Notes */}
         {medication.notes && (
-          <div className="mt-3 flex items-start gap-1.5 text-xs text-white/40">
-            <StickyNote className="w-3 h-3 flex-shrink-0 mt-0.5 text-white/25" />
+          <div className="mt-3 flex items-start gap-1.5 text-xs text-text-muted">
+            <StickyNote className="w-3 h-3 flex-shrink-0 mt-0.5 text-text-faint" />
             <p className="leading-relaxed line-clamp-2">{medication.notes}</p>
           </div>
         )}
@@ -220,8 +220,8 @@ function DetailPill({
   label: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/5 border border-white/8 text-[11px] text-white/55">
-      <span className="text-white/35">{icon}</span>
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-1 border border-border-subtle text-[11px] text-text-title/55">
+      <span className="text-text-muted">{icon}</span>
       {label}
     </span>
   );

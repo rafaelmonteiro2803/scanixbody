@@ -105,16 +105,16 @@ function LoginForm() {
   return (
     <div className="w-full animate-slide-up">
       {/* Card */}
-      <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+      <div className="rounded-2xl border border-border bg-background-secondary p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
         {/* Header */}
         <div className="mb-8 text-center">
           <h2
-            className="font-heading text-3xl font-bold text-white"
+            className="font-heading text-3xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.02em' }}
           >
             Bem-vindo de volta
           </h2>
-          <p className="mt-1.5 text-sm text-[#666666]">
+          <p className="mt-1.5 text-sm text-text-muted">
             Acesse sua conta para continuar
           </p>
         </div>
@@ -133,7 +133,7 @@ function LoginForm() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="email"
-              className="text-sm font-medium text-[#a0a0a0]"
+              className="text-sm font-medium text-text-secondary"
             >
               E-mail
             </label>
@@ -141,10 +141,10 @@ function LoginForm() {
               className={`relative flex h-11 items-center rounded-xl border transition-all duration-150 ${
                 errors.email
                   ? 'border-[#ff4444] bg-[#ff4444]/5 focus-within:ring-1 focus-within:ring-[#ff4444]'
-                  : 'border-[#2a2a2a] bg-[#0a0a0a] focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
+                  : 'border-border bg-background focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
               }`}
             >
-              <Mail className="ml-3 h-4 w-4 flex-shrink-0 text-[#444444]" aria-hidden />
+              <Mail className="ml-3 h-4 w-4 flex-shrink-0 text-text-faint" aria-hidden />
               <input
                 id="email"
                 type="email"
@@ -152,7 +152,7 @@ function LoginForm() {
                 autoCapitalize="off"
                 placeholder="seu@email.com"
                 {...register('email')}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#444444] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-text-title placeholder:text-text-faint focus:outline-none"
               />
             </div>
             {errors.email && (
@@ -167,7 +167,7 @@ function LoginForm() {
             <div className="flex items-center justify-between">
               <label
                 htmlFor="password"
-                className="text-sm font-medium text-[#a0a0a0]"
+                className="text-sm font-medium text-text-secondary"
               >
                 Senha
               </label>
@@ -182,24 +182,24 @@ function LoginForm() {
               className={`relative flex h-11 items-center rounded-xl border transition-all duration-150 ${
                 errors.password
                   ? 'border-[#ff4444] bg-[#ff4444]/5 focus-within:ring-1 focus-within:ring-[#ff4444]'
-                  : 'border-[#2a2a2a] bg-[#0a0a0a] focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
+                  : 'border-border bg-background focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
               }`}
             >
-              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-[#444444]" aria-hidden />
+              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-text-faint" aria-hidden />
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 placeholder="••••••••"
                 {...register('password')}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#444444] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-text-title placeholder:text-text-faint focus:outline-none"
               />
               <button
                 type="button"
                 tabIndex={-1}
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                className="mr-3 text-[#444444] transition-colors hover:text-[#a0a0a0]"
+                className="mr-3 text-text-faint transition-colors hover:text-text-secondary"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -238,14 +238,14 @@ function LoginForm() {
 
         {/* Divider */}
         <div className="mt-8 flex items-center gap-3">
-          <div className="h-px flex-1 bg-[#1e1e1e]" />
-          <span className="text-xs text-[#444444]">SCANIX BODY v1.0</span>
-          <div className="h-px flex-1 bg-[#1e1e1e]" />
+          <div className="h-px flex-1 bg-background-card" />
+          <span className="text-xs text-text-faint">SCANIX BODY v1.0</span>
+          <div className="h-px flex-1 bg-background-card" />
         </div>
       </div>
 
       {/* Bottom hint */}
-      <p className="mt-4 text-center text-xs text-[#444444]">
+      <p className="mt-4 text-center text-xs text-text-faint">
         Acesso restrito a usuários cadastrados pela plataforma.
       </p>
     </div>

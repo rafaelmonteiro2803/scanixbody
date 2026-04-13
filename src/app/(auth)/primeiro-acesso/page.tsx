@@ -109,17 +109,17 @@ export default function PrimeiroAcessoPage() {
   if (success) {
     return (
       <div className="w-full animate-scale-in">
-        <div className="rounded-2xl border border-[#00ff88]/30 bg-[#111111] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+        <div className="rounded-2xl border border-[#00ff88]/30 bg-background-secondary p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[#00ff88]/30 bg-[#00ff88]/10">
             <CheckCircle2 className="h-8 w-8 text-[#00ff88]" />
           </div>
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-2xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif' }}
           >
             Senha definida!
           </h2>
-          <p className="mt-2 text-sm text-[#666666]">
+          <p className="mt-2 text-sm text-text-muted">
             Redirecionando para o dashboard…
           </p>
           <div className="mt-4 flex justify-center">
@@ -135,19 +135,19 @@ export default function PrimeiroAcessoPage() {
   return (
     <div className="w-full animate-slide-up">
       {/* Card */}
-      <div className="rounded-2xl border border-[#2a2a2a] bg-[#111111] p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+      <div className="rounded-2xl border border-border bg-background-secondary p-8 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
         {/* Header */}
         <div className="mb-6 flex flex-col items-start gap-1">
           <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-[#00ff88]/20 bg-[#00ff88]/10">
             <ShieldCheck className="h-5 w-5 text-[#00ff88]" />
           </div>
           <h2
-            className="font-heading text-2xl font-bold text-white"
+            className="font-heading text-2xl font-bold text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.02em' }}
           >
             Primeiro Acesso
           </h2>
-          <p className="text-sm text-[#666666]">
+          <p className="text-sm text-text-muted">
             Defina uma senha segura para proteger sua conta. Você precisará
             usá-la nos próximos acessos.
           </p>
@@ -166,7 +166,7 @@ export default function PrimeiroAcessoPage() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="password"
-              className="text-sm font-medium text-[#a0a0a0]"
+              className="text-sm font-medium text-text-secondary"
             >
               Nova senha
             </label>
@@ -174,24 +174,24 @@ export default function PrimeiroAcessoPage() {
               className={`relative flex h-11 items-center rounded-xl border transition-all duration-150 ${
                 errors.password
                   ? 'border-[#ff4444] bg-[#ff4444]/5 focus-within:ring-1 focus-within:ring-[#ff4444]'
-                  : 'border-[#2a2a2a] bg-[#0a0a0a] focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
+                  : 'border-border bg-background focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
               }`}
             >
-              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-[#444444]" aria-hidden />
+              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-text-faint" aria-hidden />
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="Nova senha"
                 {...register('password')}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#444444] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-text-title placeholder:text-text-faint focus:outline-none"
               />
               <button
                 type="button"
                 tabIndex={-1}
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                className="mr-3 text-[#444444] transition-colors hover:text-[#a0a0a0]"
+                className="mr-3 text-text-faint transition-colors hover:text-text-secondary"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -208,8 +208,8 @@ export default function PrimeiroAcessoPage() {
           </div>
 
           {/* Password requirements */}
-          <div className="rounded-xl border border-[#1e1e1e] bg-[#0a0a0a] p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#666666]">
+          <div className="rounded-xl border border-border-subtle bg-background p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
               Requisitos da senha
             </p>
             <ul className="space-y-2">
@@ -221,18 +221,18 @@ export default function PrimeiroAcessoPage() {
                       className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
                         met
                           ? 'bg-[#00ff88]/20 text-[#00ff88]'
-                          : 'bg-[#1e1e1e] text-[#444444]'
+                          : 'bg-background-card text-text-faint'
                       }`}
                     >
                       {met ? (
                         <CheckCircle2 className="h-3 w-3" />
                       ) : (
-                        <div className="h-1.5 w-1.5 rounded-full bg-[#444444]" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-surface-3" />
                       )}
                     </div>
                     <span
                       className={`text-xs transition-colors duration-200 ${
-                        met ? 'text-[#a0a0a0]' : 'text-[#555555]'
+                        met ? 'text-text-secondary' : 'text-text-muted'
                       }`}
                     >
                       {req.label}
@@ -247,7 +247,7 @@ export default function PrimeiroAcessoPage() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="confirmPassword"
-              className="text-sm font-medium text-[#a0a0a0]"
+              className="text-sm font-medium text-text-secondary"
             >
               Confirmar senha
             </label>
@@ -255,24 +255,24 @@ export default function PrimeiroAcessoPage() {
               className={`relative flex h-11 items-center rounded-xl border transition-all duration-150 ${
                 errors.confirmPassword
                   ? 'border-[#ff4444] bg-[#ff4444]/5 focus-within:ring-1 focus-within:ring-[#ff4444]'
-                  : 'border-[#2a2a2a] bg-[#0a0a0a] focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
+                  : 'border-border bg-background focus-within:border-[#00ff88] focus-within:ring-1 focus-within:ring-[#00ff88]'
               }`}
             >
-              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-[#444444]" aria-hidden />
+              <Lock className="ml-3 h-4 w-4 flex-shrink-0 text-text-faint" aria-hidden />
               <input
                 id="confirmPassword"
                 type={showConfirm ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="Repita a senha"
                 {...register('confirmPassword')}
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder:text-[#444444] focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-text-title placeholder:text-text-faint focus:outline-none"
               />
               <button
                 type="button"
                 tabIndex={-1}
                 onClick={() => setShowConfirm((v) => !v)}
                 aria-label={showConfirm ? 'Ocultar confirmação' : 'Mostrar confirmação'}
-                className="mr-3 text-[#444444] transition-colors hover:text-[#a0a0a0]"
+                className="mr-3 text-text-faint transition-colors hover:text-text-secondary"
               >
                 {showConfirm ? (
                   <EyeOff className="h-4 w-4" />

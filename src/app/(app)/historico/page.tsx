@@ -64,13 +64,13 @@ function ConfirmDeleteModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-[#161616] shadow-card-xl p-6 space-y-4">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-background-card shadow-card-xl p-6 space-y-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-danger/10">
             <AlertCircle className="h-5 w-5 text-danger" />
           </div>
           <div>
-            <h3 className="font-bold text-white">Excluir sessão?</h3>
+            <h3 className="font-bold text-text-title">Excluir sessão?</h3>
             <p className="text-sm text-text-secondary mt-0.5">
               Esta sessão será permanentemente removida do histórico.
             </p>
@@ -108,7 +108,7 @@ function SessionCard({
   const hasPR = session.exercises.some((ex) => ex.sets.some((s) => s.is_pr))
 
   return (
-    <div className="rounded-xl border border-border bg-[#161616] overflow-hidden hover:border-border-strong transition-colors">
+    <div className="rounded-xl border border-border bg-background-card overflow-hidden hover:border-border-strong transition-colors">
       {/* Header */}
       <div className="px-5 py-4">
         <div className="flex items-start gap-4">
@@ -120,7 +120,7 @@ function SessionCard({
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-bold text-white truncate">
+              <h3 className="text-base font-bold text-text-title truncate">
                 {session.workout_day_name}
               </h3>
               {hasPR && (
@@ -166,7 +166,7 @@ function SessionCard({
             </button>
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-white hover:bg-surface-2 transition-colors"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-title hover:bg-surface-2 transition-colors"
               aria-label={expanded ? 'Recolher' : 'Expandir'}
               aria-expanded={expanded}
             >
@@ -196,11 +196,11 @@ function SessionCard({
                   0,
                 )
                 return (
-                  <div key={exercise.id} className="rounded-lg border border-border bg-[#0a0a0a] overflow-hidden">
+                  <div key={exercise.id} className="rounded-lg border border-border bg-background overflow-hidden">
                     {/* Exercise name row */}
                     <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border">
                       <Dumbbell className="w-3.5 h-3.5 text-text-muted flex-shrink-0" />
-                      <span className="text-sm font-semibold text-white flex-1 truncate">
+                      <span className="text-sm font-semibold text-text-title flex-1 truncate">
                         {exercise.exercise_name}
                       </span>
                       {exHasPR && (
@@ -305,11 +305,11 @@ export default function HistoricoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Header */}
         <div>
-          <h1 className="font-heading text-3xl font-black tracking-tight text-white">
+          <h1 className="font-heading text-3xl font-black tracking-tight text-text-title">
             HISTÓRICO
           </h1>
           <p className="mt-1 text-sm text-text-secondary">

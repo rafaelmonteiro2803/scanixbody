@@ -42,16 +42,16 @@ function StatCard({ label, value, unit, icon, accent = 'default', delta, deltaUp
     green: { border: 'border-[#00ff88]/20', bg: 'bg-[#00ff88]/8', icon: 'text-[#00ff88]', value: 'text-[#00ff88]' },
     cyan: { border: 'border-[#00d4ff]/20', bg: 'bg-[#00d4ff]/8', icon: 'text-[#00d4ff]', value: 'text-[#00d4ff]' },
     orange: { border: 'border-[#ffaa00]/20', bg: 'bg-[#ffaa00]/8', icon: 'text-[#ffaa00]', value: 'text-[#ffaa00]' },
-    default: { border: 'border-[#2a2a2a]', bg: 'bg-[#1a1a1a]', icon: 'text-[#555555]', value: 'text-white' },
+    default: { border: 'border-border', bg: 'bg-background-card', icon: 'text-text-muted', value: 'text-text-title' },
   }
 
   const colors = accentColors[accent]
 
   return (
-    <div className={`rounded-2xl border ${colors.border} bg-[#111111] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]`}>
+    <div className={`rounded-2xl border ${colors.border} bg-background-secondary p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#555555]">
+          <p className="text-xs font-semibold uppercase tracking-widest text-text-muted">
             {label}
           </p>
           <div className="mt-2 flex items-baseline gap-1.5">
@@ -62,7 +62,7 @@ function StatCard({ label, value, unit, icon, accent = 'default', delta, deltaUp
               {value}
             </span>
             {unit && (
-              <span className="text-sm text-[#444444]">{unit}</span>
+              <span className="text-sm text-text-faint">{unit}</span>
             )}
           </div>
           {delta && (
@@ -100,7 +100,7 @@ function ModuleCard({
   return (
     <Link
       href={href}
-      className="group relative flex flex-col gap-3 rounded-2xl border border-[#1e1e1e] bg-[#111111] p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#2a2a2a] hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      className="group relative flex flex-col gap-3 rounded-2xl border border-border-subtle bg-background-secondary p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
     >
       {/* Icon */}
       <div
@@ -117,7 +117,7 @@ function ModuleCard({
       {/* Content */}
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold text-white">{title}</h3>
+          <h3 className="text-sm font-bold text-text-title">{title}</h3>
           {badge && (
             <span
               className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
@@ -131,12 +131,12 @@ function ModuleCard({
             </span>
           )}
         </div>
-        <p className="mt-0.5 text-xs text-[#555555]">{description}</p>
+        <p className="mt-0.5 text-xs text-text-muted">{description}</p>
       </div>
 
       {/* Arrow */}
       <ChevronRight
-        className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#333333] transition-all group-hover:right-3 group-hover:text-[#555555]"
+        className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-faint transition-all group-hover:right-3 group-hover:text-text-muted"
         aria-hidden
       />
     </Link>
@@ -147,7 +147,7 @@ function ModuleCard({
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-[#1e1e1e] bg-[#111111] p-5">
+    <div className="rounded-2xl border border-border-subtle bg-background-secondary p-5">
       <div className="h-3 w-24 rounded skeleton mb-3" />
       <div className="h-7 w-16 rounded skeleton" />
     </div>
@@ -166,7 +166,7 @@ function SectionHeading({
   return (
     <div className="flex items-center justify-between mb-4">
       <h2
-        className="text-xs font-bold uppercase tracking-[0.15em] text-[#555555]"
+        className="text-xs font-bold uppercase tracking-[0.15em] text-text-muted"
       >
         {title}
       </h2>
@@ -267,9 +267,9 @@ export default async function DashboardPage() {
       {/* ── Greeting ── */}
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm text-[#555555]">{greeting},</p>
+          <p className="text-sm text-text-muted">{greeting},</p>
           <h1
-            className="text-3xl font-black text-white md:text-4xl"
+            className="text-3xl font-black text-text-title md:text-4xl"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif', letterSpacing: '-0.03em' }}
           >
             {firstName}{' '}
@@ -280,7 +280,7 @@ export default async function DashboardPage() {
               /
             </span>
           </h1>
-          <p className="mt-1 text-sm text-[#555555]">
+          <p className="mt-1 text-sm text-text-muted">
             Aqui está um resumo da sua performance.
           </p>
         </div>
@@ -305,7 +305,7 @@ export default async function DashboardPage() {
             <p className="text-sm font-semibold text-[#ffaa00]">
               Perfil incompleto
             </p>
-            <p className="mt-0.5 text-xs text-[#666666]">
+            <p className="mt-0.5 text-xs text-text-muted">
               Complete seu perfil atlético para desbloquear análises de IA
               personalizadas e recomendações precisas.
             </p>
@@ -363,20 +363,20 @@ export default async function DashboardPage() {
             action={{ label: 'Ver detalhes', href: '/corpo' }}
           />
           <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-[#1e1e1e] bg-[#111111] p-4 text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#444444]">
+            <div className="rounded-2xl border border-border-subtle bg-background-secondary p-4 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-text-faint">
                 Peso
               </p>
               <p
-                className="mt-1.5 text-xl font-bold text-white tabular-nums"
+                className="mt-1.5 text-xl font-bold text-text-title tabular-nums"
                 style={{ fontFamily: 'var(--font-orbitron), monospace' }}
               >
                 {athleteProfile.weight?.toFixed(1)}
-                <span className="ml-1 text-xs font-normal text-[#444444]">kg</span>
+                <span className="ml-1 text-xs font-normal text-text-faint">kg</span>
               </p>
             </div>
-            <div className="rounded-2xl border border-[#1e1e1e] bg-[#111111] p-4 text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#444444]">
+            <div className="rounded-2xl border border-border-subtle bg-background-secondary p-4 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-text-faint">
                 Gordura
               </p>
               <p
@@ -384,11 +384,11 @@ export default async function DashboardPage() {
                 style={{ fontFamily: 'var(--font-orbitron), monospace' }}
               >
                 {athleteProfile.body_fat_percentage?.toFixed(1)}
-                <span className="ml-0.5 text-xs font-normal text-[#444444]">%</span>
+                <span className="ml-0.5 text-xs font-normal text-text-faint">%</span>
               </p>
             </div>
-            <div className="rounded-2xl border border-[#1e1e1e] bg-[#111111] p-4 text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#444444]">
+            <div className="rounded-2xl border border-border-subtle bg-background-secondary p-4 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-text-faint">
                 IMC
               </p>
               <p
@@ -460,14 +460,14 @@ export default async function DashboardPage() {
         />
 
         {!recentSessions || recentSessions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#222222] bg-[#0d0d0d] py-12 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#1e1e1e] bg-[#111111]">
-              <Dumbbell className="h-6 w-6 text-[#333333]" />
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-background py-12 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-border-subtle bg-background-secondary">
+              <Dumbbell className="h-6 w-6 text-text-faint" />
             </div>
-            <p className="text-sm font-medium text-[#444444]">
+            <p className="text-sm font-medium text-text-faint">
               Nenhum treino registrado ainda
             </p>
-            <p className="mt-1 text-xs text-[#333333]">
+            <p className="mt-1 text-xs text-text-faint">
               Comece registrando seu primeiro treino
             </p>
             <Link
@@ -488,7 +488,7 @@ export default async function DashboardPage() {
               return (
                 <div
                   key={session.id}
-                  className="flex items-center gap-4 rounded-2xl border border-[#1a1a1a] bg-[#111111] px-4 py-3.5 transition-colors hover:border-[#222222]"
+                  className="flex items-center gap-4 rounded-2xl border border-border-subtle bg-background-secondary px-4 py-3.5 transition-colors hover:border-border"
                   style={{ animationDelay: `${idx * 0.05}s` }}
                 >
                   {/* Icon */}
@@ -498,17 +498,17 @@ export default async function DashboardPage() {
 
                   {/* Details */}
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">
+                    <p className="truncate text-sm font-semibold text-text-title">
                       {sessionName}
                     </p>
-                    <p className="text-xs text-[#555555]">
+                    <p className="text-xs text-text-muted">
                       {formatDate(session.session_date, "EEEE, dd 'de' MMMM")}
                     </p>
                   </div>
 
                   {/* Date chip */}
-                  <div className="flex-shrink-0 rounded-lg border border-[#1e1e1e] bg-[#0d0d0d] px-2.5 py-1">
-                    <span className="text-xs tabular-nums text-[#444444]">
+                  <div className="flex-shrink-0 rounded-lg border border-border-subtle bg-background px-2.5 py-1">
+                    <span className="text-xs tabular-nums text-text-faint">
                       {formatDate(session.session_date, 'dd/MM')}
                     </span>
                   </div>
@@ -540,8 +540,8 @@ export default async function DashboardPage() {
                     {Math.round(latestAiReport.score_overall ?? 0)}
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-white">Score Geral</p>
-                    <p className="text-xs text-[#555555]">
+                    <p className="text-sm font-bold text-text-title">Score Geral</p>
+                    <p className="text-xs text-text-muted">
                       Última análise: {formatDate(latestAiReport.generated_at, "dd/MM/yyyy")}
                     </p>
                   </div>
@@ -558,12 +558,12 @@ export default async function DashboardPage() {
                       .map((s) => (
                         <div
                           key={s.label}
-                          className="flex items-center gap-2 rounded-xl border border-[#1e1e1e] bg-[#0d0d0d] px-3 py-2"
+                          className="flex items-center gap-2 rounded-xl border border-border-subtle bg-background px-3 py-2"
                         >
-                          <s.icon className="h-3.5 w-3.5 flex-shrink-0 text-[#444444]" />
+                          <s.icon className="h-3.5 w-3.5 flex-shrink-0 text-text-faint" />
                           <div>
-                            <p className="text-[10px] text-[#444444]">{s.label}</p>
-                            <p className="text-sm font-bold text-white tabular-nums">
+                            <p className="text-[10px] text-text-faint">{s.label}</p>
+                            <p className="text-sm font-bold text-text-title tabular-nums">
                               {Math.round(s.value!)}
                             </p>
                           </div>

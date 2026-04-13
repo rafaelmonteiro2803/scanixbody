@@ -119,15 +119,15 @@ export default async function CorpoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       {/* Page header */}
-      <div className="border-b border-[#2a2a2a] bg-[#161616] px-4 sm:px-6 py-4">
+      <div className="border-b border-border bg-background-card px-4 sm:px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-black text-white uppercase tracking-widest font-display">
+            <h1 className="text-xl font-black text-text-title uppercase tracking-widest font-display">
               CORPO &amp; OBJETIVO
             </h1>
-            <p className="text-xs text-[#666] mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               Perfil corporal, composição e metas
             </p>
           </div>
