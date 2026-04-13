@@ -333,6 +333,17 @@ ALTER TYPE meal_source ADD VALUE IF NOT EXISTS 'import';
 
 
 -- =============================================================================
+-- CHECK CONSTRAINT: athlete_profiles.sex
+-- =============================================================================
+-- Migration allowed: 'male' | 'female' | 'other'
+-- TS type Sex = 'M' | 'F'  — widen to accept both conventions
+ALTER TABLE athlete_profiles DROP CONSTRAINT IF EXISTS athlete_profiles_sex_check;
+ALTER TABLE athlete_profiles
+  ADD CONSTRAINT athlete_profiles_sex_check
+  CHECK (sex IN ('male','female','other','M','F'));
+
+
+-- =============================================================================
 -- ALTER COLUMN TYPES
 -- =============================================================================
 
