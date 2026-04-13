@@ -21,10 +21,10 @@ const statusConfig: Record<
   },
   inactive: {
     label: 'Inativo',
-    bg: 'bg-[#444]/30',
-    text: 'text-[#888]',
-    border: 'border-[#444]/50',
-    dotColor: 'bg-[#888]',
+    bg: 'bg-surface-2',
+    text: 'text-text-secondary',
+    border: 'border-border-strong',
+    dotColor: 'bg-text-secondary',
   },
   blocked: {
     label: 'Bloqueado',

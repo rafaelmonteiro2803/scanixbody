@@ -31,9 +31,9 @@ const roleConfig: Record<
   },
   operator: {
     label: 'OPERADOR',
-    bg: 'bg-[#444]/30',
-    text: 'text-[#aaa]',
-    border: 'border-[#444]/50',
+    bg: 'bg-surface-2',
+    text: 'text-text-secondary',
+    border: 'border-border-strong',
   },
   usuario_final: {
     label: 'USUÁRIO',

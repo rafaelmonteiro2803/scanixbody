@@ -155,8 +155,8 @@ function SummaryBanner({ data }: { data: FormValues }) {
             ))}
           </div>
           {goalLabel && (
-            <p className="text-xs text-[#a0a0a0] mt-2">
-              Objetivo: <span className="text-white font-semibold">{goalLabel}</span>
+            <p className="text-xs text-text-secondary mt-2">
+              Objetivo: <span className="text-text-title font-semibold">{goalLabel}</span>
             </p>
           )}
         </div>
@@ -201,15 +201,15 @@ export default function CardioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-[#2a2a2a] bg-[#161616] px-4 sm:px-6 py-4">
+      <div className="border-b border-border bg-background-card px-4 sm:px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-black text-white uppercase tracking-widest font-display">
+            <h1 className="text-xl font-black text-text-title uppercase tracking-widest font-display">
               CARDIO
             </h1>
-            <p className="text-xs text-[#666] mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               Perfil de atividade cardiovascular
             </p>
           </div>
@@ -223,11 +223,11 @@ export default function CardioPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
           {/* ── Practices Toggle ── */}
-          <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
+          <div className="rounded-xl bg-background-card border border-border p-5">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-base font-bold text-white">Pratica cardio regularmente?</h2>
-                <p className="text-sm text-[#666] mt-0.5">
+                <h2 className="text-base font-bold text-text-title">Pratica cardio regularmente?</h2>
+                <p className="text-sm text-text-muted mt-0.5">
                   Ative para configurar seu perfil de cardio
                 </p>
               </div>
@@ -246,15 +246,15 @@ export default function CardioPage() {
                       'relative inline-flex w-16 h-8 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff88] focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]',
                       field.value
                         ? 'bg-[#00ff88] shadow-[0_0_16px_rgba(0,255,136,0.4)]'
-                        : 'bg-[#2a2a2a]',
+                        : 'bg-surface-3',
                     )}
                   >
                     <span
                       className={cn(
                         'absolute top-1 w-6 h-6 rounded-full transition-all duration-300 shadow-md',
                         field.value
-                          ? 'left-9 bg-[#0a0a0a]'
-                          : 'left-1 bg-[#666]',
+                          ? 'left-9 bg-background'
+                          : 'left-1 bg-text-secondary',
                       )}
                     />
                   </button>
@@ -265,12 +265,12 @@ export default function CardioPage() {
 
           {/* ── No Cardio State ── */}
           {!practices && (
-            <div className="rounded-xl border border-dashed border-[#2a2a2a] bg-[#161616] p-10 text-center">
-              <div className="w-14 h-14 rounded-full bg-[#1e1e1e] flex items-center justify-center mx-auto mb-4">
-                <HeartPulse className="w-7 h-7 text-[#3a3a3a]" />
+            <div className="rounded-xl border border-dashed border-border bg-background-card p-10 text-center">
+              <div className="w-14 h-14 rounded-full bg-background-card flex items-center justify-center mx-auto mb-4">
+                <HeartPulse className="w-7 h-7 text-text-faint" />
               </div>
-              <p className="text-base font-bold text-[#a0a0a0]">Nenhum cardio cadastrado</p>
-              <p className="text-sm text-[#666] mt-1.5 max-w-xs mx-auto">
+              <p className="text-base font-bold text-text-secondary">Nenhum cardio cadastrado</p>
+              <p className="text-sm text-text-muted mt-1.5 max-w-xs mx-auto">
                 Ative o toggle acima para configurar sua rotina de cardio e melhorar seu score.
               </p>
               <button
@@ -287,15 +287,15 @@ export default function CardioPage() {
           {/* ── Cardio Form ── */}
           {practices && (
             <>
-              <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5 space-y-5">
-                <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+              <div className="rounded-xl bg-background-card border border-border p-5 space-y-5">
+                <h3 className="text-sm font-bold text-text-title uppercase tracking-widest flex items-center gap-2">
                   <Activity className="w-4 h-4 text-[#00ff88]" />
                   Configuração
                 </h3>
 
                 {/* Type */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
                     Tipo de cardio
                   </label>
                   <Controller
@@ -312,7 +312,7 @@ export default function CardioPage() {
                               'flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border transition-all duration-150 text-center',
                               field.value === opt.value
                                 ? 'border-[#00ff88] bg-[#00ff88]/10 text-[#00ff88]'
-                                : 'border-[#2a2a2a] bg-[#0a0a0a] text-[#666] hover:border-[#3a3a3a] hover:text-[#a0a0a0]',
+                                : 'border-border bg-background text-text-muted hover:border-border-strong hover:text-text-secondary',
                             )}
                           >
                             <span>{TYPE_ICONS[opt.value]}</span>
@@ -326,7 +326,7 @@ export default function CardioPage() {
 
                 {/* Intensity */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#a0a0a0] uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
                     Intensidade
                   </label>
                   <Controller
@@ -343,7 +343,7 @@ export default function CardioPage() {
                               'flex items-start gap-3 p-4 rounded-xl border-2 transition-all duration-150 text-left',
                               field.value === opt.value
                                 ? `${opt.borderColor} ${opt.bgColor}`
-                                : 'border-[#2a2a2a] bg-[#0a0a0a] hover:border-[#3a3a3a]',
+                                : 'border-border bg-background hover:border-border-strong',
                             )}
                           >
                             <span
@@ -359,7 +359,7 @@ export default function CardioPage() {
                               >
                                 {opt.label}
                               </p>
-                              <p className="text-xs text-[#666] mt-0.5">{opt.description}</p>
+                              <p className="text-xs text-text-muted mt-0.5">{opt.description}</p>
                             </div>
                           </button>
                         ))}
@@ -377,8 +377,8 @@ export default function CardioPage() {
                     min="1"
                     max="600"
                     placeholder="30"
-                    prefix={<Timer className="w-4 h-4 text-[#666]" />}
-                    suffix={<span className="text-xs text-[#666] pr-3">minutos</span>}
+                    prefix={<Timer className="w-4 h-4 text-text-muted" />}
+                    suffix={<span className="text-xs text-text-muted pr-3">minutos</span>}
                     error={errors.duration_minutes?.message}
                     {...register('duration_minutes')}
                   />
@@ -389,8 +389,8 @@ export default function CardioPage() {
                     min="1"
                     max="14"
                     placeholder="3"
-                    prefix={<BarChart2 className="w-4 h-4 text-[#666]" />}
-                    suffix={<span className="text-xs text-[#666] pr-3">vezes/sem.</span>}
+                    prefix={<BarChart2 className="w-4 h-4 text-text-muted" />}
+                    suffix={<span className="text-xs text-text-muted pr-3">vezes/sem.</span>}
                     error={errors.frequency_per_week?.message}
                     {...register('frequency_per_week')}
                   />

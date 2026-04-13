@@ -174,14 +174,14 @@ function DeleteConfirmModal({
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onCancel}
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-[#161616] shadow-card-xl p-6 space-y-4">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-background-card shadow-card-xl p-6 space-y-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10">
             <AlertCircle className="h-5 w-5 text-red-400" />
           </div>
           <div>
-            <h3 className="font-bold text-white">Excluir medicamento?</h3>
-            <p className="text-sm text-white/50 mt-0.5">
+            <h3 className="font-bold text-text-title">Excluir medicamento?</h3>
+            <p className="text-sm text-text-secondary mt-0.5">
               &ldquo;{name}&rdquo; será removido.
             </p>
           </div>
@@ -264,8 +264,8 @@ function ImportTab({
         </div>
       )}
 
-      <div className="rounded-xl border border-border bg-[#161616] p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+      <div className="rounded-xl border border-border bg-background-card p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-text-title flex items-center gap-2">
           <Upload className="w-4 h-4 text-[#00ff88]" />
           Importar via arquivo
         </h3>
@@ -282,12 +282,12 @@ function ImportTab({
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
-        <span className="text-xs text-white/30 font-medium">OU</span>
+        <span className="text-xs text-text-faint font-medium">OU</span>
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      <div className="rounded-xl border border-border bg-[#161616] p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+      <div className="rounded-xl border border-border bg-background-card p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-text-title flex items-center gap-2">
           <Clipboard className="w-4 h-4 text-[#00ff88]" />
           Colar texto / protocolo
         </h3>
@@ -329,23 +329,23 @@ function ImportTab({
                 className="flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{med.name}</p>
+                  <p className="text-sm font-medium text-text-title truncate">{med.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                       {CATEGORY_LABELS[med.category]}
                     </span>
                     {med.dose && (
-                      <span className="text-[10px] text-white/35">• {med.dose}</span>
+                      <span className="text-[10px] text-text-muted">• {med.dose}</span>
                     )}
                     {med.frequency && (
-                      <span className="text-[10px] text-white/35">• {med.frequency}</span>
+                      <span className="text-[10px] text-text-muted">• {med.frequency}</span>
                     )}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeExtracted(i)}
-                  className="w-6 h-6 flex items-center justify-center rounded text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  className="w-6 h-6 flex items-center justify-center rounded text-text-faint hover:text-red-400 hover:bg-red-500/10 transition-colors"
                   aria-label="Remover"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -373,7 +373,7 @@ function ImportTab({
       {isExtracting && (
         <div className="flex flex-col items-center gap-3 py-8">
           <Spinner size="md" />
-          <p className="text-sm text-white/50">Analisando com IA...</p>
+          <p className="text-sm text-text-secondary">Analisando com IA...</p>
         </div>
       )}
     </div>
@@ -537,15 +537,15 @@ export default function MedicamentosPage() {
   // ── Render ─────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-heading text-3xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-3xl font-black tracking-tight text-text-title">
               MEDICAMENTOS
             </h1>
-            <p className="mt-1 text-sm text-white/40">
+            <p className="mt-1 text-sm text-text-muted">
               Suplementos, hormônios e medicamentos em uso
             </p>
           </div>

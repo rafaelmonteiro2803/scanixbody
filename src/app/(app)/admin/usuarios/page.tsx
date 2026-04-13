@@ -260,10 +260,10 @@ export default function UsuariosPage() {
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-black tracking-[0.15em] text-white uppercase">
+          <h2 className="text-xl font-black tracking-[0.15em] text-text-title uppercase">
             GESTÃO DE USUÁRIOS
           </h2>
-          <p className="mt-0.5 text-xs text-[#666]">
+          <p className="mt-0.5 text-xs text-text-muted">
             {totalUsers > 0 ? `${totalUsers} usuário${totalUsers !== 1 ? 's' : ''} encontrado${totalUsers !== 1 ? 's' : ''}` : 'Gerencie contas e permissões de acesso'}
           </p>
         </div>
@@ -318,7 +318,7 @@ export default function UsuariosPage() {
       </div>
 
       {/* ── Table ── */}
-      <div className="rounded-2xl border border-[#1e1e1e] bg-[#111] overflow-hidden">
+      <div className="rounded-2xl border border-border-subtle bg-background-secondary overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Spinner size="lg" variant="primary" label="Carregando usuários…" />
@@ -331,10 +331,10 @@ export default function UsuariosPage() {
           </div>
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-12 h-12 rounded-2xl border border-[#1e1e1e] bg-[#0d0d0d] flex items-center justify-center">
-              <Search className="w-6 h-6 text-[#333]" />
+            <div className="w-12 h-12 rounded-2xl border border-border-subtle bg-background flex items-center justify-center">
+              <Search className="w-6 h-6 text-text-faint" />
             </div>
-            <p className="text-sm font-medium text-[#444]">Nenhum usuário encontrado</p>
+            <p className="text-sm font-medium text-text-faint">Nenhum usuário encontrado</p>
             {(search || roleFilter || statusFilter) && (
               <button
                 onClick={() => { setSearch(''); setRoleFilter(''); setStatusFilter('') }}
@@ -348,11 +348,11 @@ export default function UsuariosPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#1e1e1e]">
+                <tr className="border-b border-border-subtle">
                   {['Usuário', 'Cargo', 'Status', 'Criado em', 'Ações'].map((h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[#444]"
+                      className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-faint"
                     >
                       {h}
                     </th>
@@ -371,9 +371,9 @@ export default function UsuariosPage() {
                     <tr
                       key={user.id}
                       className={[
-                        'border-b border-[#161616] transition-colors',
-                        'hover:bg-[#161616]',
-                        idx % 2 === 0 ? '' : 'bg-[#0d0d0d]/50',
+                        'border-b border-border-subtle transition-colors',
+                        'hover:bg-background-card',
+                        idx % 2 === 0 ? '' : 'bg-background/50',
                       ].join(' ')}
                     >
                       {/* Avatar + name + email */}
@@ -383,10 +383,10 @@ export default function UsuariosPage() {
                             <span className="text-xs font-bold text-[#00ff88]">{initials}</span>
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-white truncate max-w-[180px]">
-                              {name ?? <span className="text-[#444] italic">Sem nome</span>}
+                            <p className="font-semibold text-text-title truncate max-w-[180px]">
+                              {name ?? <span className="text-text-faint italic">Sem nome</span>}
                             </p>
-                            <p className="text-xs text-[#555] truncate max-w-[180px]">{user.email}</p>
+                            <p className="text-xs text-text-muted truncate max-w-[180px]">{user.email}</p>
                           </div>
                         </div>
                       </td>
@@ -402,7 +402,7 @@ export default function UsuariosPage() {
                       </td>
 
                       {/* Created at */}
-                      <td className="px-4 py-3 text-xs text-[#555] tabular-nums whitespace-nowrap">
+                      <td className="px-4 py-3 text-xs text-text-muted tabular-nums whitespace-nowrap">
                         {formatDate(user.created_at, 'dd/MM/yyyy')}
                       </td>
 
@@ -447,15 +447,15 @@ export default function UsuariosPage() {
 
         {/* ── Pagination ── */}
         {!loading && !error && users.length > 0 && (
-          <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-[#1e1e1e]">
-            <span className="text-xs text-[#444]">
+          <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-border-subtle">
+            <span className="text-xs text-text-faint">
               Página {page} de {totalPages}
             </span>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="w-8 h-8 rounded-lg border border-[#1e1e1e] bg-[#0d0d0d] flex items-center justify-center text-[#666] hover:text-white hover:border-[#2a2a2a] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded-lg border border-border-subtle bg-background flex items-center justify-center text-text-muted hover:text-text-title hover:border-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -475,7 +475,7 @@ export default function UsuariosPage() {
                       'w-8 h-8 rounded-lg text-xs font-semibold transition-all',
                       pageNum === page
                         ? 'bg-[#00ff88] text-[#0a0a0a]'
-                        : 'border border-[#1e1e1e] bg-[#0d0d0d] text-[#555] hover:text-white hover:border-[#2a2a2a]',
+                        : 'border border-border-subtle bg-background text-text-muted hover:text-text-title hover:border-border',
                     ].join(' ')}
                   >
                     {pageNum}
@@ -485,7 +485,7 @@ export default function UsuariosPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="w-8 h-8 rounded-lg border border-[#1e1e1e] bg-[#0d0d0d] flex items-center justify-center text-[#666] hover:text-white hover:border-[#2a2a2a] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded-lg border border-border-subtle bg-background flex items-center justify-center text-text-muted hover:text-text-title hover:border-border disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -530,7 +530,7 @@ export default function UsuariosPage() {
                 {passwordModal.password}
               </p>
             </div>
-            <p className="text-xs text-[#555]">
+            <p className="text-xs text-text-muted">
               O usuário será solicitado a alterar esta senha no primeiro acesso.
             </p>
           </div>
@@ -575,7 +575,7 @@ export default function UsuariosPage() {
                 confirm.variant === 'danger' ? 'text-red-400' : 'text-yellow-400',
               ].join(' ')} />
             </div>
-            <p className="text-sm text-[#aaa] leading-relaxed">{confirm.message}</p>
+            <p className="text-sm text-text-secondary leading-relaxed">{confirm.message}</p>
           </div>
         </ModalBody>
         <ModalFooter>
@@ -624,8 +624,8 @@ function ActionBtn({
         'transition-all duration-150',
         'focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00ff88]',
         danger
-          ? 'text-[#666] hover:text-red-400 hover:bg-red-500/10'
-          : 'text-[#666] hover:text-white hover:bg-[#1e1e1e]',
+          ? 'text-text-muted hover:text-red-400 hover:bg-red-500/10'
+          : 'text-text-muted hover:text-text-title hover:bg-background-card',
       ].join(' ')}
     >
       {icon}

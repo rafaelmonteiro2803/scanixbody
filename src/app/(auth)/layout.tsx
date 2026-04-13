@@ -15,7 +15,7 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] px-4 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">
 
       {/* Background radial glow — subtle green pulse */}
       <div
@@ -68,7 +68,7 @@ export default function AuthLayout({
         {/* Wordmark */}
         <div className="text-center">
           <h1
-            className="font-heading text-2xl font-black uppercase tracking-[0.2em] text-white"
+            className="font-heading text-2xl font-black uppercase tracking-[0.2em] text-text-title"
             style={{ fontFamily: 'var(--font-rajdhani), sans-serif' }}
           >
             SCANIX{' '}
@@ -76,7 +76,7 @@ export default function AuthLayout({
               BODY
             </span>
           </h1>
-          <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.25em] text-[#666666]">
+          <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.25em] text-text-muted">
             Performance Intelligence
           </p>
         </div>
@@ -89,7 +89,7 @@ export default function AuthLayout({
 
       {/* Footer */}
       <footer className="relative z-10 mt-10 text-center">
-        <p className="text-xs text-[#444444]">
+        <p className="text-xs text-text-faint">
           &copy; {new Date().getFullYear()} SCANIX BODY — Todos os direitos reservados
         </p>
       </footer>

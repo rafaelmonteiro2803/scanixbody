@@ -59,20 +59,20 @@ function ImportModal({ onClose }: { onClose: () => void }) {
         className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-modal-backdrop"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-[#161616] shadow-card-xl animate-modal-content">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-background-card shadow-card-xl animate-modal-content">
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
               <FileUp className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h2 className="font-heading text-lg font-bold text-white">Importar Treino</h2>
+              <h2 className="font-heading text-lg font-bold text-text-title">Importar Treino</h2>
               <p className="text-xs text-text-secondary">Carregue um arquivo JSON de treino</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-2 hover:text-white"
+            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-title"
             aria-label="Fechar"
           >
             <X className="h-4 w-4" />
@@ -157,13 +157,13 @@ function ConfirmDeleteModal({
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onCancel}
       />
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-[#161616] shadow-card-xl p-6 space-y-4">
+      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-background-card shadow-card-xl p-6 space-y-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-danger/10">
             <AlertCircle className="h-5 w-5 text-danger" />
           </div>
           <div>
-            <h3 className="font-bold text-white">{title}</h3>
+            <h3 className="font-bold text-text-title">{title}</h3>
             <p className="text-sm text-text-secondary mt-0.5">{message}</p>
           </div>
         </div>
@@ -321,12 +321,12 @@ export default function TreinosPage() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-heading text-3xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-3xl font-black tracking-tight text-text-title">
               TREINOS
             </h1>
             <p className="mt-1 text-sm text-text-secondary">

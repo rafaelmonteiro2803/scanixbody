@@ -12,12 +12,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Base backgrounds — dark-first design
+        // Base backgrounds — wired to CSS variables for theme support
         background: {
-          DEFAULT: "#0a0a0a",
-          secondary: "#111111",
-          tertiary: "#1a1a1a",
-          card: "#222222",
+          DEFAULT: "var(--shell-bg)",
+          secondary: "var(--shell-surface)",
+          tertiary: "var(--shell-surface-2)",
+          card: "var(--shell-surface-2)",
+          elevated: "var(--shell-surface)",
           overlay: "rgba(0,0,0,0.75)",
         },
 
@@ -55,29 +56,32 @@ const config: Config = {
           muted: "rgba(0,255,136,0.15)",
         },
 
-        // Text scale
+        // Text scale — wired to CSS variables for theme support
         text: {
-          primary: "#ffffff",
-          secondary: "#a0a0a0",
-          tertiary: "#6b6b6b",
-          disabled: "#444444",
+          title: "var(--shell-text-title)",
+          primary: "var(--shell-text-primary)",
+          secondary: "var(--shell-text-secondary)",
+          tertiary: "var(--shell-text-muted)",
+          muted: "var(--shell-text-muted)",
+          faint: "var(--shell-text-faint)",
+          disabled: "var(--shell-text-faint)",
           inverse: "#0a0a0a",
         },
 
-        // Border scale
+        // Border scale — wired to CSS variables for theme support
         border: {
-          DEFAULT: "#2a2a2a",
-          subtle: "#1e1e1e",
-          strong: "#3a3a3a",
-          focus: "#00ff88",
+          DEFAULT: "var(--shell-border)",
+          subtle: "var(--shell-border-subtle)",
+          strong: "var(--color-border-strong)",
+          focus: "var(--shell-accent)",
         },
 
-        // Surface elevations (glassmorphism helpers)
+        // Surface elevations — wired to CSS variables for theme support
         surface: {
-          1: "rgba(255,255,255,0.03)",
-          2: "rgba(255,255,255,0.06)",
-          3: "rgba(255,255,255,0.09)",
-          4: "rgba(255,255,255,0.12)",
+          1: "var(--color-surface-1)",
+          2: "var(--color-surface-2)",
+          3: "var(--color-surface-3)",
+          4: "var(--color-surface-4)",
         },
       },
 

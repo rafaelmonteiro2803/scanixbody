@@ -98,7 +98,7 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
           className="bg-white text-gray-900 rounded-xl border border-gray-200 overflow-hidden print:border-0 print:rounded-none"
         >
           {/* Report Header */}
-          <div className="bg-gray-900 text-white px-8 py-6 print:bg-gray-900">
+          <div className="bg-gray-900 text-text-title px-8 py-6 print:bg-gray-900">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#00ff88] mb-1">
@@ -202,7 +202,7 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
                 <ol className="space-y-2 list-none">
                   {result.recommendations.map((rec, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-900 text-white text-xs font-bold flex-shrink-0 mt-0.5">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-900 text-text-title text-xs font-bold flex-shrink-0 mt-0.5">
                         {i + 1}
                       </span>
                       {rec}
@@ -218,7 +218,7 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
                 <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
                   Foco da Semana
                 </h3>
-                <div className="rounded-lg bg-gray-900 text-white p-4">
+                <div className="rounded-lg bg-gray-900 text-text-title p-4">
                   <p className="text-sm font-semibold leading-relaxed">{result.weeklyFocus}</p>
                 </div>
               </section>

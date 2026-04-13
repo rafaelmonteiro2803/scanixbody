@@ -82,7 +82,7 @@ export function ChecklistItem({ module, icon: Icon, status, text }: ChecklistIte
       </div>
 
       {/* Module name */}
-      <p className="text-sm font-bold text-white mb-1.5 pr-6">{module}</p>
+      <p className="text-sm font-bold text-text-title mb-1.5 pr-6">{module}</p>
 
       {/* Status badge */}
       <div className="mb-2">
@@ -92,7 +92,7 @@ export function ChecklistItem({ module, icon: Icon, status, text }: ChecklistIte
       </div>
 
       {/* Description */}
-      <p className="text-xs text-[#666] leading-relaxed">{text}</p>
+      <p className="text-xs text-text-muted leading-relaxed">{text}</p>
     </div>
   );
 }

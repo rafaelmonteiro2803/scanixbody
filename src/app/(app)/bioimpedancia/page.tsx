@@ -115,17 +115,17 @@ function ReviewField({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b border-[#2a2a2a] last:border-0">
-      <span className="text-sm text-[#a0a0a0] min-w-0 flex-1">{label}</span>
+    <div className="flex items-center justify-between gap-3 py-2 border-b border-border last:border-0">
+      <span className="text-sm text-text-secondary min-w-0 flex-1">{label}</span>
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <input
           type="number"
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
-          className="w-24 h-8 rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] text-[#00ff88] text-sm font-semibold text-right px-2 focus:border-[#00ff88] focus:outline-none transition-colors"
+          className="w-24 h-8 rounded-lg bg-background border border-border text-[#00ff88] text-sm font-semibold text-right px-2 focus:border-[#00ff88] focus:outline-none transition-colors"
           step="0.1"
         />
-        {unit && <span className="text-xs text-[#666] w-8">{unit}</span>}
+        {unit && <span className="text-xs text-text-muted w-8">{unit}</span>}
       </div>
     </div>
   );
@@ -202,15 +202,15 @@ export default function BioimpedanciaPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-[#2a2a2a] bg-[#161616] px-4 sm:px-6 py-4">
+      <div className="border-b border-border bg-background-card px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-black text-white uppercase tracking-widest font-display">
+            <h1 className="text-xl font-black text-text-title uppercase tracking-widest font-display">
               BIOIMPEDÂNCIA
             </h1>
-            <p className="text-xs text-[#666] mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               Importar e aplicar resultados InBody / bioimpedância
             </p>
           </div>
@@ -224,8 +224,8 @@ export default function BioimpedanciaPage() {
         <div className="rounded-xl border border-[#00d4ff]/20 bg-[#00d4ff]/5 px-4 py-3 flex items-start gap-3">
           <Info className="w-5 h-5 text-[#00d4ff] flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-white">Importação de PDF InBody</p>
-            <p className="text-xs text-[#a0a0a0] mt-0.5 leading-relaxed">
+            <p className="text-sm font-semibold text-text-title">Importação de PDF InBody</p>
+            <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
               Faça upload do PDF gerado pelo aparelho InBody ou qualquer relatório de bioimpedância.
               Nossa IA extrai automaticamente todos os dados de composição corporal para revisão antes
               de aplicar ao seu perfil.
@@ -235,8 +235,8 @@ export default function BioimpedanciaPage() {
 
         {/* Upload section */}
         {!confirmed && (
-          <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5 space-y-4">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <div className="rounded-xl bg-background-card border border-border p-5 space-y-4">
+            <h2 className="text-sm font-bold text-text-title uppercase tracking-wider flex items-center gap-2">
               <Upload className="w-4 h-4 text-[#00ff88]" />
               Upload do Arquivo
             </h2>
@@ -258,12 +258,12 @@ export default function BioimpedanciaPage() {
 
             {/* Processing state */}
             {processing && (
-              <div className="rounded-xl border border-[#2a2a2a] bg-[#0a0a0a] p-8 text-center">
+              <div className="rounded-xl border border-border bg-background p-8 text-center">
                 <div className="w-14 h-14 rounded-full bg-[#00ff88]/10 flex items-center justify-center mx-auto mb-4">
                   <Loader2 className="w-7 h-7 text-[#00ff88] animate-spin" />
                 </div>
-                <p className="text-base font-bold text-white">Processando com IA...</p>
-                <p className="text-sm text-[#666] mt-1">
+                <p className="text-base font-bold text-text-title">Processando com IA...</p>
+                <p className="text-sm text-text-muted mt-1">
                   Extraindo dados de composição corporal do PDF
                 </p>
                 <div className="mt-4 flex justify-center gap-1.5">
@@ -282,20 +282,20 @@ export default function BioimpedanciaPage() {
 
         {/* Review table */}
         {editedData && !confirmed && !processing && (
-          <div className="rounded-xl bg-[#161616] border border-[#00ff88]/20 p-5 space-y-4">
+          <div className="rounded-xl bg-background-card border border-[#00ff88]/20 p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-sm font-bold text-text-title uppercase tracking-wider flex items-center gap-2">
                 <Eye className="w-4 h-4 text-[#00ff88]" />
                 Revisão dos Dados Extraídos
               </h2>
               <Badge variant="success" dot>Extração concluída</Badge>
             </div>
 
-            <p className="text-xs text-[#a0a0a0]">
+            <p className="text-xs text-text-secondary">
               Verifique os dados abaixo e edite qualquer campo antes de confirmar.
             </p>
 
-            <div className="rounded-lg bg-[#0a0a0a] border border-[#2a2a2a] p-4">
+            <div className="rounded-lg bg-background border border-border p-4">
               {reviewFields.map((f) => (
                 <ReviewField
                   key={f.key}
@@ -333,8 +333,8 @@ export default function BioimpedanciaPage() {
         {confirmed && (
           <div className="rounded-xl border border-[#00ff88]/30 bg-[#00ff88]/5 p-8 text-center">
             <CheckCircle2 className="w-14 h-14 text-[#00ff88] mx-auto mb-4" />
-            <p className="text-lg font-black text-white">Dados aplicados com sucesso!</p>
-            <p className="text-sm text-[#a0a0a0] mt-1">
+            <p className="text-lg font-black text-text-title">Dados aplicados com sucesso!</p>
+            <p className="text-sm text-text-secondary mt-1">
               Os dados da bioimpedância foram salvos no seu perfil corporal.
             </p>
             <div className="flex items-center justify-center gap-3 mt-5">
@@ -351,43 +351,43 @@ export default function BioimpedanciaPage() {
         )}
 
         {/* Past imports */}
-        <div className="rounded-xl bg-[#161616] border border-[#2a2a2a] p-5">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 mb-4">
+        <div className="rounded-xl bg-background-card border border-border p-5">
+          <h2 className="text-sm font-bold text-text-title uppercase tracking-wider flex items-center gap-2 mb-4">
             <FileText className="w-4 h-4 text-[#00ff88]" />
             Importações Anteriores
           </h2>
 
           {pastImports.length === 0 ? (
             <div className="text-center py-8">
-              <AlertCircle className="w-10 h-10 text-[#3a3a3a] mx-auto mb-3" />
-              <p className="text-sm text-[#666]">Nenhuma importação anterior</p>
+              <AlertCircle className="w-10 h-10 text-text-faint mx-auto mb-3" />
+              <p className="text-sm text-text-muted">Nenhuma importação anterior</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#2a2a2a]">
-                    <th className="text-left text-xs font-semibold text-[#666] uppercase tracking-wider pb-2 pr-4">
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider pb-2 pr-4">
                       Data
                     </th>
-                    <th className="text-left text-xs font-semibold text-[#666] uppercase tracking-wider pb-2 pr-4">
+                    <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider pb-2 pr-4">
                       Arquivo
                     </th>
-                    <th className="text-left text-xs font-semibold text-[#666] uppercase tracking-wider pb-2">
+                    <th className="text-left text-xs font-semibold text-text-muted uppercase tracking-wider pb-2">
                       Status
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {pastImports.map((imp) => (
-                    <tr key={imp.id} className="border-b border-[#2a2a2a]/50 last:border-0">
-                      <td className="py-3 pr-4 text-[#a0a0a0] text-xs whitespace-nowrap">
+                    <tr key={imp.id} className="border-b border-border/50 last:border-0">
+                      <td className="py-3 pr-4 text-text-secondary text-xs whitespace-nowrap">
                         {format(new Date(imp.date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </td>
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-2">
-                          <FileText className="w-3.5 h-3.5 text-[#666] flex-shrink-0" />
-                          <span className="text-[#a0a0a0] text-xs truncate max-w-[200px]">{imp.source_file}</span>
+                          <FileText className="w-3.5 h-3.5 text-text-muted flex-shrink-0" />
+                          <span className="text-text-secondary text-xs truncate max-w-[200px]">{imp.source_file}</span>
                         </div>
                       </td>
                       <td className="py-3">

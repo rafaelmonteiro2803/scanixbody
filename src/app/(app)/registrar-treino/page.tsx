@@ -289,12 +289,12 @@ export default function RegistrarTreinoPage() {
 
   if (saved) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
           <div className="w-20 h-20 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6 shadow-[0_0_32px_rgba(0,255,136,0.15)]">
             <CheckCircle2 className="w-10 h-10 text-primary" />
           </div>
-          <h2 className="font-heading text-2xl font-black text-white mb-2">
+          <h2 className="font-heading text-2xl font-black text-text-title mb-2">
             Treino Registrado!
           </h2>
           <p className="text-text-secondary text-sm mb-2">
@@ -340,11 +340,11 @@ export default function RegistrarTreinoPage() {
 
   if (step === 1) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="mx-auto max-w-md space-y-6">
           {/* Header */}
           <div>
-            <h1 className="font-heading text-3xl font-black tracking-tight text-white">
+            <h1 className="font-heading text-3xl font-black tracking-tight text-text-title">
               REGISTRAR TREINO
             </h1>
             <p className="mt-1 text-sm text-text-secondary">
@@ -357,9 +357,9 @@ export default function RegistrarTreinoPage() {
               <Spinner size="lg" />
             </div>
           ) : workoutDays.length === 0 ? (
-            <div className="rounded-xl border border-border bg-[#161616] p-8 text-center">
+            <div className="rounded-xl border border-border bg-background-card p-8 text-center">
               <Dumbbell className="w-10 h-10 text-text-muted mx-auto mb-3" />
-              <p className="font-semibold text-white mb-1">Nenhum treino cadastrado</p>
+              <p className="font-semibold text-text-title mb-1">Nenhum treino cadastrado</p>
               <p className="text-sm text-text-secondary mb-4">
                 Crie seus dias de treino antes de registrar uma sessão.
               </p>
@@ -368,7 +368,7 @@ export default function RegistrarTreinoPage() {
               </Button>
             </div>
           ) : (
-            <div className="rounded-xl border border-border bg-[#161616] p-6 space-y-5">
+            <div className="rounded-xl border border-border bg-background-card p-6 space-y-5">
               {/* Day selector */}
               <Select
                 label="Dia de Treino"
@@ -394,7 +394,7 @@ export default function RegistrarTreinoPage() {
                     value={sessionDate}
                     max={today()}
                     onChange={(e) => setSessionDate(e.target.value)}
-                    className="flex-1 h-full bg-transparent px-3 text-sm text-white focus:outline-none"
+                    className="flex-1 h-full bg-transparent px-3 text-sm text-text-title focus:outline-none"
                   />
                 </div>
               </div>
@@ -443,13 +443,13 @@ export default function RegistrarTreinoPage() {
   // ── Step 2: Log sets ─────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pb-32">
+    <div className="min-h-screen bg-background pb-32">
       {/* Sticky top bar */}
-      <div className="sticky top-0 z-40 border-b border-border bg-[#0a0a0a]/95 backdrop-blur-sm">
+      <div className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="mx-auto max-w-2xl flex items-center justify-between px-4 py-3">
           <button
             onClick={goToStep1}
-            className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-title transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             Voltar
@@ -461,7 +461,7 @@ export default function RegistrarTreinoPage() {
           </div>
 
           {/* Timer */}
-          <div className="flex items-center gap-1.5 text-sm font-mono font-bold text-white">
+          <div className="flex items-center gap-1.5 text-sm font-mono font-bold text-text-title">
             <Clock className="w-4 h-4 text-primary" />
             {timer.format()}
           </div>
@@ -501,7 +501,7 @@ export default function RegistrarTreinoPage() {
       </div>
 
       {/* Bottom save bar */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-[#0a0a0a]/95 backdrop-blur-sm px-4 py-4">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-background/95 backdrop-blur-sm px-4 py-4">
         <div className="mx-auto max-w-2xl">
           <Button
             variant="primary"

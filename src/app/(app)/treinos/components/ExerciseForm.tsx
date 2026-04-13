@@ -87,7 +87,7 @@ export function ExerciseForm({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-[#161616] shadow-card-xl animate-modal-content max-h-[90vh] flex flex-col">
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-background-card shadow-card-xl animate-modal-content max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4 flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -95,7 +95,7 @@ export function ExerciseForm({
               <Dumbbell className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h2 className="font-heading text-lg font-bold text-white">
+              <h2 className="font-heading text-lg font-bold text-text-title">
                 {isEdit ? 'Editar Exercício' : 'Novo Exercício'}
               </h2>
               <p className="text-xs text-text-secondary">
@@ -105,7 +105,7 @@ export function ExerciseForm({
           </div>
           <button
             onClick={onCancel}
-            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-2 hover:text-white"
+            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-2 hover:text-text-title"
             aria-label="Fechar modal"
           >
             <X className="h-4 w-4" />
