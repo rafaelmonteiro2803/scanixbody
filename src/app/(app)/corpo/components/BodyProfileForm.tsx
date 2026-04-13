@@ -114,11 +114,11 @@ const GOAL_OPTIONS = [
 ];
 
 const ACTIVITY_OPTIONS = [
-  { value: 'sedentary', label: 'Sedentário (×1.2)' },
-  { value: 'light', label: 'Levemente ativo (×1.375)' },
-  { value: 'moderate', label: 'Moderadamente ativo (×1.55)' },
-  { value: 'active', label: 'Muito ativo (×1.725)' },
-  { value: 'very_active', label: 'Extremamente ativo (×1.9)' },
+  { value: 'sedentary', label: '0 treinos por semana' },
+  { value: 'light', label: '1–2 treinos por semana' },
+  { value: 'moderate', label: '3–4 treinos por semana' },
+  { value: 'active', label: '5–6 treinos por semana' },
+  { value: 'very_active', label: '7+ treinos por semana' },
 ];
 
 const SLEEP_QUALITY_OPTIONS = [
