@@ -264,15 +264,21 @@ UPDATE athlete_profiles
 
 -- workout_days
 ALTER TABLE workout_days ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
-UPDATE workout_days
-  SET deleted_at = updated_at
-  WHERE is_active = FALSE AND deleted_at IS NULL;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema='public' AND table_name='workout_days' AND column_name='is_active') THEN
+    UPDATE workout_days SET deleted_at = updated_at WHERE is_active = FALSE AND deleted_at IS NULL;
+  END IF;
+END $$;
 
 -- workout_exercises
 ALTER TABLE workout_exercises ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
-UPDATE workout_exercises
-  SET deleted_at = updated_at
-  WHERE is_active = FALSE AND deleted_at IS NULL;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema='public' AND table_name='workout_exercises' AND column_name='is_active') THEN
+    UPDATE workout_exercises SET deleted_at = updated_at WHERE is_active = FALSE AND deleted_at IS NULL;
+  END IF;
+END $$;
 
 -- workout_sessions
 ALTER TABLE workout_sessions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
@@ -288,9 +294,12 @@ ALTER TABLE bioimpedance_imports ADD COLUMN IF NOT EXISTS raw_text TEXT;
 
 -- medication_entries
 ALTER TABLE medication_entries ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
-UPDATE medication_entries
-  SET deleted_at = updated_at
-  WHERE is_active = FALSE AND deleted_at IS NULL;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema='public' AND table_name='medication_entries' AND column_name='is_active') THEN
+    UPDATE medication_entries SET deleted_at = updated_at WHERE is_active = FALSE AND deleted_at IS NULL;
+  END IF;
+END $$;
 
 -- exam_reports
 ALTER TABLE exam_reports ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
