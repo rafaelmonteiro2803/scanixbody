@@ -31,7 +31,7 @@ export default async function AppRootLayout({
   // Fetch profile for shell personalisation (name, avatar, role)
   const { data: profileData } = await supabase
     .from('profiles')
-    .select('full_name, avatar_url, role, status')
+    .select('full_name, avatar_url, role, status, theme')
     .eq('user_id', user.id)
     .single()
 
@@ -40,6 +40,7 @@ export default async function AppRootLayout({
     avatar_url: string | null
     role: UserRole
     status: string
+    theme: string | null
   } | null
 
   // Guard: first_access users must complete onboarding
@@ -57,6 +58,7 @@ export default async function AppRootLayout({
         avatarUrl: profile?.avatar_url ?? null,
         role: profile?.role ?? 'usuario_final',
       }}
+      initialTheme={(profile?.theme === 'light' ? 'light' : 'dark')}
     >
       {children}
     </AppLayout>

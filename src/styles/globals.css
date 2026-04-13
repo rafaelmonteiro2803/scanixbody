@@ -64,6 +64,67 @@
   --font-rajdhani: 'Rajdhani', sans-serif;
   --font-orbitron: 'Orbitron', monospace;
   --font-jetbrains-mono: 'JetBrains Mono', monospace;
+
+  /* ── App shell tokens (dark default) ── */
+  --shell-bg:              #0a0a0a;
+  --shell-sidebar:         #0d0d0d;
+  --shell-topbar:          rgba(10,10,10,0.85);
+  --shell-border:          #1a1a1a;
+  --shell-border-subtle:   #1e1e1e;
+  --shell-surface:         #111111;
+  --shell-surface-2:       #161616;
+  --shell-surface-hover:   #1a1a1a;
+  --shell-divider:         #1a1a1a;
+  --shell-text-title:      #ffffff;
+  --shell-text-primary:    #e0e0e0;
+  --shell-text-secondary:  #a0a0a0;
+  --shell-text-muted:      #666666;
+  --shell-text-faint:      #444444;
+  --shell-text-ghost:      #333333;
+  --shell-accent:          #00ff88;
+  --shell-accent-bg:       rgba(0,255,136,0.10);
+  --shell-accent-text:     #00ff88;
+  --shell-accent-subtle:   rgba(0,255,136,0.70);
+  --shell-status-text:     #333333;
+  --shell-status-year:     #2a2a2a;
+}
+
+/* ── Light theme overrides ── */
+html.light {
+  --color-bg-primary:    #f0f4f8;
+  --color-bg-secondary:  #ffffff;
+  --color-bg-card:       #ffffff;
+  --color-bg-elevated:   #e8edf3;
+  --color-border:        #d0d8e4;
+  --color-text-primary:  #0f172a;
+  --color-text-secondary:#475569;
+  --color-text-muted:    #64748b;
+  --color-primary:       #059669;
+  --color-primary-dark:  #047857;
+  --color-primary-muted: rgba(5,150,105,0.12);
+  --color-primary-glow:  rgba(5,150,105,0.25);
+
+  --shell-bg:              #f0f4f8;
+  --shell-sidebar:         #ffffff;
+  --shell-topbar:          rgba(248,250,252,0.95);
+  --shell-border:          #e2e8f0;
+  --shell-border-subtle:   #edf2f7;
+  --shell-surface:         #ffffff;
+  --shell-surface-2:       #f8fafc;
+  --shell-surface-hover:   #f1f5f9;
+  --shell-divider:         #e2e8f0;
+  --shell-text-title:      #0f172a;
+  --shell-text-primary:    #1e293b;
+  --shell-text-secondary:  #475569;
+  --shell-text-muted:      #64748b;
+  --shell-text-faint:      #94a3b8;
+  --shell-text-ghost:      #cbd5e1;
+  --shell-accent:          #059669;
+  --shell-accent-bg:       rgba(5,150,105,0.10);
+  --shell-accent-text:     #059669;
+  --shell-accent-subtle:   rgba(5,150,105,0.70);
+  --shell-status-text:     #94a3b8;
+  --shell-status-year:     #cbd5e1;
 }
 
 /* ============================================================
@@ -85,8 +146,9 @@
   }
 
   body {
-    background-color: var(--color-bg-primary);
+    background-color: var(--shell-bg);
     color: var(--color-text-primary);
+    transition: background-color 200ms ease, color 200ms ease;
     font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
     font-size: 1rem;
     line-height: 1.5;
