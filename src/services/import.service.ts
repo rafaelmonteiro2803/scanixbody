@@ -120,22 +120,42 @@ export interface BioimpedanceData {
 
 async function readFileAsText(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = e => resolve(e.target?.result as string ?? '')
-    reader.onerror = () => reject(new Error('Falha ao ler arquivo'))
+    const normalizedType = file.type.toLowerCase()
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
 
-    if (file.type === 'application/pdf') {
-      // For PDFs we send the raw binary as base64 — the backend handles extraction
+    const isPdf = normalizedType === 'application/pdf' || extension === 'pdf'
+    const isDocx =
+      normalizedType ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      extension === 'docx'
+    const isXlsx =
+      normalizedType ===
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      extension === 'xlsx'
+    const isJson = normalizedType === 'application/json' || extension === 'json'
+
+    if (isPdf || isDocx || isXlsx) {
       const bReader = new FileReader()
       bReader.onload = e => {
-        const b64 = (e.target?.result as string).split(',')[1] ?? ''
-        resolve(`[PDF_BASE64]:${b64}`)
+        const dataUrl = e.target?.result as string
+        const b64 = dataUrl.split(',')[1] ?? ''
+        const prefix = isPdf ? 'PDF' : isDocx ? 'DOCX' : 'XLSX'
+        resolve(`[${prefix}_BASE64]:${b64}`)
       }
-      bReader.onerror = () => reject(new Error('Falha ao ler PDF'))
+      bReader.onerror = () => reject(new Error('Falha ao ler arquivo'))
       bReader.readAsDataURL(file)
-    } else {
-      reader.readAsText(file)
+      return
     }
+
+    if (isJson || normalizedType.startsWith('text/')) {
+      const reader = new FileReader()
+      reader.onload = e => resolve((e.target?.result as string) ?? '')
+      reader.onerror = () => reject(new Error('Falha ao ler arquivo'))
+      reader.readAsText(file)
+      return
+    }
+
+    reject(new Error('Formato de arquivo não suportado'))
   })
 }
 

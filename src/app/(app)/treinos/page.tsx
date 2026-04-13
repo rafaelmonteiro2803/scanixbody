@@ -20,6 +20,7 @@ import {
   workoutExerciseService,
   type WorkoutDayWithExercises,
 } from '@/services/workout.service'
+import { importWorkout, type WorkoutImportData } from '@/services/import.service'
 import type { WorkoutDaysRow, WorkoutExercisesRow } from '@/types/database.types'
 
 // ---------------------------------------------------------------------------
@@ -38,19 +39,178 @@ type ModalState =
 // Import modal (stub – accepts JSON file)
 // ---------------------------------------------------------------------------
 
-function ImportModal({ onClose }: { onClose: () => void }) {
+const IMPORT_ACCEPTED_EXTENSIONS = ['json', 'pdf', 'xlsx', 'docx']
+
+function ImportModal({
+  onClose,
+  onImportComplete,
+}: {
+  onClose: () => void
+  onImportComplete: () => Promise<void>
+}) {
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [importedData, setImportedData] = useState<WorkoutImportData | null>(null)
+  const [jsonPreview, setJsonPreview] = useState('')
+
+  function normalizeWorkoutImport(data: unknown): WorkoutImportData {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Estrutura JSON inválida para treinos.')
+    }
+
+    const candidate = data as { days?: unknown[] }
+    if (!Array.isArray(candidate.days) || candidate.days.length === 0) {
+      throw new Error('Nenhum dia de treino foi encontrado no arquivo.')
+    }
+
+    return {
+      days: candidate.days.map((day, dayIndex) => {
+        if (!day || typeof day !== 'object') {
+          throw new Error(`Dia ${dayIndex + 1} inválido.`)
+        }
+        const d = day as {
+          name?: unknown
+          muscleGroups?: unknown
+          muscle_groups?: unknown
+          exercises?: unknown
+        }
+        const name = typeof d.name === 'string' && d.name.trim() ? d.name.trim() : `Dia ${dayIndex + 1}`
+        const groupsRaw = Array.isArray(d.muscleGroups) ? d.muscleGroups : Array.isArray(d.muscle_groups) ? d.muscle_groups : []
+        const muscleGroups = groupsRaw.filter((g): g is string => typeof g === 'string' && g.trim().length > 0)
+
+        if (!Array.isArray(d.exercises) || d.exercises.length === 0) {
+          throw new Error(`O dia "${name}" não possui exercícios.`)
+        }
+
+        return {
+          name,
+          muscleGroups,
+          exercises: d.exercises.map((exercise, exerciseIndex) => {
+            if (!exercise || typeof exercise !== 'object') {
+              throw new Error(`Exercício ${exerciseIndex + 1} inválido no dia "${name}".`)
+            }
+            const ex = exercise as {
+              name?: unknown
+              sets?: unknown
+              targetReps?: unknown
+              target_reps?: unknown
+              load?: unknown
+              restSeconds?: unknown
+              rest_seconds?: unknown
+              notes?: unknown
+            }
+            const exerciseName = typeof ex.name === 'string' && ex.name.trim() ? ex.name.trim() : `Exercício ${exerciseIndex + 1}`
+            const setsNumber = Number(ex.sets)
+            return {
+              name: exerciseName,
+              sets: Number.isFinite(setsNumber) && setsNumber > 0 ? Math.floor(setsNumber) : 3,
+              targetReps: typeof ex.targetReps === 'string' || typeof ex.targetReps === 'number'
+                ? ex.targetReps
+                : typeof ex.target_reps === 'string' || typeof ex.target_reps === 'number'
+                  ? ex.target_reps
+                  : '',
+              load: typeof ex.load === 'number' && Number.isFinite(ex.load) ? ex.load : undefined,
+              restSeconds: typeof ex.restSeconds === 'number' && Number.isFinite(ex.restSeconds)
+                ? ex.restSeconds
+                : typeof ex.rest_seconds === 'number' && Number.isFinite(ex.rest_seconds)
+                  ? ex.rest_seconds
+                  : undefined,
+              notes: typeof ex.notes === 'string' ? ex.notes : undefined,
+            }
+          }),
+        }
+      }),
+    }
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (!f) return
-    if (f.type !== 'application/json') {
-      setError('Apenas arquivos JSON são suportados.')
+
+    const extension = f.name.split('.').pop()?.toLowerCase() ?? ''
+    if (!IMPORT_ACCEPTED_EXTENSIONS.includes(extension)) {
+      setError('Apenas arquivos JSON, PDF, XLSX e DOCX são suportados.')
       return
     }
+
     setError(null)
+    setImportedData(null)
+    setJsonPreview('')
     setFile(f)
+  }
+
+  async function handleProcessFile() {
+    if (!file) return
+    setIsProcessing(true)
+    setError(null)
+
+    try {
+      const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
+      let normalized: WorkoutImportData
+
+      if (extension === 'json') {
+        const rawText = await file.text()
+        const parsed = JSON.parse(rawText) as unknown
+        normalized = normalizeWorkoutImport(parsed)
+      } else {
+        const result = await importWorkout(file)
+        if (!result.success || !result.data) {
+          throw new Error(result.error ?? 'Não foi possível processar o arquivo.')
+        }
+        normalized = normalizeWorkoutImport(result.data)
+      }
+
+      setImportedData(normalized)
+      setJsonPreview(JSON.stringify(normalized, null, 2))
+    } catch (err) {
+      setImportedData(null)
+      setJsonPreview('')
+      setError(err instanceof Error ? err.message : 'Erro ao processar importação.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  async function handleLoadImportedWorkouts() {
+    if (!importedData) return
+    setIsImporting(true)
+    setError(null)
+
+    try {
+      for (const day of importedData.days) {
+        const createDayRes = await workoutDayService.create({
+          name: day.name,
+          muscle_groups: day.muscleGroups,
+        })
+        if (createDayRes.error || !createDayRes.data) {
+          throw new Error(createDayRes.error ?? `Erro ao criar dia "${day.name}".`)
+        }
+
+        for (const exercise of day.exercises) {
+          const exerciseRes = await workoutExerciseService.create({
+            workout_day_id: createDayRes.data.id,
+            name: exercise.name,
+            sets: exercise.sets,
+            target_reps: exercise.targetReps ? String(exercise.targetReps) : undefined,
+            load: exercise.load,
+            rest_seconds: exercise.restSeconds,
+            notes: exercise.notes,
+          })
+          if (exerciseRes.error) {
+            throw new Error(exerciseRes.error)
+          }
+        }
+      }
+
+      await onImportComplete()
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer carga dos treinos.')
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   return (
@@ -67,7 +227,7 @@ function ImportModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <h2 className="font-heading text-lg font-bold text-white">Importar Treino</h2>
-              <p className="text-xs text-text-secondary">Carregue um arquivo JSON de treino</p>
+              <p className="text-xs text-text-secondary">Carregue um arquivo JSON, PDF, XLSX ou DOCX</p>
             </div>
           </div>
           <button
@@ -91,13 +251,13 @@ function ImportModal({ onClose }: { onClose: () => void }) {
                   <p className="text-sm font-medium text-text-secondary">
                     Arraste ou clique para selecionar
                   </p>
-                  <p className="text-xs text-text-muted mt-1">Somente arquivos .json</p>
+                  <p className="text-xs text-text-muted mt-1">Arquivos .json, .pdf, .xlsx e .docx</p>
                 </>
               )}
             </div>
             <input
               type="file"
-              accept=".json,application/json"
+              accept=".json,.pdf,.xlsx,.docx,application/json,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               className="sr-only"
               onChange={handleFileChange}
             />
@@ -110,22 +270,43 @@ function ImportModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          <p className="text-xs text-text-muted">
-            A importação via arquivo JSON está disponível. Para integração com planilhas, use a exportação em formato JSON compatível com o SCANIX BODY.
-          </p>
+          <Button
+            variant="primary"
+            size="md"
+            className="w-full"
+            disabled={!file || isProcessing || isImporting}
+            loading={isProcessing}
+            onClick={handleProcessFile}
+          >
+            Processar arquivo
+          </Button>
+
+          {jsonPreview && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-text-secondary">
+                JSON estruturado para carga
+              </p>
+              <textarea
+                className="h-48 w-full rounded-xl border border-border bg-[#101010] p-3 font-mono text-xs text-text-secondary"
+                value={jsonPreview}
+                onChange={(e) => setJsonPreview(e.target.value)}
+              />
+            </div>
+          )}
 
           <div className="flex gap-3">
-            <Button variant="secondary" size="md" className="flex-1" onClick={onClose}>
+            <Button variant="secondary" size="md" className="flex-1" onClick={onClose} disabled={isProcessing || isImporting}>
               Cancelar
             </Button>
             <Button
               variant="primary"
               size="md"
               className="flex-1"
-              disabled={!file}
-              onClick={onClose}
+              disabled={!importedData || isProcessing || isImporting}
+              loading={isImporting}
+              onClick={handleLoadImportedWorkouts}
             >
-              Importar
+              Fazer carga dos treinos
             </Button>
           </div>
         </div>
@@ -471,7 +652,10 @@ export default function TreinosPage() {
 
       {/* Import */}
       {modal.type === 'import' && (
-        <ImportModal onClose={() => setModal({ type: 'none' })} />
+        <ImportModal
+          onClose={() => setModal({ type: 'none' })}
+          onImportComplete={loadDays}
+        />
       )}
 
       {/* Delete confirmation */}
