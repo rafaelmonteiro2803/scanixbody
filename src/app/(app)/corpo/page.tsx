@@ -22,7 +22,6 @@ async function saveBodyProfile(
     const {
       full_name,
       goal_period_weeks: _gp,
-      sleep_quality: _sq,
       waist: _waist,
       hip: _hip,
       seg_right_arm_lean,
@@ -65,6 +64,7 @@ async function saveBodyProfile(
       activity_level: profileData.activity_level as ActivityLevel | null,
       water_per_day: profileData.water_per_day as number | null,
       sleep_hours: profileData.sleep_hours as number | null,
+      sleep_quality: profileData.sleep_quality ? Number(profileData.sleep_quality) : null,
       notes: profileData.notes as string | null,
     });
 

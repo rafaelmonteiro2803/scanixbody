@@ -74,9 +74,9 @@ const schema = z.object({
   goal: z.string().optional().nullable(),
   activity_level: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional().nullable(),
   goal_period_weeks: z.coerce.number().int().min(1).max(104).optional().nullable(),
-  water_per_day: z.coerce.number().min(0).max(20000).optional().nullable(),
+  water_per_day: z.coerce.number().min(0).max(20).optional().nullable(),
   sleep_hours: z.coerce.number().min(0).max(24).optional().nullable(),
-  sleep_quality: z.enum(['Ótima', 'Boa', 'Regular', 'Ruim']).optional().nullable(),
+  sleep_quality: z.enum(['5', '4', '3', '2', '1']).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
 
   // Section 5: Segments
@@ -122,10 +122,11 @@ const ACTIVITY_OPTIONS = [
 ];
 
 const SLEEP_QUALITY_OPTIONS = [
-  { value: 'Ótima', label: 'Ótima' },
-  { value: 'Boa', label: 'Boa' },
-  { value: 'Regular', label: 'Regular' },
-  { value: 'Ruim', label: 'Ruim' },
+  { value: '5', label: 'Ótima' },
+  { value: '4', label: 'Boa' },
+  { value: '3', label: 'Regular' },
+  { value: '2', label: 'Ruim' },
+  { value: '1', label: 'Muito ruim' },
 ];
 
 const SEGMENT_CONFIG = [
@@ -142,6 +143,16 @@ function safeNum(v: unknown): number | null {
   if (v === '' || v === null || v === undefined) return null;
   const n = Number(v);
   return isNaN(n) ? null : n;
+}
+
+function mlToLiters(ml: number | null | undefined): number | null {
+  if (ml === null || ml === undefined) return null;
+  return Math.round((ml / 1000) * 100) / 100;
+}
+
+function litersToMl(liters: number | null | undefined): number | null {
+  if (liters === null || liters === undefined) return null;
+  return Math.round(liters * 1000);
 }
 
 function getBMIBadgeColor(classification: string): 'success' | 'warning' | 'danger' | 'neutral' {
@@ -234,9 +245,9 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       goal: initialProfile?.goal ?? null,
       activity_level: (initialProfile?.activity_level as FormValues['activity_level']) ?? null,
       goal_period_weeks: null,
-      water_per_day: initialProfile?.water_per_day ?? null,
+      water_per_day: mlToLiters(initialProfile?.water_per_day),
       sleep_hours: initialProfile?.sleep_hours ?? null,
-      sleep_quality: null,
+      sleep_quality: initialProfile?.sleep_quality ? String(initialProfile.sleep_quality) as FormValues['sleep_quality'] : null,
       notes: initialProfile?.notes ?? null,
       seg_right_arm_lean: segmentByKey('right_arm')?.lean_mass ?? null,
       seg_right_arm_fat: segmentByKey('right_arm')?.fat_mass ?? null,
@@ -272,14 +283,15 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
   const idealWeight = height && sex ? calculateIdealWeight(height, sex as 'M' | 'F') : null;
   const whr = waist_val && hip_val ? (() => { try { return calculateWaistHipRatio(waist_val, hip_val); } catch { return null; } })() : null;
   const whrClass = whr && sex ? classifyWaistHipRatio(whr, sex as 'M' | 'F') : null;
-  const suggestedWater = weight ? calculateDailyWater(weight) : null;
+  const suggestedWaterMl = weight ? calculateDailyWater(weight) : null;
+  const suggestedWaterLiters = mlToLiters(suggestedWaterMl);
 
   // Auto-suggest water when weight changes
   useEffect(() => {
-    if (suggestedWater && !water_per_day_val) {
-      setValue('water_per_day', suggestedWater);
+    if (suggestedWaterLiters && !water_per_day_val) {
+      setValue('water_per_day', suggestedWaterLiters);
     }
-  }, [suggestedWater, water_per_day_val, setValue]);
+  }, [suggestedWaterLiters, water_per_day_val, setValue]);
 
   // Build a partial profile for body state narrative
   const liveProfile: AthleteProfilesRow = {
@@ -307,8 +319,8 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
     goal: watch('goal') ?? null,
     activity_level: (activity_level as ActivityLevel | null) ?? null,
     sleep_hours: sleep_hours_val,
-    sleep_quality: null,
-    water_per_day: water_per_day_val,
+    sleep_quality: safeNum(watch('sleep_quality')),
+    water_per_day: litersToMl(water_per_day_val),
     notes: watch('notes') ?? null,
     created_at: initialProfile?.created_at ?? new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -319,7 +331,10 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
   const onSubmit = async (data: FormValues) => {
     setSaveStatus('idle');
     setSaveError(null);
-    const result = await onSave(data);
+    const result = await onSave({
+      ...data,
+      water_per_day: litersToMl(data.water_per_day),
+    });
     if (result?.error) {
       setSaveStatus('error');
       setSaveError(result.error);
@@ -634,10 +649,10 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Input
               label="Água diária"
               type="number"
-              step="50"
-              placeholder={suggestedWater?.toString() ?? '2800'}
-              suffix={<span className="text-xs text-text-muted pr-3">ml</span>}
-              helperText={suggestedWater ? `Sugerido: ${suggestedWater} ml (peso × 35 ml)` : undefined}
+              step="0.1"
+              placeholder={suggestedWaterLiters?.toString() ?? '2.8'}
+              suffix={<span className="text-xs text-text-muted pr-3">L</span>}
+              helperText={suggestedWaterLiters ? `Sugerido: ${suggestedWaterLiters} L (peso × 35 ml/kg)` : undefined}
               error={errors.water_per_day?.message}
               {...register('water_per_day')}
             />
@@ -728,8 +743,8 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Droplets className="w-5 h-5 text-[#00d4ff] mx-auto mb-1" />
             <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">Água recomendada</p>
             <p className="text-2xl font-black text-[#00d4ff] font-mono">
-              {suggestedWater !== null
-                ? (suggestedWater / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
+              {suggestedWaterLiters !== null
+                ? suggestedWaterLiters.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
                 : '—'}
             </p>
             <p className="text-xs text-text-muted">litros / dia</p>
