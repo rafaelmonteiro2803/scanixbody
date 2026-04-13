@@ -120,10 +120,47 @@ function ImportSection({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState('');
+  const [currentUser, setCurrentUser] = useState<string>('não identificado');
   const [isExtracting, setIsExtracting] = useState(false);
   const [extracted, setExtracted] = useState<ParsedMarker[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    async function loadUser() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        setCurrentUser(user.email ?? user.id);
+      }
+    }
+
+    void loadUser();
+  }, []);
+
+  const extractedJson = JSON.stringify(
+    {
+      usuario: currentUser,
+      tipo_de_exames: extracted.length > 0 ? 'laboratoriais' : '',
+      exames: extracted.map((marker) => marker.marker_name),
+      resultado: extracted.map((marker) => ({
+        exame: marker.marker_name,
+        valor: marker.value,
+        unidade: marker.unit,
+        status: marker.status,
+      })),
+      valores_de_referencia: extracted.map((marker) => ({
+        exame: marker.marker_name,
+        referencia: marker.reference_range,
+      })),
+      laudo: pasteText.trim() || file?.name || '',
+    },
+    null,
+    2,
+  );
 
   async function handleExtract() {
     const text = pasteText.trim() || (file ? await file.text() : '');
@@ -268,6 +305,23 @@ function ImportSection({
           <p className="text-xs text-text-muted text-center">
             Identificando marcadores, valores e faixas de referência
           </p>
+        </div>
+      )}
+
+      {/* Structured JSON preview */}
+      {extracted.length > 0 && (
+        <div className="rounded-xl border border-border bg-[#161616] p-5 space-y-3">
+          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <FileText className="w-4 h-4 text-[#00ff88]" />
+            JSON estruturado do laudo
+          </h3>
+          <Textarea
+            value={extractedJson}
+            readOnly
+            rows={14}
+            resize="vertical"
+            className="font-mono text-xs"
+          />
         </div>
       )}
 
