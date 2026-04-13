@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,6 +17,8 @@ import {
   Loader2,
   TrendingUp,
   Zap,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import {
   Button,
@@ -97,7 +99,8 @@ type FormValues = z.infer<typeof schema>;
 interface BodyProfileFormProps {
   initialProfile: AthleteProfilesRow | null;
   initialSegments: BodySegmentsRow[];
-  onSave: (data: FormValues) => Promise<void>;
+  initialFullName: string | null;
+  onSave: (data: FormValues) => Promise<{ error?: string }>;
 }
 
 // ── Constants ─────────────────────────────────────────────────
@@ -192,7 +195,10 @@ function CalcField({ label, value, unit }: { label: string; value: React.ReactNo
 
 // ── Main Component ────────────────────────────────────────────
 
-export function BodyProfileForm({ initialProfile, initialSegments, onSave }: BodyProfileFormProps) {
+export function BodyProfileForm({ initialProfile, initialSegments, initialFullName, onSave }: BodyProfileFormProps) {
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const segmentByKey = useCallback(
     (key: string): BodySegmentsRow | undefined =>
       initialSegments.find((s) => s.segment === key),
@@ -209,7 +215,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      full_name: '',
+      full_name: initialFullName ?? '',
       weight: initialProfile?.weight ?? null,
       height: initialProfile?.height ?? null,
       age: initialProfile?.age ?? null,
@@ -311,7 +317,16 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
   const bodyStateNarrative = readBodyState(liveProfile);
 
   const onSubmit = async (data: FormValues) => {
-    await onSave(data);
+    setSaveStatus('idle');
+    setSaveError(null);
+    const result = await onSave(data);
+    if (result?.error) {
+      setSaveStatus('error');
+      setSaveError(result.error);
+    } else {
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 4000);
+    }
   };
 
   return (
@@ -731,6 +746,20 @@ export function BodyProfileForm({ initialProfile, initialSegments, onSave }: Bod
           <p className="text-sm text-[#a0a0a0] leading-relaxed">{bodyStateNarrative}</p>
         </div>
       </div>
+
+      {/* ── Feedback ── */}
+      {saveStatus === 'success' && (
+        <div className="flex items-center gap-3 rounded-xl border border-[#00ff88]/30 bg-[#00ff88]/10 px-4 py-3 text-sm text-[#00ff88] animate-slide-up">
+          <CheckCircle className="h-4 w-4 flex-shrink-0" />
+          Perfil corporal salvo com sucesso!
+        </div>
+      )}
+      {saveStatus === 'error' && (
+        <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 animate-slide-up">
+          <XCircle className="h-4 w-4 flex-shrink-0" />
+          {saveError ?? 'Erro ao salvar. Tente novamente.'}
+        </div>
+      )}
 
       {/* ── Submit ── */}
       <div className="flex justify-end pt-2 pb-6">
