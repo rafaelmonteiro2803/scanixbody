@@ -76,7 +76,7 @@ const schema = z.object({
   goal_period_weeks: z.coerce.number().int().min(1).max(104).optional().nullable(),
   water_per_day: z.coerce.number().min(0).max(20).optional().nullable(),
   sleep_hours: z.coerce.number().min(0).max(24).optional().nullable(),
-  sleep_quality: z.enum(['Ótima', 'Boa', 'Regular', 'Ruim']).optional().nullable(),
+  sleep_quality: z.enum(['5', '4', '3', '2', '1']).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
 
   // Section 5: Segments
@@ -122,10 +122,11 @@ const ACTIVITY_OPTIONS = [
 ];
 
 const SLEEP_QUALITY_OPTIONS = [
-  { value: 'Ótima', label: 'Ótima' },
-  { value: 'Boa', label: 'Boa' },
-  { value: 'Regular', label: 'Regular' },
-  { value: 'Ruim', label: 'Ruim' },
+  { value: '5', label: 'Ótima' },
+  { value: '4', label: 'Boa' },
+  { value: '3', label: 'Regular' },
+  { value: '2', label: 'Ruim' },
+  { value: '1', label: 'Muito ruim' },
 ];
 
 const SEGMENT_CONFIG = [
@@ -246,7 +247,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       goal_period_weeks: null,
       water_per_day: mlToLiters(initialProfile?.water_per_day),
       sleep_hours: initialProfile?.sleep_hours ?? null,
-      sleep_quality: null,
+      sleep_quality: initialProfile?.sleep_quality ? String(initialProfile.sleep_quality) as FormValues['sleep_quality'] : null,
       notes: initialProfile?.notes ?? null,
       seg_right_arm_lean: segmentByKey('right_arm')?.lean_mass ?? null,
       seg_right_arm_fat: segmentByKey('right_arm')?.fat_mass ?? null,
@@ -318,7 +319,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
     goal: watch('goal') ?? null,
     activity_level: (activity_level as ActivityLevel | null) ?? null,
     sleep_hours: sleep_hours_val,
-    sleep_quality: null,
+    sleep_quality: safeNum(watch('sleep_quality')),
     water_per_day: litersToMl(water_per_day_val),
     notes: watch('notes') ?? null,
     created_at: initialProfile?.created_at ?? new Date().toISOString(),
