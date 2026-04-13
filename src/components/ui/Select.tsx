@@ -218,11 +218,12 @@ export function Select<T extends string = string>({
             role="listbox"
             aria-label={label}
             className={cn(
-              'absolute z-50 mt-1 w-full',
-              'bg-background-elevated border border-border rounded-xl shadow-card-lg',
+              'absolute z-[200] mt-1 w-full',
+              'border border-border rounded-xl shadow-card-lg',
               'py-1 overflow-y-auto max-h-60',
               'animate-slide-up',
             )}
+            style={{ background: 'var(--shell-surface-2, #1a1a1a)' }}
           >
             {options.length === 0 ? (
               <li className="px-3 py-2.5 text-sm text-text-muted text-center">
@@ -246,12 +247,19 @@ export function Select<T extends string = string>({
                       'text-sm transition-colors duration-100 select-none',
                       option.disabled
                         ? 'opacity-40 cursor-not-allowed'
-                        : isFocused
-                          ? 'bg-surface-3 text-text-primary'
-                          : isSelected
-                            ? 'bg-primary/10 text-primary'
-                            : 'text-text-primary hover:bg-surface-2',
+                        : isSelected
+                          ? 'text-primary'
+                          : 'text-text-primary',
                     )}
+                    style={
+                      option.disabled
+                        ? undefined
+                        : isFocused
+                          ? { background: 'var(--shell-surface-hover, #222222)' }
+                          : isSelected
+                            ? { background: 'var(--shell-accent-bg, rgba(0,255,136,0.10))' }
+                            : undefined
+                    }
                   >
                     {option.icon && (
                       <span className={cn('flex-shrink-0', s.icon)} aria-hidden>
