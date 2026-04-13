@@ -728,9 +728,11 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Droplets className="w-5 h-5 text-[#00d4ff] mx-auto mb-1" />
             <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">Água recomendada</p>
             <p className="text-2xl font-black text-[#00d4ff] font-mono">
-              {suggestedWater !== null ? suggestedWater.toLocaleString('pt-BR') : '—'}
+              {suggestedWater !== null
+                ? (suggestedWater / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })
+                : '—'}
             </p>
-            <p className="text-xs text-text-muted">ml / dia</p>
+            <p className="text-xs text-text-muted">litros / dia</p>
           </div>
           <div className="rounded-lg bg-background border border-border p-4 text-center">
             <Activity className="w-5 h-5 text-[#ffaa00] mx-auto mb-1" />
