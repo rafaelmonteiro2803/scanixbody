@@ -333,6 +333,20 @@ ALTER TYPE meal_source ADD VALUE IF NOT EXISTS 'import';
 
 
 -- =============================================================================
+-- CHECK CONSTRAINT: athlete_profiles.sex
+-- =============================================================================
+-- Migration allowed: 'male' | 'female' | 'other'
+-- TS type Sex = 'M' | 'F'  — widen to accept both conventions
+ALTER TABLE athlete_profiles DROP CONSTRAINT IF EXISTS athlete_profiles_sex_check;
+ALTER TABLE athlete_profiles
+  ADD CONSTRAINT athlete_profiles_sex_check
+  CHECK (sex IN ('male','female','other','M','F'));
+
+-- activity_level is NOT NULL in migration but nullable in TS type / service layer
+ALTER TABLE athlete_profiles ALTER COLUMN activity_level DROP NOT NULL;
+
+
+-- =============================================================================
 -- ALTER COLUMN TYPES
 -- =============================================================================
 
