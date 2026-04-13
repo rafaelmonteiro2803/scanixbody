@@ -127,9 +127,9 @@ export function WorkoutDayCard({
   onEditExercise,
   onDeleteExercise,
 }: WorkoutDayCardProps) {
-  const [expanded, setExpanded] = useState(false)
-
   const exerciseCount = day.exercises.length
+  // Start expanded when there are no exercises so the add button is immediately visible
+  const [expanded, setExpanded] = useState(exerciseCount === 0)
 
   return (
     <div className="rounded-xl border border-border bg-[#161616] overflow-hidden transition-all duration-200 hover:border-border-strong">
@@ -168,6 +168,29 @@ export function WorkoutDayCard({
 
           {/* Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Add exercise — always visible */}
+            <button
+              onClick={() => {
+                onAddExercise(day.id)
+                setExpanded(true)
+              }}
+              className="hidden sm:flex items-center gap-1.5 h-8 rounded-lg px-3 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+              aria-label={`Adicionar exercício em ${day.name}`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Exercício
+            </button>
+            {/* Mobile: icon only */}
+            <button
+              onClick={() => {
+                onAddExercise(day.id)
+                setExpanded(true)
+              }}
+              className="sm:hidden w-8 h-8 rounded-lg flex items-center justify-center text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+              aria-label={`Adicionar exercício em ${day.name}`}
+            >
+              <Plus className="w-4 h-4" />
+            </button>
             <button
               onClick={() => onEdit(day)}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-primary hover:bg-primary/10 transition-colors"
