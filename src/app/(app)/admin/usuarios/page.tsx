@@ -119,11 +119,11 @@ export default function UsuariosPage() {
       if (roleFilter) params.set('role', roleFilter)
       if (statusFilter) params.set('status', statusFilter)
 
-      const res = await fetch(`/api/admin/users?${params.toString()}`)
+      const res = await fetch(`/api/v1/admin/usuarios?${params.toString()}`)
       if (!res.ok) throw new Error('Falha ao carregar usuários')
       const json = await res.json()
-      setUsers(json.data ?? [])
-      setTotalUsers(json.total ?? 0)
+      setUsers(json.data?.users ?? [])
+      setTotalUsers(json.data?.total ?? 0)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
     } finally {
@@ -143,7 +143,7 @@ export default function UsuariosPage() {
   // ── actions ─────────────────────────────────────────────────────────────────
 
   async function handleCreateUser(data: CreateUserDTO) {
-    const res = await fetch('/api/admin/users', {
+    const res = await fetch('/api/v1/admin/usuarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -153,7 +153,7 @@ export default function UsuariosPage() {
 
     setPasswordModal({
       open: true,
-      password: json.temporaryPassword ?? '',
+      password: json.data?.temporaryPassword ?? '',
       userName: data.full_name ?? data.email,
     })
     setFormOpen(false)
@@ -162,8 +162,8 @@ export default function UsuariosPage() {
 
   async function handleEditUser(data: UpdateProfileDTO) {
     if (!editUser) return
-    const res = await fetch(`/api/admin/users/${editUser.id}`, {
-      method: 'PATCH',
+    const res = await fetch(`/api/v1/admin/usuarios/${editUser.id}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
@@ -193,13 +193,17 @@ export default function UsuariosPage() {
       variant: 'warning',
       onConfirm: () =>
         startConfirmTransition(async () => {
-          const res = await fetch(`/api/admin/users/${user.id}/reset-password`, { method: 'POST' })
+          const res = await fetch(`/api/v1/admin/usuarios/${user.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'reset-password' }),
+          })
           const json = await res.json()
           setConfirm((c) => ({ ...c, open: false }))
           if (res.ok) {
             setPasswordModal({
               open: true,
-              password: json.temporaryPassword ?? '',
+              password: json.data?.tempPassword ?? '',
               userName: name,
             })
           }
@@ -220,7 +224,11 @@ export default function UsuariosPage() {
       onConfirm: () =>
         startConfirmTransition(async () => {
           const action = isBlocked ? 'unblock' : 'block'
-          await fetch(`/api/admin/users/${user.id}/${action}`, { method: 'POST' })
+          await fetch(`/api/v1/admin/usuarios/${user.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action }),
+          })
           setConfirm((c) => ({ ...c, open: false }))
           fetchUsers()
         }),
@@ -236,7 +244,7 @@ export default function UsuariosPage() {
       variant: 'danger',
       onConfirm: () =>
         startConfirmTransition(async () => {
-          await fetch(`/api/admin/users/${user.id}`, { method: 'DELETE' })
+          await fetch(`/api/v1/admin/usuarios/${user.id}`, { method: 'DELETE' })
           setConfirm((c) => ({ ...c, open: false }))
           fetchUsers()
         }),
