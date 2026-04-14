@@ -30,13 +30,19 @@ const PUBLIC_ROUTES = [
 ]
 
 /** Auth-protected route prefixes. */
-const PROTECTED_PREFIXES = ['/dashboard', '/app', '/admin']
+const PROTECTED_PREFIXES = ['/dashboard', '/app', '/admin', '/coach']
 
 /** Admin-only route prefixes (subset of PROTECTED_PREFIXES). */
 const ADMIN_PREFIXES = ['/admin']
 
+/** Coach-only route prefixes. */
+const COACH_PREFIXES = ['/coach']
+
 /** Roles that may access /admin routes. */
 const ADMIN_ROLES = new Set(['super_admin', 'admin'])
+
+/** Roles that may access /coach routes. */
+const COACH_ROLES = new Set(['coach', 'super_admin', 'admin'])
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
@@ -50,6 +56,10 @@ function isProtected(pathname: string): boolean {
 
 function isAdminRoute(pathname: string): boolean {
   return ADMIN_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+}
+
+function isCoachRoute(pathname: string): boolean {
+  return COACH_PREFIXES.some((prefix) => pathname.startsWith(prefix))
 }
 
 // ---------------------------------------------------------------------------
@@ -133,6 +143,11 @@ export async function middleware(request: NextRequest) {
 
         // 5. Non-admin roles trying to reach /admin → /dashboard.
         if (isAdminRoute(pathname) && !ADMIN_ROLES.has(profile.role)) {
+          return NextResponse.redirect(new URL('/dashboard', request.url))
+        }
+
+        // 6. Non-coach roles trying to reach /coach → /dashboard.
+        if (isCoachRoute(pathname) && !COACH_ROLES.has(profile.role)) {
           return NextResponse.redirect(new URL('/dashboard', request.url))
         }
 

@@ -35,6 +35,12 @@ interface ActiveSession {
   exercises: ActiveSessionExercise[]
 }
 
+interface CoachViewingStudent {
+  userId: string
+  fullName: string | null
+  avatarUrl: string | null
+}
+
 interface AppStore {
   // Auth
   sidebarOpen: boolean
@@ -48,6 +54,10 @@ interface AppStore {
   // Global loading overlay
   globalLoading: boolean
   setGlobalLoading: (loading: boolean) => void
+
+  // Coach mode: when a coach is viewing a student's data
+  coachViewingStudent: CoachViewingStudent | null
+  setCoachViewingStudent: (student: CoachViewingStudent | null) => void
 }
 
 // ---------------------------------------------------------------------------
@@ -70,15 +80,21 @@ export const useAppStore = create<AppStore>()(
       // ── Global loading ─────────────────────────────────────────────────────
       globalLoading: false,
       setGlobalLoading: (loading) => set({ globalLoading: loading }),
+
+      // ── Coach mode ─────────────────────────────────────────────────────────
+      coachViewingStudent: null,
+      setCoachViewingStudent: (student) => set({ coachViewingStudent: student }),
     }),
     {
       name: 'scanix-app-store',
-      // Only persist the active session; UI state (sidebar, loading) resets
-      // on every page load intentionally.
-      partialize: (state) => ({ activeSession: state.activeSession }),
+      // Persist active session and coach mode across page reloads.
+      partialize: (state) => ({
+        activeSession: state.activeSession,
+        coachViewingStudent: state.coachViewingStudent,
+      }),
     },
   ),
 )
 
-// Re-export Toast type for consumers
-export type { Toast, ActiveSession, ActiveSessionExercise, ActiveSessionSet }
+// Re-export types for consumers
+export type { Toast, ActiveSession, ActiveSessionExercise, ActiveSessionSet, CoachViewingStudent }

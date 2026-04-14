@@ -21,10 +21,15 @@ import {
   Zap,
   Sun,
   Moon,
+  Users,
+  UserCheck,
+  ArrowLeftCircle,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@/types/database.types'
 import { cn } from '@/lib/utils'
+import { useAppStore } from '@/stores/app.store'
+import type { CoachViewingStudent } from '@/types/domain.types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -41,6 +46,8 @@ interface AppUser {
 interface AppLayoutProps {
   user: AppUser
   initialTheme?: Theme
+  /** Set when a coach is actively viewing a student's profile */
+  coachStudent?: CoachViewingStudent | null
   children: React.ReactNode
 }
 
@@ -70,12 +77,87 @@ const NAV_ITEMS = [
 
 const ADMIN_NAV_ITEMS = [
   { href: '/admin/usuarios', icon: Settings, label: 'Administração' },
+  { href: '/admin/vinculos', icon: Users,    label: 'Vínculos Coach' },
 ]
+
+const COACH_NAV_ITEMS = [
+  { href: '/coach/alunos', icon: Users, label: 'Meus Alunos' },
+]
+
+// ── Coach Banner ──────────────────────────────────────────────────────────────
+
+function CoachBanner({
+  student,
+  onExit,
+}: {
+  student: CoachViewingStudent
+  onExit: () => void
+}) {
+  const displayName = student.fullName ?? 'Aluno'
+  const initials = student.fullName
+    ? student.fullName.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+    : '?'
+
+  return (
+    <div
+      className="flex items-center justify-between gap-3 px-4 py-2 md:px-6"
+      style={{
+        background: 'linear-gradient(90deg, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0.08) 100%)',
+        borderBottom: '1px solid rgba(245,158,11,0.30)',
+      }}
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        <UserCheck className="h-4 w-4 flex-shrink-0" style={{ color: '#f59e0b' }} />
+        <span className="text-xs font-semibold uppercase tracking-widest flex-shrink-0"
+          style={{ color: '#f59e0b' }}>
+          Modo Coach
+        </span>
+        <span className="text-xs" style={{ color: 'var(--shell-text-muted)' }}>|</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <div
+            className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[9px] font-bold"
+            style={{ background: 'rgba(245,158,11,0.20)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.40)' }}
+          >
+            {student.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={student.avatarUrl} alt={displayName} className="h-full w-full rounded-full object-cover" />
+            ) : (
+              initials
+            )}
+          </div>
+          <span className="truncate text-xs font-semibold" style={{ color: 'var(--shell-text-primary)' }}>
+            {displayName}
+          </span>
+        </div>
+      </div>
+
+      <button
+        onClick={onExit}
+        className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-all"
+        style={{
+          border: '1px solid rgba(245,158,11,0.30)',
+          color: '#f59e0b',
+          background: 'rgba(245,158,11,0.08)',
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLElement).style.background = 'rgba(245,158,11,0.18)'
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.background = 'rgba(245,158,11,0.08)'
+        }}
+        title="Sair do modo coach"
+      >
+        <ArrowLeftCircle className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Sair do modo coach</span>
+        <span className="sm:hidden">Sair</span>
+      </button>
+    </div>
+  )
+}
 
 // ── Sidebar Logo ──────────────────────────────────────────────────────────────
 
 function SidebarLogo({ collapsed }: { collapsed: boolean }) {
-  const { theme } = useTheme()
   return (
     <Link
       href="/dashboard"
@@ -166,12 +248,14 @@ function NavItem({
 
 function Sidebar({
   user,
+  coachStudent,
   collapsed,
   onToggle,
   onClose,
   isMobile = false,
 }: {
   user: AppUser
+  coachStudent: CoachViewingStudent | null
   collapsed: boolean
   onToggle: () => void
   onClose?: () => void
@@ -188,6 +272,7 @@ function Sidebar({
 
   const displayName = user.fullName?.split(' ')[0] ?? user.email.split('@')[0]
   const isAdmin = user.role === 'admin' || user.role === 'super_admin'
+  const isCoach = user.role === 'coach'
   const initials = user.fullName
     ? user.fullName.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
     : user.email[0].toUpperCase()
@@ -201,6 +286,24 @@ function Sidebar({
 
       <div className="mx-4 mb-3 h-px" style={{ background: 'var(--shell-divider)' }} />
 
+      {/* Coach mode student indicator in sidebar */}
+      {coachStudent && !collapsed && (
+        <div
+          className="mx-2 mb-2 rounded-lg px-3 py-2"
+          style={{
+            background: 'rgba(245,158,11,0.08)',
+            border: '1px solid rgba(245,158,11,0.25)',
+          }}
+        >
+          <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'rgba(245,158,11,0.70)' }}>
+            Visualizando aluno
+          </p>
+          <p className="mt-0.5 truncate text-xs font-semibold" style={{ color: '#f59e0b' }}>
+            {coachStudent.fullName ?? 'Aluno'}
+          </p>
+        </div>
+      )}
+
       {!collapsed && (
         <p className="mb-2 px-4 text-[10px] font-bold uppercase tracking-[0.15em]"
           style={{ color: 'var(--shell-text-ghost)' }}>
@@ -212,6 +315,13 @@ function Sidebar({
         {NAV_ITEMS.map(item => (
           <NavItem key={item.href} item={item} collapsed={collapsed} onClick={isMobile ? onClose : undefined} />
         ))}
+
+        {/* Coach-specific nav */}
+        {isCoach && COACH_NAV_ITEMS.map(item => (
+          <NavItem key={item.href} item={item} collapsed={collapsed} onClick={isMobile ? onClose : undefined} />
+        ))}
+
+        {/* Admin nav */}
         {isAdmin && ADMIN_NAV_ITEMS.map(item => (
           <NavItem key={item.href} item={item} collapsed={collapsed} onClick={isMobile ? onClose : undefined} />
         ))}
@@ -265,7 +375,9 @@ function Sidebar({
                   {displayName}
                 </p>
                 <p className="truncate text-[10px]" style={{ color: 'var(--shell-text-muted)' }}>
-                  {user.role === 'usuario_final' ? 'Atleta' : user.role}
+                  {user.role === 'usuario_final' ? 'Atleta'
+                   : user.role === 'coach' ? 'Coach'
+                   : user.role}
                 </p>
               </div>
 
@@ -352,7 +464,15 @@ function ThemeToggleButton() {
 
 // ── Top bar ───────────────────────────────────────────────────────────────────
 
-function TopBar({ user, onMenuToggle }: { user: AppUser; onMenuToggle: () => void }) {
+function TopBar({
+  user,
+  coachStudent,
+  onMenuToggle,
+}: {
+  user: AppUser
+  coachStudent: CoachViewingStudent | null
+  onMenuToggle: () => void
+}) {
   const pathname = usePathname()
   const currentNav = NAV_ITEMS.find(item => item.exact ? pathname === item.href : pathname.startsWith(item.href))
   const pageTitle = currentNav?.label ?? 'SCANIX BODY'
@@ -379,6 +499,19 @@ function TopBar({ user, onMenuToggle }: { user: AppUser; onMenuToggle: () => voi
         >
           {pageTitle}
         </h1>
+
+        {/* Coach mode badge in topbar */}
+        {coachStudent && (
+          <div
+            className="hidden items-center gap-1.5 rounded-full px-2.5 py-1 sm:flex"
+            style={{ border: '1px solid rgba(245,158,11,0.35)', background: 'rgba(245,158,11,0.10)' }}
+          >
+            <UserCheck className="h-3 w-3" style={{ color: '#f59e0b' }} />
+            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#f59e0b' }}>
+              {coachStudent.fullName?.split(' ')[0] ?? 'Aluno'}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Right */}
@@ -429,13 +562,23 @@ function TopBar({ user, onMenuToggle }: { user: AppUser; onMenuToggle: () => voi
 
 // ── Mobile drawer ─────────────────────────────────────────────────────────────
 
-function MobileDrawer({ user, open, onClose }: { user: AppUser; open: boolean; onClose: () => void }) {
+function MobileDrawer({
+  user,
+  coachStudent,
+  open,
+  onClose,
+}: {
+  user: AppUser
+  coachStudent: CoachViewingStudent | null
+  open: boolean
+  onClose: () => void
+}) {
   if (!open) return null
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden />
       <div className="animate-slide-in-left fixed inset-y-0 left-0 z-50 flex w-72 flex-col">
-        <Sidebar user={user} collapsed={false} onToggle={onClose} onClose={onClose} isMobile />
+        <Sidebar user={user} coachStudent={coachStudent} collapsed={false} onToggle={onClose} onClose={onClose} isMobile />
         <button
           onClick={onClose}
           className="absolute right-3 top-4 flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
@@ -508,10 +651,30 @@ export function PageHeader({ title, subtitle, breadcrumb, actions, className, ..
 
 // ── AppLayout ─────────────────────────────────────────────────────────────────
 
-export default function AppLayout({ user, initialTheme = 'dark', children }: AppLayoutProps) {
+export default function AppLayout({
+  user,
+  initialTheme = 'dark',
+  coachStudent: initialCoachStudent,
+  children,
+}: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen]             = useState(false)
   const [theme, setTheme]                       = useState<Theme>(initialTheme)
+
+  const setCoachViewingStudent = useAppStore(s => s.setCoachViewingStudent)
+  const storeCoachStudent      = useAppStore(s => s.coachViewingStudent)
+
+  // The source of truth for coach student is the server-side cookie (passed via
+  // initialCoachStudent prop). Sync it to Zustand on mount so client components
+  // (service calls, hooks) can also read it without prop drilling.
+  useEffect(() => {
+    if (initialCoachStudent !== undefined) {
+      setCoachViewingStudent(initialCoachStudent ?? null)
+    }
+  }, [initialCoachStudent, setCoachViewingStudent])
+
+  // Use the prop as authoritative (layout re-renders on navigation via cookies)
+  const coachStudent = initialCoachStudent ?? null
 
   // Apply theme class to <html> immediately and on every change
   useEffect(() => {
@@ -520,10 +683,22 @@ export default function AppLayout({ user, initialTheme = 'dark', children }: App
     html.classList.add(theme)
   }, [theme])
 
+  // Apply coach mode attribute to <html> for CSS variable overrides
+  useEffect(() => {
+    const html = document.documentElement
+    if (coachStudent) {
+      html.setAttribute('data-coach-mode', 'true')
+    } else {
+      html.removeAttribute('data-coach-mode')
+    }
+    return () => {
+      html.removeAttribute('data-coach-mode')
+    }
+  }, [coachStudent])
+
   const toggleTheme = useCallback(async () => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
     setTheme(next)
-    // Persist preference in the user's profile
     try {
       const supabase = createClient()
       await supabase.from('profiles').update({ theme: next }).eq('user_id', user.id)
@@ -531,6 +706,15 @@ export default function AppLayout({ user, initialTheme = 'dark', children }: App
       // Non-critical — theme already applied locally
     }
   }, [theme, user.id])
+
+  const handleExitCoachMode = useCallback(async () => {
+    try {
+      await fetch('/api/v1/coach', { method: 'DELETE' })
+    } catch { /* ignore */ }
+    setCoachViewingStudent(null)
+    // Full page reload so layout server component re-reads the cleared cookie
+    window.location.href = '/coach/alunos'
+  }, [setCoachViewingStudent])
 
   const toggleSidebar = useCallback(() => setSidebarCollapsed(v => !v), [])
   const openMobile    = useCallback(() => setMobileOpen(true), [])
@@ -541,15 +725,20 @@ export default function AppLayout({ user, initialTheme = 'dark', children }: App
       <div className="flex h-screen overflow-hidden" style={{ background: 'var(--shell-bg)' }}>
         {/* Desktop Sidebar */}
         <div className="hidden md:flex md:flex-shrink-0">
-          <Sidebar user={user} collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+          <Sidebar user={user} coachStudent={coachStudent} collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
         </div>
 
         {/* Mobile Drawer */}
-        <MobileDrawer user={user} open={mobileOpen} onClose={closeMobile} />
+        <MobileDrawer user={user} coachStudent={coachStudent} open={mobileOpen} onClose={closeMobile} />
 
         {/* Main area */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <TopBar user={user} onMenuToggle={openMobile} />
+          <TopBar user={user} coachStudent={coachStudent} onMenuToggle={openMobile} />
+
+          {/* Coach banner — shown below topbar when in coach mode */}
+          {coachStudent && (
+            <CoachBanner student={coachStudent} onExit={handleExitCoachMode} />
+          )}
 
           <main className="flex-1 overflow-y-auto">
             <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
