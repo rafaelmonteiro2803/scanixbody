@@ -228,6 +228,8 @@ CREATE POLICY "workout_sessions_update"
 
 
 -- ── workout_session_exercises ─────────────────────────────────────────────────
+-- NOTE: this table has no direct user_id column; ownership is derived via the
+-- parent workout_sessions row (joined on session_id).
 
 DROP POLICY IF EXISTS "workout_session_exercises_select" ON workout_session_exercises;
 DROP POLICY IF EXISTS "workout_session_exercises_insert" ON workout_session_exercises;
@@ -235,19 +237,45 @@ DROP POLICY IF EXISTS "workout_session_exercises_update" ON workout_session_exer
 
 CREATE POLICY "workout_session_exercises_select"
   ON workout_session_exercises FOR SELECT
-  USING ( user_id = auth.uid() OR is_admin() OR is_coach_of(user_id) );
+  USING (
+    EXISTS (
+      SELECT 1 FROM workout_sessions ws
+      WHERE ws.id = session_id
+        AND (ws.user_id = auth.uid() OR is_admin() OR is_coach_of(ws.user_id))
+    )
+  );
 
 CREATE POLICY "workout_session_exercises_insert"
   ON workout_session_exercises FOR INSERT
-  WITH CHECK ( user_id = auth.uid() OR is_coach_of(user_id) );
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM workout_sessions ws
+      WHERE ws.id = session_id
+        AND (ws.user_id = auth.uid() OR is_coach_of(ws.user_id))
+    )
+  );
 
 CREATE POLICY "workout_session_exercises_update"
   ON workout_session_exercises FOR UPDATE
-  USING  ( user_id = auth.uid() OR is_coach_of(user_id) )
-  WITH CHECK ( user_id = auth.uid() OR is_coach_of(user_id) );
+  USING (
+    EXISTS (
+      SELECT 1 FROM workout_sessions ws
+      WHERE ws.id = session_id
+        AND (ws.user_id = auth.uid() OR is_coach_of(ws.user_id))
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM workout_sessions ws
+      WHERE ws.id = session_id
+        AND (ws.user_id = auth.uid() OR is_coach_of(ws.user_id))
+    )
+  );
 
 
 -- ── workout_session_sets ──────────────────────────────────────────────────────
+-- NOTE: no direct user_id; ownership derived via session_exercise_id →
+-- workout_session_exercises.session_id → workout_sessions.user_id.
 
 DROP POLICY IF EXISTS "workout_session_sets_select" ON workout_session_sets;
 DROP POLICY IF EXISTS "workout_session_sets_insert" ON workout_session_sets;
@@ -255,16 +283,48 @@ DROP POLICY IF EXISTS "workout_session_sets_update" ON workout_session_sets;
 
 CREATE POLICY "workout_session_sets_select"
   ON workout_session_sets FOR SELECT
-  USING ( user_id = auth.uid() OR is_admin() OR is_coach_of(user_id) );
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM   workout_session_exercises wse
+      JOIN   workout_sessions ws ON ws.id = wse.session_id
+      WHERE  wse.id = session_exercise_id
+        AND  (ws.user_id = auth.uid() OR is_admin() OR is_coach_of(ws.user_id))
+    )
+  );
 
 CREATE POLICY "workout_session_sets_insert"
   ON workout_session_sets FOR INSERT
-  WITH CHECK ( user_id = auth.uid() OR is_coach_of(user_id) );
+  WITH CHECK (
+    EXISTS (
+      SELECT 1
+      FROM   workout_session_exercises wse
+      JOIN   workout_sessions ws ON ws.id = wse.session_id
+      WHERE  wse.id = session_exercise_id
+        AND  (ws.user_id = auth.uid() OR is_coach_of(ws.user_id))
+    )
+  );
 
 CREATE POLICY "workout_session_sets_update"
   ON workout_session_sets FOR UPDATE
-  USING  ( user_id = auth.uid() OR is_coach_of(user_id) )
-  WITH CHECK ( user_id = auth.uid() OR is_coach_of(user_id) );
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM   workout_session_exercises wse
+      JOIN   workout_sessions ws ON ws.id = wse.session_id
+      WHERE  wse.id = session_exercise_id
+        AND  (ws.user_id = auth.uid() OR is_coach_of(ws.user_id))
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1
+      FROM   workout_session_exercises wse
+      JOIN   workout_sessions ws ON ws.id = wse.session_id
+      WHERE  wse.id = session_exercise_id
+        AND  (ws.user_id = auth.uid() OR is_coach_of(ws.user_id))
+    )
+  );
 
 
 -- ── cardio_profiles ───────────────────────────────────────────────────────────
