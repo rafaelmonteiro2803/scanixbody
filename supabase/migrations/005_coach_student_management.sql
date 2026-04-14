@@ -35,7 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_coach_students_active      ON coach_students (coa
 -- Auto-timestamp trigger
 CREATE OR REPLACE TRIGGER trg_coach_students_updated_at
   BEFORE UPDATE ON coach_students
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
 
 -- =============================================================================
