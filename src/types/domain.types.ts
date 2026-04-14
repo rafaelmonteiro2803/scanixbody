@@ -549,3 +549,50 @@ export interface BodyProgressDelta {
   bmi_delta: number | null;
   period_days: number;
 }
+
+// ---------------------------------------------------------------------------
+// Coach-Student relationship types
+// ---------------------------------------------------------------------------
+
+/** Raw coach_students row */
+export interface CoachStudent {
+  id: string;
+  coach_user_id: string;
+  student_user_id: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Coach-student link with the student's profile info */
+export interface CoachStudentWithProfile extends CoachStudent {
+  student: {
+    full_name: string | null;
+    avatar_url: string | null;
+    email: string;
+    status: UserStatus;
+  };
+}
+
+/** Minimal student summary used in coach mode context */
+export interface CoachViewingStudent {
+  userId: string;
+  fullName: string | null;
+  avatarUrl: string | null;
+}
+
+/** Shape passed to AppLayout when a coach is viewing a student */
+export interface CoachModeProps {
+  student: CoachViewingStudent;
+}
+
+/** DTO to create a coach-student link (admin only) */
+export interface CreateCoachStudentDTO {
+  coach_user_id: string;
+  student_user_id: string;
+}
+
+/** DTO to update a coach-student link active state */
+export interface UpdateCoachStudentDTO {
+  active: boolean;
+}

@@ -141,6 +141,33 @@ html.light {
   --color-border-strong: #94a3b8;
 }
 
+/* ── Coach mode overrides (amber/orange palette) ── */
+/* Applied via data-coach-mode="true" on <html> when a coach is viewing a student */
+html[data-coach-mode="true"] {
+  --shell-accent:        #f59e0b;
+  --shell-accent-bg:     rgba(245,158,11,0.10);
+  --shell-accent-text:   #f59e0b;
+  --shell-accent-subtle: rgba(245,158,11,0.70);
+  --color-primary:       #f59e0b;
+  --color-primary-dark:  #d97706;
+  --color-primary-muted: rgba(245,158,11,0.12);
+  --color-primary-glow:  rgba(245,158,11,0.30);
+  --color-border-active: #f59e0b;
+}
+
+/* Coach mode + light theme */
+html.light[data-coach-mode="true"] {
+  --shell-accent:        #d97706;
+  --shell-accent-bg:     rgba(217,119,6,0.10);
+  --shell-accent-text:   #d97706;
+  --shell-accent-subtle: rgba(217,119,6,0.70);
+  --color-primary:       #d97706;
+  --color-primary-dark:  #b45309;
+  --color-primary-muted: rgba(217,119,6,0.12);
+  --color-primary-glow:  rgba(217,119,6,0.25);
+  --color-border-active: #d97706;
+}
+
 /* ============================================================
    BASE LAYER
    ============================================================ */

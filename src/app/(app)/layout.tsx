@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AppLayout from '@/components/layout/AppLayout'
+import { resolveCoachContext } from '@/lib/coach-context'
 import type { UserRole } from '@/types/database.types'
 
 // ── App Route Group Layout ────────────────────────────────────────────────────
@@ -9,7 +10,9 @@ import type { UserRole } from '@/types/database.types'
 //   1. Validates the server-side session — unauthenticated users are redirected
 //      to /login.
 //   2. Fetches the user profile to pass display data to the shell.
-//   3. Renders the full app shell (sidebar + top bar + content area) via
+//   3. For coaches: reads the scanix_coach_student cookie, validates the
+//      coach-student relationship and passes the student info to AppLayout.
+//   4. Renders the full app shell (sidebar + top bar + content area) via
 //      <AppLayout />, which is a Client Component that handles interactivity.
 
 export default async function AppRootLayout({
@@ -28,7 +31,7 @@ export default async function AppRootLayout({
     redirect('/login')
   }
 
-  // Fetch profile for shell personalisation (name, avatar, role)
+  // Fetch profile for shell personalisation (name, avatar, role, theme)
   const { data: profileData } = await supabase
     .from('profiles')
     .select('full_name, avatar_url, role, status, theme')
@@ -44,10 +47,16 @@ export default async function AppRootLayout({
   } | null
 
   // Guard: first_access users must complete onboarding
-  // (middleware already handles this, but we defensively guard here too)
   if (profile?.status === 'first_access') {
     redirect('/primeiro-acesso')
   }
+
+  // For coaches: check if they have an active student-viewing cookie
+  // (non-coaches will always get null back from resolveCoachContext)
+  const isCoach = profile?.role === 'coach'
+  const coachCtx = isCoach
+    ? await resolveCoachContext(user.id)
+    : { coachStudent: null, isCoachMode: false }
 
   return (
     <AppLayout
@@ -59,6 +68,7 @@ export default async function AppRootLayout({
         role: profile?.role ?? 'usuario_final',
       }}
       initialTheme={(profile?.theme === 'light' ? 'light' : 'dark')}
+      coachStudent={coachCtx.coachStudent}
     >
       {children}
     </AppLayout>
