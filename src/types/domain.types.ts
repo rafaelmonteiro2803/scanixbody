@@ -557,7 +557,7 @@ export interface BodyProgressDelta {
 /** Raw coach_students row */
 export interface CoachStudent {
   id: string;
-  coach_user_id: string;
+  user_id: string;
   student_user_id: string;
   active: boolean;
   created_at: string;
@@ -588,7 +588,7 @@ export interface CoachModeProps {
 
 /** DTO to create a coach-student link (admin only) */
 export interface CreateCoachStudentDTO {
-  coach_user_id: string;
+  user_id: string;
   student_user_id: string;
 }
 

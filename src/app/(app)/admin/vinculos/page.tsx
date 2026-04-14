@@ -28,7 +28,7 @@ interface UserOption {
 
 interface VinculoRow {
   id: string
-  coach_user_id: string
+  user_id: string
   student_user_id: string
   active: boolean
   created_at: string
@@ -316,7 +316,7 @@ export default function AdminVinculosPage() {
     // Fetch links
     const { data: links, error: linksError } = await supabase
       .from('coach_students')
-      .select('id, coach_user_id, student_user_id, active, created_at')
+      .select('id, user_id, student_user_id, active, created_at')
       .order('created_at', { ascending: false })
 
     if (linksError) { setError(linksError.message); setLoading(false); return }
@@ -324,7 +324,7 @@ export default function AdminVinculosPage() {
     // Fetch all user profiles for display
     const allUserIds = [
       ...new Set([
-        ...(links ?? []).map(l => l.coach_user_id),
+        ...(links ?? []).map(l => l.user_id),
         ...(links ?? []).map(l => l.student_user_id),
       ])
     ]
@@ -336,16 +336,16 @@ export default function AdminVinculosPage() {
     const profileMap = new Map(profiles?.map(p => [p.user_id, p]) ?? [])
 
     const rows: VinculoRow[] = (links ?? []).map(l => {
-      const coach   = profileMap.get(l.coach_user_id)
+      const coach   = profileMap.get(l.user_id)
       const student = profileMap.get(l.student_user_id)
       return {
         id: l.id,
-        coach_user_id: l.coach_user_id,
+        user_id: l.user_id,
         student_user_id: l.student_user_id,
         active: l.active,
         created_at: l.created_at,
         coach_name: coach?.full_name ?? null,
-        coach_email: coach?.email ?? l.coach_user_id,
+        coach_email: coach?.email ?? l.user_id,
         student_name: student?.full_name ?? null,
         student_email: student?.email ?? l.student_user_id,
       }
@@ -396,7 +396,7 @@ export default function AdminVinculosPage() {
     setCreateError(null)
     const { error: e } = await supabase
       .from('coach_students')
-      .insert({ coach_user_id: formCoach, student_user_id: formStudent, active: true })
+      .insert({ user_id: formCoach, student_user_id: formStudent, active: true })
     if (e) {
       setCreateError(e.code === '23505' ? 'Este vínculo já existe.' : e.message)
     } else {

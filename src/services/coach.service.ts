@@ -46,8 +46,8 @@ export const coachService = {
     // Fetch links where this user is the coach
     const { data: links, error: linksError } = await supabase
       .from('coach_students')
-      .select('id, coach_user_id, student_user_id, active, created_at, updated_at')
-      .eq('coach_user_id', user.id)
+      .select('id, user_id, student_user_id, active, created_at, updated_at')
+      .eq('user_id', user.id)
       .eq('active', true)
       .order('created_at', { ascending: true })
 

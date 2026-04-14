@@ -49,7 +49,7 @@ export async function resolveCoachContext(coachUserId: string): Promise<CoachCon
     const { data: link } = await supabase
       .from('coach_students')
       .select('student_user_id')
-      .eq('coach_user_id', coachUserId)
+      .eq('user_id', coachUserId)
       .eq('student_user_id', studentId)
       .eq('active', true)
       .maybeSingle()
