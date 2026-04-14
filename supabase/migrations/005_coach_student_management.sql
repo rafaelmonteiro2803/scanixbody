@@ -35,7 +35,8 @@ CREATE INDEX IF NOT EXISTS idx_coach_students_student_id ON coach_students (stud
 CREATE INDEX IF NOT EXISTS idx_coach_students_active     ON coach_students (user_id, active);
 
 -- Auto-timestamp trigger
-CREATE OR REPLACE TRIGGER trg_coach_students_updated_at
+DROP TRIGGER IF EXISTS trg_coach_students_updated_at ON coach_students;
+CREATE TRIGGER trg_coach_students_updated_at
   BEFORE UPDATE ON coach_students
   FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
@@ -71,6 +72,7 @@ $$;
 ALTER TABLE coach_students ENABLE ROW LEVEL SECURITY;
 
 -- Coaches can see their own links; students can see they are assigned; admins see all
+DROP POLICY IF EXISTS "coach_students_select" ON coach_students;
 CREATE POLICY "coach_students_select"
   ON coach_students FOR SELECT
   USING (
@@ -80,17 +82,20 @@ CREATE POLICY "coach_students_select"
   );
 
 -- Only admins may create links (coaches don't self-assign students)
+DROP POLICY IF EXISTS "coach_students_insert" ON coach_students;
 CREATE POLICY "coach_students_insert"
   ON coach_students FOR INSERT
   WITH CHECK ( is_admin() );
 
 -- Only admins may update (activate/deactivate links)
+DROP POLICY IF EXISTS "coach_students_update" ON coach_students;
 CREATE POLICY "coach_students_update"
   ON coach_students FOR UPDATE
   USING  ( is_admin() )
   WITH CHECK ( is_admin() );
 
 -- Only admins may delete links
+DROP POLICY IF EXISTS "coach_students_delete" ON coach_students;
 CREATE POLICY "coach_students_delete"
   ON coach_students FOR DELETE
   USING ( is_admin() );
