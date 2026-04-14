@@ -17,20 +17,22 @@
 -- A coach may have many students; a student may have many coaches.
 -- Soft-deactivation via active = FALSE (preserves history).
 
+-- user_id = the coach's auth.users id (row owner, consistent with all other tables).
+-- student_user_id = the athlete being coached.
 CREATE TABLE IF NOT EXISTS coach_students (
   id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  coach_user_id   UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id         UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   student_user_id UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   active          BOOLEAN     NOT NULL DEFAULT TRUE,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (coach_user_id, student_user_id)
+  UNIQUE (user_id, student_user_id)
 );
 
 -- Indexes for fast lookup
-CREATE INDEX IF NOT EXISTS idx_coach_students_coach_id   ON coach_students (coach_user_id);
+CREATE INDEX IF NOT EXISTS idx_coach_students_user_id    ON coach_students (user_id);
 CREATE INDEX IF NOT EXISTS idx_coach_students_student_id ON coach_students (student_user_id);
-CREATE INDEX IF NOT EXISTS idx_coach_students_active      ON coach_students (coach_user_id, active);
+CREATE INDEX IF NOT EXISTS idx_coach_students_active     ON coach_students (user_id, active);
 
 -- Auto-timestamp trigger
 CREATE OR REPLACE TRIGGER trg_coach_students_updated_at
@@ -55,7 +57,7 @@ AS $$
   SELECT EXISTS (
     SELECT 1
     FROM   coach_students
-    WHERE  coach_user_id   = auth.uid()
+    WHERE  user_id         = auth.uid()
       AND  student_user_id = p_student_user_id
       AND  active          = TRUE
   );
@@ -68,11 +70,11 @@ $$;
 
 ALTER TABLE coach_students ENABLE ROW LEVEL SECURITY;
 
--- Coaches can see their own links; admins see all
+-- Coaches can see their own links; students can see they are assigned; admins see all
 CREATE POLICY "coach_students_select"
   ON coach_students FOR SELECT
   USING (
-    coach_user_id = auth.uid()
+    user_id = auth.uid()
     OR student_user_id = auth.uid()
     OR is_admin()
   );

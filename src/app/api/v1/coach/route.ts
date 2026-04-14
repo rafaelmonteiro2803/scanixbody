@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   const { data: link } = await supabase
     .from('coach_students')
     .select('student_user_id')
-    .eq('coach_user_id', user.id)
+    .eq('user_id', user.id)
     .eq('student_user_id', student_user_id)
     .eq('active', true)
     .maybeSingle()
