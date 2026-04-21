@@ -428,19 +428,19 @@ export default async function DashboardPage() {
             accentColor="#a855f7"
           />
           <ModuleCard
+            href="/exames"
+            icon={<ClipboardList className="h-5 w-5" />}
+            title="Exames"
+            description="Importe e acompanhe seus resultados laboratoriais"
+            accentColor="#ff6b6b"
+          />
+          <ModuleCard
             href="/analise-ia"
             icon={<Brain className="h-5 w-5" />}
             title="Análise IA"
             description="Score de performance, recomendações e insights inteligentes"
             badge="IA"
             accentColor="#ffaa00"
-          />
-          <ModuleCard
-            href="/exames"
-            icon={<ClipboardList className="h-5 w-5" />}
-            title="Exames"
-            description="Importe e acompanhe seus resultados laboratoriais"
-            accentColor="#ff6b6b"
           />
           <ModuleCard
             href="/progresso"

@@ -364,7 +364,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="80"
-            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted">kg</span>}
             error={errors.weight?.message}
             {...register('weight')}
           />
@@ -373,7 +373,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="1"
             placeholder="175"
-            suffix={<span className="text-xs text-text-muted pr-3">cm</span>}
+            suffix={<span className="text-xs text-text-muted">cm</span>}
             error={errors.height?.message}
             {...register('height')}
           />
@@ -382,7 +382,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="1"
             placeholder="30"
-            suffix={<span className="text-xs text-text-muted pr-3">anos</span>}
+            suffix={<span className="text-xs text-text-muted">anos</span>}
             error={errors.age?.message}
             {...register('age')}
           />
@@ -434,7 +434,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="18.5"
-            suffix={<span className="text-xs text-text-muted pr-3">%</span>}
+            suffix={<span className="text-xs text-text-muted">%</span>}
             error={errors.body_fat_percentage?.message}
             {...register('body_fat_percentage')}
           />
@@ -443,7 +443,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="15.2"
-            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted">kg</span>}
             error={errors.fat_mass?.message}
             {...register('fat_mass')}
           />
@@ -452,7 +452,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="35.4"
-            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted">kg</span>}
             error={errors.skeletal_muscle_mass?.message}
             {...register('skeletal_muscle_mass')}
           />
@@ -461,7 +461,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="64.8"
-            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted">kg</span>}
             error={errors.lean_mass?.message}
             {...register('lean_mass')}
           />
@@ -470,7 +470,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="47.4"
-            suffix={<span className="text-xs text-text-muted pr-3">L</span>}
+            suffix={<span className="text-xs text-text-muted">L</span>}
             error={errors.body_water?.message}
             {...register('body_water')}
           />
@@ -479,7 +479,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="12.6"
-            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted">kg</span>}
             error={errors.protein_mass?.message}
             {...register('protein_mass')}
           />
@@ -488,7 +488,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.1"
             placeholder="3.8"
-            suffix={<span className="text-xs text-text-muted pr-3">kg</span>}
+            suffix={<span className="text-xs text-text-muted">kg</span>}
             error={errors.minerals_mass?.message}
             {...register('minerals_mass')}
           />
@@ -529,7 +529,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               min="1"
               max="20"
               placeholder="8"
-              suffix={<span className="text-xs text-text-muted pr-3">1–20</span>}
+              suffix={<span className="text-xs text-text-muted">1–20</span>}
               error={errors.visceral_fat?.message}
               {...register('visceral_fat')}
             />
@@ -552,7 +552,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             type="number"
             step="0.5"
             placeholder="85"
-            suffix={<span className="text-xs text-text-muted pr-3">cm</span>}
+            suffix={<span className="text-xs text-text-muted">cm</span>}
             error={errors.waist?.message}
             {...register('waist')}
           />
@@ -564,7 +564,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               type="number"
               step="0.5"
               placeholder="96"
-              suffix={<span className="text-xs text-text-muted pr-3">cm</span>}
+              suffix={<span className="text-xs text-text-muted">cm</span>}
               error={errors.hip?.message}
               {...register('hip')}
             />
@@ -585,7 +585,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               min="0"
               max="100"
               placeholder="80"
-              suffix={<span className="text-xs text-text-muted pr-3">/ 100</span>}
+              suffix={<span className="text-xs text-text-muted">/ 100</span>}
               error={errors.inbody_score?.message}
               {...register('inbody_score')}
             />
@@ -641,7 +641,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             min="1"
             max="104"
             placeholder="12"
-            suffix={<span className="text-xs text-text-muted pr-3">semanas</span>}
+            suffix={<span className="text-xs text-text-muted">semanas</span>}
             error={errors.goal_period_weeks?.message}
             {...register('goal_period_weeks')}
           />
@@ -651,7 +651,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
               type="number"
               step="0.1"
               placeholder={suggestedWaterLiters?.toString() ?? '2.8'}
-              suffix={<span className="text-xs text-text-muted pr-3">L</span>}
+              suffix={<span className="text-xs text-text-muted">L</span>}
               helperText={suggestedWaterLiters ? `Sugerido: ${suggestedWaterLiters} L (peso × 35 ml/kg)` : undefined}
               error={errors.water_per_day?.message}
               {...register('water_per_day')}
@@ -664,7 +664,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             min="0"
             max="24"
             placeholder="8"
-            suffix={<span className="text-xs text-text-muted pr-3">h/noite</span>}
+            suffix={<span className="text-xs text-text-muted">h/noite</span>}
             error={errors.sleep_hours?.message}
             {...register('sleep_hours')}
           />
@@ -706,7 +706,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                   type="number"
                   step="0.1"
                   placeholder="0.0"
-                  suffix={<span className="text-xs text-text-muted pr-2">kg</span>}
+                  suffix={<span className="text-xs text-text-muted">kg</span>}
                   size="sm"
                   error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_lean`]?.message}
                   {...register(`seg_${seg.key}_lean` as keyof FormValues)}
@@ -716,7 +716,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                   type="number"
                   step="0.1"
                   placeholder="0.0"
-                  suffix={<span className="text-xs text-text-muted pr-2">kg</span>}
+                  suffix={<span className="text-xs text-text-muted">kg</span>}
                   size="sm"
                   error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_fat`]?.message}
                   {...register(`seg_${seg.key}_fat` as keyof FormValues)}

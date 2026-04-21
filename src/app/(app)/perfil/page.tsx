@@ -8,13 +8,23 @@ import { User, Lock, Shield, Calendar, LogIn, Trash2, CheckCircle } from 'lucide
 import { Card, CardHeader, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
 import { createClient } from '@/lib/supabase/client'
 
+const ROLE_OPTIONS = [
+  { value: 'usuario_final', label: 'Usuário' },
+  { value: 'coach', label: 'Coach' },
+  { value: 'operador', label: 'Operador' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'super_admin', label: 'Super Admin' },
+]
+
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Nome deve ter ao menos 2 caracteres').max(100),
   phone: z.string().optional(),
+  role: z.string().optional(),
 })
 
 const passwordSchema = z.object({
@@ -79,7 +89,7 @@ export default function PerfilPage() {
 
         if (prof) {
           setProfile(prof)
-          profileForm.reset({ full_name: prof.full_name ?? '', phone: prof.phone ?? '' })
+          profileForm.reset({ full_name: prof.full_name ?? '', phone: prof.phone ?? '', role: prof.role ?? 'usuario_final' })
         }
       } finally {
         setLoading(false)
@@ -93,9 +103,9 @@ export default function PerfilPage() {
     if (!authUser) return
     await supabase
       .from('profiles')
-      .update({ full_name: data.full_name, phone: data.phone || null })
+      .update({ full_name: data.full_name, phone: data.phone || null, role: data.role })
       .eq('user_id', authUser.id)
-    setProfile(prev => prev ? { ...prev, full_name: data.full_name, phone: data.phone || null } : null)
+    setProfile(prev => prev ? { ...prev, full_name: data.full_name, phone: data.phone || null, role: data.role ?? prev.role } : null)
     setProfileSaved(true)
     setTimeout(() => setProfileSaved(false), 3000)
   }
@@ -158,7 +168,7 @@ export default function PerfilPage() {
               <p className="text-text-title font-medium">{user?.email}</p>
             </div>
             <div>
-              <p className="text-xs text-text-muted mb-1">Perfil</p>
+              <p className="text-xs text-text-muted mb-1">Perfil atual</p>
               <Badge variant={ROLE_VARIANTS[profile?.role ?? 'usuario_final']} size="sm">
                 {ROLE_LABELS[profile?.role ?? 'usuario_final']}
               </Badge>
@@ -213,6 +223,12 @@ export default function PerfilPage() {
               label="Telefone (opcional)"
               {...profileForm.register('phone')}
               placeholder="(11) 99999-9999"
+            />
+            <Select
+              label="Perfil"
+              options={ROLE_OPTIONS}
+              value={profileForm.watch('role') ?? profile?.role ?? 'usuario_final'}
+              onChange={(val) => profileForm.setValue('role', val)}
             />
 
             {profileSaved && (
