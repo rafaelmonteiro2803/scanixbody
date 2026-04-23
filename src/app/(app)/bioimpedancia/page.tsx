@@ -20,6 +20,11 @@ import { importBioimpedance } from '@/services/import.service';
 
 // ── Types ─────────────────────────────────────────────────────
 
+interface SegmentData {
+  leanMass: number | null;
+  fatMass: number | null;
+}
+
 interface ExtractedBodyData {
   weight: number | null;
   height: number | null;
@@ -35,6 +40,13 @@ interface ExtractedBodyData {
   visceral_fat: number | null;
   inbody_score: number | null;
   bmi: number | null;
+  segments?: {
+    rightArm?: SegmentData;
+    leftArm?: SegmentData;
+    trunk?: SegmentData;
+    rightLeg?: SegmentData;
+    leftLeg?: SegmentData;
+  };
 }
 
 interface PastImport {
@@ -136,6 +148,9 @@ export default function BioimpedanciaPage() {
         throw new Error(result.error ?? 'Não foi possível extrair os dados do arquivo.');
       }
       const d = result.data;
+      const mapSeg = (s?: { leanMass?: number; fatMass?: number }): SegmentData | undefined =>
+        s ? { leanMass: s.leanMass ?? null, fatMass: s.fatMass ?? null } : undefined;
+
       const mapped: ExtractedBodyData = {
         weight: d.weight ?? null,
         height: d.height ?? null,
@@ -151,6 +166,13 @@ export default function BioimpedanciaPage() {
         minerals_mass: d.mineralsMass ?? null,
         visceral_fat: d.visceralFat ?? null,
         inbody_score: d.inbodyScore ?? null,
+        segments: d.segments ? {
+          rightArm: mapSeg(d.segments.rightArm),
+          leftArm: mapSeg(d.segments.leftArm),
+          trunk: mapSeg(d.segments.trunk),
+          rightLeg: mapSeg(d.segments.rightLeg),
+          leftLeg: mapSeg(d.segments.leftLeg),
+        } : undefined,
       };
       setExtracted(mapped);
       setEditedData({ ...mapped });
@@ -187,6 +209,15 @@ export default function BioimpedanciaPage() {
           mineralsMass: editedData.minerals_mass,
           visceralFat: editedData.visceral_fat,
           inbodyScore: editedData.inbody_score,
+          ...(editedData.segments && {
+            bodySegments: [
+              editedData.segments.rightArm && { segment: 'right_arm', leanMass: editedData.segments.rightArm.leanMass, fatMass: editedData.segments.rightArm.fatMass },
+              editedData.segments.leftArm && { segment: 'left_arm', leanMass: editedData.segments.leftArm.leanMass, fatMass: editedData.segments.leftArm.fatMass },
+              editedData.segments.trunk && { segment: 'trunk', leanMass: editedData.segments.trunk.leanMass, fatMass: editedData.segments.trunk.fatMass },
+              editedData.segments.rightLeg && { segment: 'right_leg', leanMass: editedData.segments.rightLeg.leanMass, fatMass: editedData.segments.rightLeg.fatMass },
+              editedData.segments.leftLeg && { segment: 'left_leg', leanMass: editedData.segments.leftLeg.leanMass, fatMass: editedData.segments.leftLeg.fatMass },
+            ].filter(Boolean),
+          }),
         }),
       });
       if (!res.ok) throw new Error('Erro ao salvar composição corporal.');
