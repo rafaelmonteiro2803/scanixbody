@@ -14,12 +14,20 @@ import { Spinner } from '@/components/ui/Spinner'
 import { createClient } from '@/lib/supabase/client'
 
 const ROLE_OPTIONS = [
-  { value: 'usuario_final', label: 'Usuário' },
+  { value: 'usuario_final', label: 'Usuário Final' },
   { value: 'coach', label: 'Coach' },
   { value: 'operador', label: 'Operador' },
   { value: 'admin', label: 'Admin' },
   { value: 'super_admin', label: 'Super Admin' },
 ]
+
+const ROLE_DESCRIPTIONS: Record<string, string> = {
+  usuario_final: 'Acesso padrão de atleta — gerencia apenas seus próprios dados de treino, dieta e saúde.',
+  coach: 'Pode visualizar e editar dados de treino e corpo dos atletas sob sua supervisão.',
+  operador: 'Acesso operacional básico — gerencia dados próprios e visualiza informações limitadas.',
+  admin: 'Gerencia usuários, visualiza logs de auditoria e tem acesso a dados de todos os atletas.',
+  super_admin: 'Acesso irrestrito a todas as funcionalidades do sistema. Cargo protegido.',
+}
 
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Nome deve ter ao menos 2 caracteres').max(100),
@@ -224,12 +232,21 @@ export default function PerfilPage() {
               {...profileForm.register('phone')}
               placeholder="(11) 99999-9999"
             />
-            <Select
-              label="Perfil"
-              options={ROLE_OPTIONS}
-              value={profileForm.watch('role') ?? profile?.role ?? 'usuario_final'}
-              onChange={(val) => profileForm.setValue('role', val)}
-            />
+            <div className="space-y-2">
+              <Select
+                label="Perfil"
+                options={ROLE_OPTIONS}
+                value={profileForm.watch('role') ?? profile?.role ?? 'usuario_final'}
+                onChange={(val) => profileForm.setValue('role', val)}
+              />
+              {(() => {
+                const role = profileForm.watch('role') ?? profile?.role ?? 'usuario_final'
+                const desc = ROLE_DESCRIPTIONS[role]
+                return desc ? (
+                  <p className="text-xs text-text-muted leading-relaxed px-1">{desc}</p>
+                ) : null
+              })()}
+            </div>
 
             {profileSaved && (
               <div className="flex items-center gap-2 text-success text-sm">

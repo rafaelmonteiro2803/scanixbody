@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: my-app  # TODO: rename to your app
+    env: node
+    region: oregon  # TODO: change to your preferred region
+    plan: starter
+    buildCommand: yarn install && yarn build
+    startCommand: yarn start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false  # Set in Render dashboard
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
