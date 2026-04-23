@@ -13,6 +13,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
 import {
   withAuth,
   createApiResponse,
@@ -253,44 +254,59 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
         ? `${meals.length} refeições registradas recentemente`
         : null
 
-    // ── 4. Call AI extract for narrative recommendations ──────────────────
+    // ── 4. Call Claude directly for narrative recommendations ─────────────
     let recommendations: string[] = []
     let reportData: Record<string, unknown> = {}
 
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL ??
-        process.env.NEXTAUTH_URL ??
-        'http://localhost:3000'
+      const anthropicKey = process.env.ANTHROPIC_API_KEY
+      if (anthropicKey) {
+        const anthropic = new Anthropic({ apiKey: anthropicKey })
 
-      const aiRes = await fetch(`${baseUrl}/api/v1/ai/extract`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: [
-            bodyState ? `Corpo: ${bodyState}` : '',
-            workoutContext ? `Treinos: ${workoutContext}` : '',
-            dietContext ? `Dieta: ${dietContext}` : '',
-            medicationContext ? `Suplementos: ${medicationContext}` : '',
-            examContext ? `Exames: ${examContext}` : '',
-            `Scores – Treino: ${trainingScore}, Dieta: ${dietScore}, Sono: ${sleepScore}, Hidratação: ${hydrationScore}, Cardio: ${cardioScore}, Geral: ${overallScore}`,
-          ]
-            .filter(Boolean)
-            .join('\n'),
-          extractionType: 'workout',
-        }),
-      })
+        const athleteContext = [
+          bodyState ? `Composição corporal: ${bodyState}` : null,
+          workoutContext ? `Treinos: ${workoutContext}` : null,
+          dietContext ? `Dieta: ${dietContext}` : null,
+          medicationContext ? `Medicamentos/Suplementos: ${medicationContext}` : null,
+          examContext ? `Exames laboratoriais: ${examContext}` : null,
+          profile?.goal ? `Objetivo: ${profile.goal}` : null,
+          `Scores – Treino: ${trainingScore}/100, Dieta: ${dietScore}/100, Sono: ${sleepScore}/100, Hidratação: ${hydrationScore}/100, Cardio: ${cardioScore}/100, Geral: ${overallScore}/100`,
+        ].filter(Boolean).join('\n')
 
-      if (aiRes.ok) {
-        const aiJson = await aiRes.json()
-        if (aiJson.success && aiJson.extracted) {
-          recommendations = aiJson.extracted.recommendations ?? []
-          reportData = aiJson.extracted
-        }
+        const message = await anthropic.messages.create({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 2048,
+          system: 'Você é um coach fitness e nutricionista especializado. Seja honesto, motivador e prático. Retorne apenas JSON válido, sem markdown.',
+          messages: [{
+            role: 'user',
+            content: `Com base nos dados do atleta abaixo, gere um relatório de análise completo em português.
+
+DADOS DO ATLETA:
+${athleteContext}
+
+Retorne APENAS este JSON:
+{
+  "summary": "3-4 frases descrevendo o estado atual do atleta de forma honesta e motivadora",
+  "strengths": ["ponto forte 1", "ponto forte 2", "ponto forte 3"],
+  "improvements": ["área para melhorar 1", "área para melhorar 2"],
+  "recommendations": ["recomendação prática 1", "recomendação prática 2", "recomendação prática 3", "recomendação prática 4"],
+  "weeklyFocus": "a prioridade número 1 para os próximos 7 dias",
+  "estimatedProgressTimeline": "estimativa de prazo para atingir o objetivo atual, ou null"
+}`,
+          }],
+        })
+
+        const rawText = message.content[0]?.type === 'text' ? message.content[0].text : '{}'
+        const codeBlock = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
+        const jsonStr = codeBlock ? codeBlock[1].trim() : rawText.trim()
+        const aiResult = JSON.parse(jsonStr) as Record<string, unknown>
+
+        recommendations = Array.isArray(aiResult.recommendations) ? aiResult.recommendations as string[] : []
+        reportData = aiResult
       }
     } catch (aiErr) {
       // AI generation failure is non-fatal; scores are still saved
-      console.warn('[POST /analise-ia] AI extract failed:', aiErr)
+      console.warn('[POST /analise-ia] Claude call failed:', aiErr)
     }
 
     // ── 5. Save report to DB ─────────────────────────��────────────────────
