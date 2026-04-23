@@ -1,4 +1,6 @@
 import React from 'react';
+import Link from 'next/link';
+import { Upload } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import corpoService from '@/services/corpo.service';
 import { BodyProfileForm } from './components/BodyProfileForm';
@@ -131,14 +133,21 @@ export default async function CorpoPage() {
               Perfil corporal, composição e metas
             </p>
           </div>
-          {profile && (
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            {profile && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#00ff88]/10 text-[#00ff88] border border-[#00ff88]/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00ff88]" />
                 Perfil salvo
               </span>
-            </div>
-          )}
+            )}
+            <Link
+              href="/bioimpedancia"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#00ff88] text-black hover:bg-[#00e87a] transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Importar InBody
+            </Link>
+          </div>
         </div>
       </div>
 
