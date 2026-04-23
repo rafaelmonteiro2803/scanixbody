@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const extractSchema = z.object({
-  extractionType: z.enum(['workout', 'diet', 'medications', 'exams', 'bioimpedance']),
+  extractionType: z.enum(['workout', 'diet', 'medications', 'exams', 'bioimpedance', 'analysis']),
   content: z.string().min(10, 'Conteúdo muito curto para extração'),
 })
 
@@ -29,7 +30,7 @@ const EXTRACTION_PROMPTS: Record<string, string> = {
     }
   ]
 }
-Retorne APENAS o JSON, sem explicações.`,
+Retorne APENAS o JSON, sem explicações, sem markdown.`,
 
   diet: `Analise este plano alimentar/dieta e extraia as refeições em JSON:
 {
@@ -49,7 +50,7 @@ Retorne APENAS o JSON, sem explicações.`,
   "totalCarbsG": 320,
   "totalFatG": 80
 }
-Retorne APENAS o JSON.`,
+Retorne APENAS o JSON, sem explicações, sem markdown.`,
 
   medications: `Extraia a lista de medicamentos/suplementos deste texto em JSON:
 {
@@ -65,7 +66,7 @@ Retorne APENAS o JSON.`,
   ]
 }
 Categorias válidas: hormonio, peptideo, suplemento, medicamento, sarm, outro.
-Retorne APENAS o JSON.`,
+Retorne APENAS o JSON, sem explicações, sem markdown.`,
 
   exams: `Extraia todos os marcadores laboratoriais deste laudo/exame em JSON:
 {
@@ -82,7 +83,7 @@ Retorne APENAS o JSON.`,
   ]
 }
 Status válidos: normal, alto, baixo, critico.
-Retorne APENAS o JSON.`,
+Retorne APENAS o JSON, sem explicações, sem markdown.`,
 
   bioimpedance: `Extraia todos os dados de composição corporal deste laudo de bioimpedância (InBody ou similar) em JSON:
 {
@@ -107,10 +108,22 @@ Retorne APENAS o JSON.`,
     "leftLeg": { "leanMass": 9.7, "fatMass": 2.3 }
   }
 }
-Inclua apenas campos que encontrar no documento. Retorne APENAS o JSON.`,
+Inclua apenas campos que encontrar no documento. Retorne APENAS o JSON, sem explicações, sem markdown.`,
+
+  analysis: `Você é um coach fitness e nutricionista especializado. Analise os dados do atleta abaixo e gere um relatório motivador e prático em português.
+
+Retorne APENAS este JSON (sem markdown, sem explicações):
+{
+  "summary": "3-4 frases descrevendo o estado atual do atleta de forma honesta e motivadora",
+  "strengths": ["ponto forte 1", "ponto forte 2", "ponto forte 3"],
+  "improvements": ["área para melhorar 1", "área para melhorar 2"],
+  "recommendations": ["recomendação prática 1", "recomendação prática 2", "recomendação prática 3", "recomendação prática 4"],
+  "weeklyFocus": "a prioridade número 1 para os próximos 7 dias",
+  "estimatedProgressTimeline": "estimativa de prazo para atingir o objetivo atual, ou null se não houver dados suficientes"
+}`,
 }
 
-// Mock data for development (when no AI key is configured)
+// Mock data for development (when no API key is configured)
 const MOCK_RESPONSES: Record<string, unknown> = {
   workout: {
     days: [
@@ -150,27 +163,31 @@ const MOCK_RESPONSES: Record<string, unknown> = {
     ],
   },
   bioimpedance: {
-    weight: 85.5,
-    height: 178,
-    bmi: 27.0,
-    bodyFatPercentage: 18.5,
-    fatMass: 15.8,
-    skeletalMuscleMass: 42.3,
-    leanMass: 69.7,
-    bodyWater: 54.2,
-    proteinMass: 12.1,
-    mineralsMass: 3.4,
-    visceralFat: 8,
-    inbodyScore: 74,
+    weight: 85.5, height: 178, bmi: 27.0, bodyFatPercentage: 18.5,
+    fatMass: 15.8, skeletalMuscleMass: 42.3, leanMass: 69.7, bodyWater: 54.2,
+    proteinMass: 12.1, mineralsMass: 3.4, visceralFat: 8, inbodyScore: 74,
     basalMetabolicRate: 1920,
     segments: {
-      rightArm: { leanMass: 3.8, fatMass: 0.9 },
-      leftArm: { leanMass: 3.7, fatMass: 0.9 },
-      trunk: { leanMass: 30.2, fatMass: 9.1 },
-      rightLeg: { leanMass: 9.8, fatMass: 2.3 },
+      rightArm: { leanMass: 3.8, fatMass: 0.9 }, leftArm: { leanMass: 3.7, fatMass: 0.9 },
+      trunk: { leanMass: 30.2, fatMass: 9.1 }, rightLeg: { leanMass: 9.8, fatMass: 2.3 },
       leftLeg: { leanMass: 9.7, fatMass: 2.3 },
     },
   },
+  analysis: {
+    summary: 'Atleta com bom engajamento no treino e disciplina alimentar consistente. Os scores gerais indicam uma base sólida para progressão. Há oportunidades claras de melhora em hidratação e sono para otimizar a recuperação.',
+    strengths: ['Frequência de treino consistente', 'Boa aderência ao plano alimentar', 'Cardio regularmente praticado'],
+    improvements: ['Aumentar ingestão de água diária', 'Melhorar qualidade e duração do sono'],
+    recommendations: ['Beba pelo menos 35ml de água por kg corporal por dia', 'Estabeleça um horário fixo para dormir antes das 23h', 'Adicione 1 sessão de mobilidade por semana', 'Revise os volumes de treino a cada 4 semanas'],
+    weeklyFocus: 'Aumentar hidratação para 3L/dia e manter consistência no sono de 7-8h',
+    estimatedProgressTimeline: '8-12 semanas para resultados visíveis com a estratégia atual',
+  },
+}
+
+// Strips markdown code blocks from Claude's response
+function parseClaudeJson(text: string): unknown {
+  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+  const jsonStr = codeBlock ? codeBlock[1].trim() : text.trim()
+  return JSON.parse(jsonStr)
 }
 
 export async function POST(request: NextRequest) {
@@ -196,9 +213,8 @@ export async function POST(request: NextRequest) {
   const { extractionType, content } = parsed.data
   const prompt = EXTRACTION_PROMPTS[extractionType]
 
-  // If no OpenAI key, return mock data for development
-  const openaiKey = process.env.OPENAI_API_KEY
-  if (!openaiKey) {
+  const anthropicKey = process.env.ANTHROPIC_API_KEY
+  if (!anthropicKey) {
     return NextResponse.json({
       success: true,
       extracted: MOCK_RESPONSES[extractionType],
@@ -208,35 +224,29 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  // Call OpenAI API
   try {
-    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'Você é um assistente especializado em extrair dados estruturados de documentos de saúde e fitness. Sempre retorne JSON válido.' },
-          { role: 'user', content: `${prompt}\n\nDOCUMENTO:\n${content.slice(0, 8000)}` },
-        ],
-        temperature: 0.1,
-        response_format: { type: 'json_object' },
-      }),
+    const anthropic = new Anthropic({ apiKey: anthropicKey })
+
+    // Use Sonnet for analysis (better reasoning), Haiku for structured extraction (faster + cheaper)
+    const model = extractionType === 'analysis' ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001'
+
+    const message = await anthropic.messages.create({
+      model,
+      max_tokens: extractionType === 'analysis' ? 2048 : 4096,
+      system: 'Você é um assistente especializado em extrair dados estruturados de documentos de saúde e fitness. Sempre retorne JSON válido, sem markdown, sem explicações adicionais.',
+      messages: [
+        {
+          role: 'user',
+          content: `${prompt}\n\nDOCUMENTO:\n${content.slice(0, 12000)}`,
+        },
+      ],
     })
 
-    if (!openaiRes.ok) {
-      throw new Error(`OpenAI error: ${openaiRes.status}`)
-    }
-
-    const openaiData = await openaiRes.json() as { choices: Array<{ message: { content: string } }> }
-    const rawText = openaiData.choices[0]?.message?.content ?? '{}'
+    const rawText = message.content[0]?.type === 'text' ? message.content[0].text : '{}'
     let extracted: unknown
 
     try {
-      extracted = JSON.parse(rawText)
+      extracted = parseClaudeJson(rawText)
     } catch {
       return NextResponse.json({ success: false, error: 'IA retornou formato inválido' }, { status: 500 })
     }
@@ -245,7 +255,7 @@ export async function POST(request: NextRequest) {
       success: true,
       extracted,
       rawText: content.slice(0, 200),
-      confidence: 0.9,
+      confidence: 0.95,
     })
   } catch (err) {
     console.error('AI extraction error:', err)
