@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -288,12 +288,15 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
   const suggestedWaterMl = weight ? calculateDailyWater(weight) : null;
   const suggestedWaterLiters = mlToLiters(suggestedWaterMl);
 
-  // Auto-suggest water when weight changes
+  // Auto-suggest water once on mount when no value exists in the saved profile
+  const didAutoFillWaterRef = useRef(false);
   useEffect(() => {
-    if (suggestedWaterLiters && !water_per_day_val) {
+    if (suggestedWaterLiters && !initialProfile?.water_per_day && !didAutoFillWaterRef.current) {
       setValue('water_per_day', suggestedWaterLiters);
+      didAutoFillWaterRef.current = true;
     }
-  }, [suggestedWaterLiters, water_per_day_val, setValue]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suggestedWaterLiters]);
 
   // Auto-calculate lean_mass = weight - fat_mass when field is empty
   useEffect(() => {
@@ -660,7 +663,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Input
               label="Água diária"
               type="number"
-              step="0.1"
+              step="0.01"
               placeholder={suggestedWaterLiters?.toString() ?? '2.8'}
               suffix={<span className="text-xs text-text-muted">L</span>}
               helperText={suggestedWaterLiters ? `Sugerido: ${suggestedWaterLiters} L (peso × 35 ml/kg)` : undefined}

@@ -568,6 +568,47 @@ export interface CardioProfilesUpdate {
   updated_at?: ISODateTimeString;
 }
 
+// ── cardio_sessions ───────────────────────────────────────────────────────────
+
+export interface CardioSessionsRow {
+  id: UUID;
+  user_id: UUID;
+  session_date: ISODateString;
+  type: string | null;
+  duration_minutes: number | null;
+  intensity: CardioIntensity | null;
+  notes: string | null;
+  deleted_at: ISODateTimeString | null;
+  created_at: ISODateTimeString;
+  updated_at: ISODateTimeString;
+}
+
+export interface CardioSessionsInsert {
+  id?: UUID;
+  user_id: UUID;
+  session_date?: ISODateString;
+  type?: string | null;
+  duration_minutes?: number | null;
+  intensity?: CardioIntensity | null;
+  notes?: string | null;
+  deleted_at?: ISODateTimeString | null;
+  created_at?: ISODateTimeString;
+  updated_at?: ISODateTimeString;
+}
+
+export interface CardioSessionsUpdate {
+  id?: UUID;
+  user_id?: UUID;
+  session_date?: ISODateString;
+  type?: string | null;
+  duration_minutes?: number | null;
+  intensity?: CardioIntensity | null;
+  notes?: string | null;
+  deleted_at?: ISODateTimeString | null;
+  created_at?: ISODateTimeString;
+  updated_at?: ISODateTimeString;
+}
+
 // ── meals ─────────────────────────────────────────────────────────────────────
 
 export interface MealsRow {

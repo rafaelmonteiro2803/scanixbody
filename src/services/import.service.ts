@@ -9,7 +9,7 @@
  * /api/v1/ai/extract.
  */
 
-export type ExtractionType = 'workout' | 'diet' | 'medications' | 'exams' | 'bioimpedance'
+export type ExtractionType = 'workout' | 'diet' | 'medications' | 'exams' | 'bioimpedance' | 'cardio'
 
 export interface ImportResult<T> {
   success: boolean
@@ -231,4 +231,27 @@ export async function importExamReport(input: File | string): Promise<ImportResu
 export async function importBioimpedance(input: File | string): Promise<ImportResult<BioimpedanceData>> {
   const content = typeof input === 'string' ? input : await readFileAsText(input)
   return callExtractionAPI<BioimpedanceData>('bioimpedance', content)
+}
+
+// ─── Cardio Import ───────────────────────────────────────────────────────────
+
+export interface CardioSessionImport {
+  sessionDate: string | null
+  type: string | null
+  durationMinutes: number | null
+  intensity: 'low' | 'moderate' | 'high' | null
+  notes: string | null
+}
+
+export interface CardioImportData {
+  sessions: CardioSessionImport[]
+}
+
+/**
+ * Import cardio training plan from file or text.
+ * Extracts individual sessions with date, type, duration and intensity.
+ */
+export async function importCardio(input: File | string): Promise<ImportResult<CardioImportData>> {
+  const content = typeof input === 'string' ? input : await readFileAsText(input)
+  return callExtractionAPI<CardioImportData>('cardio', content)
 }
