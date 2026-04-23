@@ -58,7 +58,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'relative rounded-xl overflow-hidden',
+          'relative rounded-xl',
           'transition-all duration-200',
           variantStyles[variant],
           accent && 'border-l-[3px] border-l-primary',
