@@ -34,6 +34,7 @@ import type {
   UpdateMedicationEntryDTO,
   MedicationCategory,
 } from '@/types/domain.types';
+import { importMedications } from '@/services/import.service';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -86,74 +87,7 @@ const CATEGORY_COLOR: Record<MedicationCategory, string> = {
   outro: 'text-gray-400',
 };
 
-// ── AI extract simulation ───────────────────────────────────────
-
-function simulateAIExtract(text: string): ParsedMedication[] {
-  // Simulate extracting medications from text
-  const lines = text
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
-  const results: ParsedMedication[] = [];
-
-  for (const line of lines) {
-    const lower = line.toLowerCase();
-    let category: MedicationCategory = 'outro';
-
-    if (
-      lower.includes('testosterona') ||
-      lower.includes('gh ') ||
-      lower.includes('hormônio') ||
-      lower.includes('estradiol') ||
-      lower.includes('insulina')
-    ) {
-      category = 'hormonio';
-    } else if (
-      lower.includes('bpc') ||
-      lower.includes('tb-500') ||
-      lower.includes('ipamorelin') ||
-      lower.includes('peptideo') ||
-      lower.includes('peptídeo')
-    ) {
-      category = 'peptideo';
-    } else if (
-      lower.includes('creatina') ||
-      lower.includes('whey') ||
-      lower.includes('vitamina') ||
-      lower.includes('omega') ||
-      lower.includes('proteína') ||
-      lower.includes('bcaa') ||
-      lower.includes('cafeina') ||
-      lower.includes('cafeína')
-    ) {
-      category = 'suplemento';
-    } else if (lower.includes('sarm') || lower.includes('rad') || lower.includes('lgd')) {
-      category = 'sarm';
-    }
-
-    // Extract dose with regex
-    const doseMatch = line.match(/\d+\s*(?:mg|g|mcg|ui|iu|ml|caps?|tab)/i);
-    const dose = doseMatch ? doseMatch[0] : undefined;
-
-    // Extract frequency
-    const freqMatch = line.match(
-      /\d+\s*x\/(?:dia|semana|week)|eod|e3d|pwo|diário|diária|semanal/i,
-    );
-    const frequency = freqMatch ? freqMatch[0] : undefined;
-
-    const name = line
-      .replace(/\d+\s*(?:mg|g|mcg|ui|iu|ml|caps?|tab)/gi, '')
-      .replace(/\d+\s*x\/(?:dia|semana|week)|eod|e3d|pwo/gi, '')
-      .replace(/[-–]/g, '')
-      .trim();
-
-    if (name.length > 1) {
-      results.push({ name, category, dose, frequency });
-    }
-  }
-
-  return results;
-}
+const VALID_MED_CATEGORIES: MedicationCategory[] = ['hormonio', 'sarm', 'peptideo', 'medicamento', 'suplemento', 'outro'];
 
 // ── Delete confirm modal ───────────────────────────────────────
 
@@ -222,19 +156,35 @@ function ImportTab({
   const [pasteText, setPasteText] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
   const [extracted, setExtracted] = useState<ParsedMedication[]>([]);
+  const [extractError, setExtractError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function handleExtract() {
-    const text = pasteText.trim() || (file ? await file.text() : '');
-    if (!text) return;
-
+    if (!pasteText.trim() && !file) return;
     setIsExtracting(true);
-    // Simulate AI extraction delay
-    await new Promise((r) => setTimeout(r, 1500));
-    const results = simulateAIExtract(text);
-    setExtracted(results);
-    setIsExtracting(false);
+    setExtractError(null);
+    try {
+      const input = file ?? pasteText.trim();
+      const result = await importMedications(input);
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Não foi possível extrair medicamentos.');
+      }
+      setExtracted(result.data.medications.map((m) => ({
+        name: m.name,
+        category: VALID_MED_CATEGORIES.includes(m.category as MedicationCategory)
+          ? (m.category as MedicationCategory)
+          : 'outro',
+        dose: m.dose,
+        frequency: m.frequency,
+        route: m.route,
+        notes: m.notes,
+      })));
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : 'Erro ao extrair medicamentos.');
+    } finally {
+      setIsExtracting(false);
+    }
   }
 
   function handleSave() {
@@ -311,6 +261,13 @@ function ImportTab({
       >
         {isExtracting ? 'Extraindo com IA...' : 'Extrair Medicamentos com IA'}
       </Button>
+
+      {extractError && (
+        <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          {extractError}
+        </div>
+      )}
 
       {/* Review table */}
       {extracted.length > 0 && (

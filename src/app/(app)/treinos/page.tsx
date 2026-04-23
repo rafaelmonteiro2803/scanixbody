@@ -53,7 +53,6 @@ function ImportModal({
   const [isProcessing, setIsProcessing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [importedData, setImportedData] = useState<WorkoutImportData | null>(null)
-  const [jsonPreview, setJsonPreview] = useState('')
 
   function normalizeWorkoutImport(data: unknown): WorkoutImportData {
     if (!data || typeof data !== 'object') {
@@ -137,7 +136,7 @@ function ImportModal({
 
     setError(null)
     setImportedData(null)
-    setJsonPreview('')
+    // removed jsonPreview
     setFile(f)
   }
 
@@ -163,10 +162,8 @@ function ImportModal({
       }
 
       setImportedData(normalized)
-      setJsonPreview(JSON.stringify(normalized, null, 2))
     } catch (err) {
       setImportedData(null)
-      setJsonPreview('')
       setError(err instanceof Error ? err.message : 'Erro ao processar importação.')
     } finally {
       setIsProcessing(false)
@@ -281,16 +278,28 @@ function ImportModal({
             Processar arquivo
           </Button>
 
-          {jsonPreview && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-text-secondary">
-                JSON estruturado para carga
-              </p>
-              <textarea
-                className="h-48 w-full rounded-xl border border-border bg-[#101010] p-3 font-mono text-xs text-text-secondary"
-                value={jsonPreview}
-                onChange={(e) => setJsonPreview(e.target.value)}
-              />
+          {importedData && (
+            <div className="rounded-xl border border-[#00ff88]/20 bg-[#00ff88]/5 overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#00ff88]/15">
+                <p className="text-sm font-semibold text-[#00ff88]">
+                  ✓ {importedData.days.length} {importedData.days.length === 1 ? 'dia extraído' : 'dias extraídos'} — pronto para carga
+                </p>
+              </div>
+              <div className="divide-y divide-white/5 max-h-48 overflow-y-auto">
+                {importedData.days.map((day, i) => (
+                  <div key={i} className="flex items-center justify-between px-4 py-2.5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text-title truncate">{day.name}</p>
+                      {day.muscleGroups.length > 0 && (
+                        <p className="text-xs text-text-muted mt-0.5">{day.muscleGroups.join(', ')}</p>
+                      )}
+                    </div>
+                    <span className="text-xs text-text-muted ml-3 flex-shrink-0">
+                      {day.exercises.length} exercício{day.exercises.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

@@ -29,6 +29,7 @@ import { MacroSummary } from './components/MacroSummary';
 import type { MealsRow } from '@/types/database.types';
 import type { CreateMealDTO } from '@/types/domain.types';
 import { cn } from '@/lib/utils';
+import { importDiet } from '@/services/import.service';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -165,6 +166,7 @@ export default function DietaPage() {
   const [importLoading, setImportLoading] = useState(false);
   const [importedMeals, setImportedMeals] = useState<ImportedMeal[] | null>(null);
   const [importConfirmed, setImportConfirmed] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   // ── Date navigation ────────────────────────────────────────
 
@@ -253,38 +255,62 @@ export default function DietaPage() {
     setImportLoading(true);
     setImportedMeals(null);
     setImportConfirmed(false);
-    await new Promise((r) => setTimeout(r, 2500));
-    setImportedMeals([
-      { meal_name: 'Café da Manhã', time: '07:00', items: 'Ovos, pão integral, suco de laranja', calories: 490, protein_g: 24, carbs_g: 52, fat_g: 17 },
-      { meal_name: 'Almoço', time: '12:00', items: 'Frango grelhado, arroz, feijão, salada', calories: 670, protein_g: 46, carbs_g: 70, fat_g: 13 },
-      { meal_name: 'Jantar', time: '19:00', items: 'Omelete de queijo, salada verde', calories: 380, protein_g: 28, carbs_g: 12, fat_g: 22 },
-    ]);
-    setImportLoading(false);
+    setImportError(null);
+    try {
+      const result = await importDiet(file);
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Não foi possível extrair refeições do arquivo.');
+      }
+      setImportedMeals(result.data.meals.map((m) => ({
+        meal_name: m.mealName,
+        time: m.time ?? undefined,
+        items: m.items ?? undefined,
+        calories: m.calories ?? undefined,
+        protein_g: m.proteinG ?? undefined,
+        carbs_g: m.carbsG ?? undefined,
+        fat_g: m.fatG ?? undefined,
+      })));
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Erro ao processar arquivo.');
+    } finally {
+      setImportLoading(false);
+    }
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     if (!importedMeals) return;
-    const newMeals: MealsRow[] = importedMeals.map((m) => ({
-      id: String(++MOCK_ID_COUNTER),
-      user_id: 'mock',
-      meal_date: selectedDate,
-      meal_name: m.meal_name,
-      time: m.time ?? null,
-      items: m.items ?? null,
-      calories: m.calories ?? null,
-      protein_g: m.protein_g ?? null,
-      carbs_g: m.carbs_g ?? null,
-      fat_g: m.fat_g ?? null,
-      source: 'import',
-      notes: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-    }));
-    setMeals((prev) => [...prev, ...newMeals]);
-    setImportConfirmed(true);
-    setImportedMeals(null);
-    setImportFile(null);
+    setImportLoading(true);
+    setImportError(null);
+    try {
+      const saved: MealsRow[] = [];
+      for (const m of importedMeals) {
+        const res = await fetch('/api/v1/dieta', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mealDate: selectedDate,
+            mealName: m.meal_name,
+            time: m.time ?? null,
+            items: m.items ?? null,
+            calories: m.calories ?? null,
+            proteinG: m.protein_g ?? null,
+            carbsG: m.carbs_g ?? null,
+            fatG: m.fat_g ?? null,
+            source: 'import',
+          }),
+        });
+        const json = await res.json() as { data?: MealsRow };
+        if (json.data) saved.push(json.data);
+      }
+      if (saved.length > 0) setMeals((prev) => [...prev, ...saved]);
+      setImportConfirmed(true);
+      setImportedMeals(null);
+      setImportFile(null);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Erro ao salvar refeições.');
+    } finally {
+      setImportLoading(false);
+    }
   };
 
   // ── Tabs config ────────────────────────────────────────────
@@ -636,6 +662,9 @@ export default function DietaPage() {
                       ))}
                     </div>
 
+                    {importError && (
+                      <p className="text-xs text-danger mb-2">{importError}</p>
+                    )}
                     <div className="flex items-center gap-3">
                       <Button
                         variant="ghost"
@@ -644,7 +673,9 @@ export default function DietaPage() {
                         onClick={() => {
                           setImportedMeals(null);
                           setImportFile(null);
+                          setImportError(null);
                         }}
+                        disabled={importLoading}
                       >
                         Descartar
                       </Button>
@@ -653,6 +684,7 @@ export default function DietaPage() {
                         size="md"
                         leftIcon={<CheckCircle2 className="w-4 h-4" />}
                         onClick={handleConfirmImport}
+                        loading={importLoading}
                         className="flex-1"
                       >
                         Confirmar e Salvar

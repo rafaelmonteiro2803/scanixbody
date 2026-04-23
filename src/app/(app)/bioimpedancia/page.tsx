@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button, FileUpload, Badge, Input } from '@/components/ui';
 import type { BioimpedanceStatus } from '@/types/database.types';
+import { importBioimpedance } from '@/services/import.service';
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -43,27 +44,6 @@ interface PastImport {
   source_file: string;
 }
 
-// ── Mock extraction ───────────────────────────────────────────
-
-async function mockExtractBioimpedance(_file: File): Promise<ExtractedBodyData> {
-  await new Promise((r) => setTimeout(r, 2500));
-  return {
-    weight: 82.5,
-    height: 178,
-    age: 32,
-    sex: 'M',
-    body_fat_percentage: 18.2,
-    fat_mass: 15.0,
-    skeletal_muscle_mass: 37.8,
-    lean_mass: 67.5,
-    body_water: 49.4,
-    protein_mass: 13.1,
-    minerals_mass: 3.8,
-    visceral_fat: 8,
-    inbody_score: 77,
-    bmi: 26.0,
-  };
-}
 
 // ── Past Imports Mock Data ────────────────────────────────────
 
@@ -140,17 +120,42 @@ export default function BioimpedanciaPage() {
   const [editedData, setEditedData] = useState<ExtractedBodyData | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [pastImports, setPastImports] = useState<PastImport[]>(INITIAL_PAST_IMPORTS);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleFileSelect = async (selectedFile: File) => {
     setFile(selectedFile);
     setExtracted(null);
     setEditedData(null);
     setConfirmed(false);
+    setExtractError(null);
     setProcessing(true);
     try {
-      const result = await mockExtractBioimpedance(selectedFile);
-      setExtracted(result);
-      setEditedData({ ...result });
+      const result = await importBioimpedance(selectedFile);
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Não foi possível extrair os dados do arquivo.');
+      }
+      const d = result.data;
+      const mapped: ExtractedBodyData = {
+        weight: d.weight ?? null,
+        height: d.height ?? null,
+        age: null,
+        sex: null,
+        bmi: d.bmi ?? null,
+        body_fat_percentage: d.bodyFatPercentage ?? null,
+        fat_mass: d.fatMass ?? null,
+        skeletal_muscle_mass: d.skeletalMuscleMass ?? null,
+        lean_mass: d.leanMass ?? null,
+        body_water: d.bodyWater ?? null,
+        protein_mass: d.proteinMass ?? null,
+        minerals_mass: d.mineralsMass ?? null,
+        visceral_fat: d.visceralFat ?? null,
+        inbody_score: d.inbodyScore ?? null,
+      };
+      setExtracted(mapped);
+      setEditedData({ ...mapped });
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : 'Erro ao processar arquivo.');
     } finally {
       setProcessing(false);
     }
@@ -162,20 +167,45 @@ export default function BioimpedanciaPage() {
     setEditedData({ ...editedData, [field]: isNaN(num as number) ? null : num });
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!editedData || !file) return;
-    // In production: call corpoService.saveAthleteProfile with editedData
-    const newImport: PastImport = {
-      id: String(Date.now()),
-      date: new Date().toISOString(),
-      status: 'confirmed',
-      source_file: file.name,
-    };
-    setPastImports((prev) => [newImport, ...prev]);
-    setConfirmed(true);
-    setExtracted(null);
-    setEditedData(null);
-    setFile(null);
+    setSaving(true);
+    try {
+      const res = await fetch('/api/v1/corpo', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          weight: editedData.weight,
+          height: editedData.height,
+          bmi: editedData.bmi,
+          bodyFatPercentage: editedData.body_fat_percentage,
+          fatMass: editedData.fat_mass,
+          skeletalMuscleMass: editedData.skeletal_muscle_mass,
+          leanMass: editedData.lean_mass,
+          bodyWater: editedData.body_water,
+          proteinMass: editedData.protein_mass,
+          mineralsMass: editedData.minerals_mass,
+          visceralFat: editedData.visceral_fat,
+          inbodyScore: editedData.inbody_score,
+        }),
+      });
+      if (!res.ok) throw new Error('Erro ao salvar composição corporal.');
+      const newImport: PastImport = {
+        id: String(Date.now()),
+        date: new Date().toISOString(),
+        status: 'confirmed',
+        source_file: file.name,
+      };
+      setPastImports((prev) => [newImport, ...prev]);
+      setConfirmed(true);
+      setExtracted(null);
+      setEditedData(null);
+      setFile(null);
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : 'Erro ao salvar.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDiscard = () => {
@@ -256,6 +286,13 @@ export default function BioimpedanciaPage() {
               disabled={processing}
             />
 
+            {extractError && !processing && !editedData && (
+              <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {extractError}
+              </div>
+            )}
+
             {/* Processing state */}
             {processing && (
               <div className="rounded-xl border border-border bg-background p-8 text-center">
@@ -307,12 +344,16 @@ export default function BioimpedanciaPage() {
               ))}
             </div>
 
+            {extractError && (
+              <p className="text-xs text-danger">{extractError}</p>
+            )}
             <div className="flex items-center gap-3 pt-2">
               <Button
                 variant="ghost"
                 size="md"
                 leftIcon={<XCircle className="w-4 h-4" />}
                 onClick={handleDiscard}
+                disabled={saving}
               >
                 Descartar
               </Button>
@@ -321,6 +362,7 @@ export default function BioimpedanciaPage() {
                 size="md"
                 leftIcon={<CheckCircle2 className="w-4 h-4" />}
                 onClick={handleConfirm}
+                loading={saving}
                 className="flex-1"
               >
                 Confirmar e Aplicar ao Perfil Corporal

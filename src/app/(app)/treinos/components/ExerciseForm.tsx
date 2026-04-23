@@ -22,17 +22,14 @@ const exerciseSchema = z.object({
     .min(1, 'Mínimo 1 série')
     .max(20, 'Máximo 20 séries'),
   target_reps: z.string().max(20, 'Máximo 20 caracteres').optional(),
-  load: z
-    .number({ invalid_type_error: 'Informe a carga' })
-    .min(0, 'Mínimo 0 kg')
-    .max(1000, 'Máximo 1000 kg')
-    .optional(),
-  rest_seconds: z
-    .number({ invalid_type_error: 'Informe o descanso' })
-    .int('Deve ser inteiro')
-    .min(0, 'Mínimo 0 segundos')
-    .max(600, 'Máximo 600 segundos')
-    .optional(),
+  load: z.preprocess(
+    (v) => (v === '' || v === null || v === undefined || (typeof v === 'number' && isNaN(v)) ? undefined : Number(v)),
+    z.number().min(0, 'Mínimo 0 kg').max(1000, 'Máximo 1000 kg').optional()
+  ),
+  rest_seconds: z.preprocess(
+    (v) => (v === '' || v === null || v === undefined || (typeof v === 'number' && isNaN(v)) ? undefined : Number(v)),
+    z.number().int('Deve ser inteiro').min(0, 'Mínimo 0 segundos').max(600, 'Máximo 600 segundos').optional()
+  ),
   notes: z.string().max(300, 'Máximo de 300 caracteres').optional(),
 })
 
