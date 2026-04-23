@@ -70,8 +70,8 @@ const NAV_ITEMS = [
   { href: '/dieta',     icon: Utensils,        label: 'Dieta' },
   { href: '/corpo',     icon: Activity,        label: 'Composição' },
   { href: '/medicamentos', icon: Pill,         label: 'Medicamentos' },
-  { href: '/analise-ia',icon: Brain,           label: 'Análise IA' },
   { href: '/exames',    icon: ClipboardList,   label: 'Exames' },
+  { href: '/analise-ia',icon: Brain,           label: 'Análise IA' },
   { href: '/progresso', icon: TrendingUp,      label: 'Progresso' },
 ]
 

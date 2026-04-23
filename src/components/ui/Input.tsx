@@ -239,7 +239,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
             {suffix && !hasError && !hasSuccess && (
               <span
-                className={cn('text-text-muted flex-shrink-0', s.icon)}
+                className="text-text-muted flex-shrink-0 flex items-center"
                 aria-hidden
               >
                 {suffix}
