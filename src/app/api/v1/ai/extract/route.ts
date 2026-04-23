@@ -12,19 +12,30 @@ const extractSchema = z.object({
 })
 
 const EXTRACTION_PROMPTS: Record<string, string> = {
-  workout: `Analise este texto/arquivo de treino e extraia a estrutura em JSON com o seguinte formato:
+  workout: `Analise este plano de treino e extraia TODOS os dias/treinos encontrados em JSON.
+
+REGRAS IMPORTANTES:
+- Extraia todos os dias de treino (ex: Treino A, Treino B, Dia 1, etc.)
+- Se séries (sets) não estiverem especificadas, use 3 como padrão
+- Se repetições (reps) não estiverem especificadas, use "10-12" como padrão
+- Se carga (load) não estiver especificada, use null
+- Inclua TODOS os exercícios de cada dia, mesmo sem dados de séries/reps
+- Ignore seções de periodização, fases ou progressão de carga (ex: "Fase 1", "Semana 1-2") — extraia apenas os dias de treino com exercícios
+- Os grupos musculares devem ser inferidos pelo nome do treino (ex: "Peito e Costas" → ["Peito", "Costas"])
+
+Formato de saída:
 {
   "days": [
     {
-      "name": "Dia A - Peito/Tríceps",
-      "muscleGroups": ["Peito", "Tríceps"],
+      "name": "Treino A - Peito e Costas",
+      "muscleGroups": ["Peito", "Costas"],
       "exercises": [
         {
           "name": "Supino Reto",
-          "sets": 4,
-          "targetReps": "8-12",
-          "load": 80,
-          "restSeconds": 90,
+          "sets": 3,
+          "targetReps": "10-12",
+          "load": null,
+          "restSeconds": null,
           "notes": ""
         }
       ]
@@ -283,7 +294,12 @@ export async function POST(request: NextRequest) {
     try {
       extracted = parseClaudeJson(rawText)
     } catch {
+      console.error('AI extraction parse error. Raw response:', rawText.slice(0, 500))
       return NextResponse.json({ success: false, error: 'IA retornou formato inválido' }, { status: 500 })
+    }
+
+    if (extractionType === 'workout') {
+      console.log('[extract/workout] extracted:', JSON.stringify(extracted).slice(0, 400))
     }
 
     return NextResponse.json({
