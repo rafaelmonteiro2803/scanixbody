@@ -710,34 +710,55 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       {/* ── SECTION 5: ANÁLISE SEGMENTAR ── */}
       <div className="rounded-xl bg-background-card border border-border p-5">
         <SectionHeading number={5} icon={<Ruler className="w-4 h-4" />} title="Análise Segmentar" />
+        <p className="text-xs text-text-faint mb-3">Dica: digite sem vírgula (ex: 399 → 3,99)</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {SEGMENT_CONFIG.map((seg) => (
-            <div key={seg.key} className="rounded-lg bg-background border border-border p-3">
-              <p className="text-xs font-bold text-[#00ff88] uppercase tracking-wider mb-3">{seg.label}</p>
-              <div className="space-y-2">
-                <Input
-                  label="Massa magra"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.0"
-                  suffix={<span className="text-xs text-text-muted">kg</span>}
-                  size="sm"
-                  error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_lean`]?.message}
-                  {...register(`seg_${seg.key}_lean` as keyof FormValues)}
-                />
-                <Input
-                  label="Massa gorda"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.0"
-                  suffix={<span className="text-xs text-text-muted">kg</span>}
-                  size="sm"
-                  error={(errors as Record<string, { message?: string }>)[`seg_${seg.key}_fat`]?.message}
-                  {...register(`seg_${seg.key}_fat` as keyof FormValues)}
-                />
+          {SEGMENT_CONFIG.map((seg) => {
+            const leanField = `seg_${seg.key}_lean` as keyof FormValues;
+            const fatField  = `seg_${seg.key}_fat`  as keyof FormValues;
+            const leanReg   = register(leanField);
+            const fatReg    = register(fatField);
+
+            const autoDecimal = (
+              reg: typeof leanReg,
+              field: keyof FormValues,
+            ) => (e: React.FocusEvent<HTMLInputElement>) => {
+              const raw = e.target.value.trim().replace(',', '.');
+              if (/^\d{3,}$/.test(raw)) {
+                setValue(field, (parseFloat(raw) / 100) as never);
+              }
+              void reg.onBlur(e);
+            };
+
+            return (
+              <div key={seg.key} className="rounded-lg bg-background border border-border p-3">
+                <p className="text-xs font-bold text-[#00ff88] uppercase tracking-wider mb-3">{seg.label}</p>
+                <div className="space-y-2">
+                  <Input
+                    label="Massa magra"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.0"
+                    suffix={<span className="text-xs text-text-muted">kg</span>}
+                    size="sm"
+                    error={(errors as Record<string, { message?: string }>)[leanField]?.message}
+                    {...leanReg}
+                    onBlur={autoDecimal(leanReg, leanField)}
+                  />
+                  <Input
+                    label="Massa gorda"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.0"
+                    suffix={<span className="text-xs text-text-muted">kg</span>}
+                    size="sm"
+                    error={(errors as Record<string, { message?: string }>)[fatField]?.message}
+                    {...fatReg}
+                    onBlur={autoDecimal(fatReg, fatField)}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
