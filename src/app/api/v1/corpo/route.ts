@@ -113,7 +113,7 @@ export const PUT = withAuth(async (request: NextRequest, ctx: AuthContext) => {
         lean_mass: s.leanMass ?? null,
         fat_mass: s.fatMass ?? null,
       }))
-      segments = await corpoService.saveBodySegments(savedProfile.id, segmentInputs)
+      segments = await corpoService.saveBodySegments(savedProfile.id, ctx.userId, segmentInputs)
     } else {
       segments = await corpoService.getBodySegments(savedProfile.id)
     }

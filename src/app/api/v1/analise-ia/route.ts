@@ -196,7 +196,18 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
     const medications = medsResult.data ?? []
     const examReports = examsResult.data ?? []
 
-    // ── 2. Calculate all 6 scores ───────────────────────���─────────────────
+    // Fetch actual exam markers for the most recent report
+    let examMarkers: Array<{ marker_name: string; value: string | null; unit: string | null; status: string | null; reference_range: string | null }> = []
+    if (examReports.length > 0) {
+      const { data: markers } = await supabase
+        .from('exam_markers')
+        .select('marker_name, value, unit, status, reference_range')
+        .eq('exam_report_id', examReports[0].id)
+        .order('marker_name', { ascending: true })
+      examMarkers = markers ?? []
+    }
+
+    // ── 2. Calculate all 6 scores ─────────────────────────────────────────
     const macroTargets: MacroTargets | undefined = profile?.tdee
       ? {
           calories: profile.tdee,
@@ -239,9 +250,16 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
             .join('; ')
         : null
 
-    const examContext =
-      examReports.length > 0
-        ? `${examReports.length} relatório(s) de exames registrado(s)`
+    const examContext = examMarkers.length > 0
+      ? examMarkers
+          .map((m) => {
+            const range = m.reference_range ? ` [ref: ${m.reference_range}]` : ''
+            const status = m.status ? ` → ${m.status.toUpperCase()}` : ''
+            return `${m.marker_name}: ${m.value ?? '?'} ${m.unit ?? ''}${range}${status}`
+          })
+          .join('; ')
+      : examReports.length > 0
+        ? `${examReports.length} relatório(s) registrado(s) sem marcadores detalhados`
         : null
 
     const workoutContext =
@@ -279,19 +297,25 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
           system: 'Você é um coach fitness e nutricionista especializado. Seja honesto, motivador e prático. Retorne apenas JSON válido, sem markdown.',
           messages: [{
             role: 'user',
-            content: `Com base nos dados do atleta abaixo, gere um relatório de análise completo em português.
+            content: `Com base nos dados do atleta abaixo, gere um relatório de análise completo e personalizado em português.
 
 DADOS DO ATLETA:
 ${athleteContext}
 
-Retorne APENAS este JSON:
+INSTRUÇÕES:
+- Se houver medicamentos/suplementos, analise como cada um impacta o objetivo declarado, a dieta, o sono e a recuperação.
+- Se houver marcadores de exames, identifique quais estão ALTO, BAIXO ou CRÍTICO e inclua nas recomendações.
+- Seja específico com os dados fornecidos — não invente informações ausentes.
+- Seja honesto sobre pontos negativos, mas sempre motivador.
+
+Retorne APENAS este JSON (sem markdown):
 {
-  "summary": "3-4 frases descrevendo o estado atual do atleta de forma honesta e motivadora",
-  "strengths": ["ponto forte 1", "ponto forte 2", "ponto forte 3"],
-  "improvements": ["área para melhorar 1", "área para melhorar 2"],
-  "recommendations": ["recomendação prática 1", "recomendação prática 2", "recomendação prática 3", "recomendação prática 4"],
-  "weeklyFocus": "a prioridade número 1 para os próximos 7 dias",
-  "estimatedProgressTimeline": "estimativa de prazo para atingir o objetivo atual, ou null"
+  "summary": "3-4 frases descrevendo o estado atual do atleta, mencionando composição corporal, treino e principais destaques",
+  "strengths": ["ponto forte específico 1", "ponto forte específico 2", "ponto forte específico 3"],
+  "improvements": ["área de melhoria concreta 1", "área de melhoria concreta 2", "área de melhoria concreta 3"],
+  "recommendations": ["recomendação prática e específica 1", "recomendação 2", "recomendação 3", "recomendação 4", "recomendação 5"],
+  "weeklyFocus": "a prioridade número 1 para os próximos 7 dias em uma frase de ação",
+  "estimatedProgressTimeline": "estimativa realista de prazo para atingir o objetivo, ou null"
 }`,
           }],
         })

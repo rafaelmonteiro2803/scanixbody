@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dumbbell,
   Salad,
@@ -22,7 +22,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Button, ScoreRing, ProgressBar, Badge } from '@/components/ui';
-import { ChecklistItem, type ChecklistStatus } from './components/ChecklistItem';
+import { ChecklistItem, type ChecklistStatus as ModuleChecklistStatus } from './components/ChecklistItem';
 import { AnalysisReport, type MacroAdjustments } from './components/AnalysisReport';
 import type { ScoreBreakdown } from '@/types/domain.types';
 import type { AnalysisResult } from '@/services/ai.service';
@@ -81,7 +81,7 @@ const MOCK_MACRO_ADJUSTMENTS: MacroAdjustments = {
 interface ModuleChecklistConfig {
   module: string;
   icon: LucideIcon;
-  status: ChecklistStatus;
+  status: ModuleChecklistStatus;
   text: string;
 }
 
@@ -150,26 +150,119 @@ function PriorityBadge({ priority }: { priority: 'Alta' | 'Média' | 'Baixa' }) 
 
 // ── Main Page ─────────────────────────────────────────────────
 
+interface ApiChecklistStatus {
+  hasProfile: boolean;
+  hasSessions: boolean;
+  hasMeals: boolean;
+  hasCardio: boolean;
+  hasMedications: boolean;
+  hasExams: boolean;
+}
+
+interface ApiReport {
+  score_training: number | null;
+  score_diet: number | null;
+  score_sleep: number | null;
+  score_hydration: number | null;
+  score_cardio: number | null;
+  score_overall: number | null;
+  recommendations: string[] | null;
+  report_data: Record<string, unknown> | null;
+  generated_at: string;
+}
+
 export default function AnaliseIAPage() {
-  const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'done'>('idle');
+  const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [scores, setScores] = useState<ScoreBreakdown>({
     training: 0, diet: 0, sleep: 0, hydration: 0, cardio: 0, overall: 0,
   });
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [checklist, setChecklist] = useState<ApiChecklistStatus | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  // Completeness
-  const completeCount = MODULE_CHECKLIST.filter((m) => m.status === 'complete').length;
-  const completeness = Math.round((completeCount / MODULE_CHECKLIST.length) * 100);
+  // Load checklist status on mount
+  useEffect(() => {
+    fetch('/api/v1/analise-ia')
+      .then((r) => r.json() as Promise<{ checklistStatus?: ApiChecklistStatus; report?: ApiReport | null }>)
+      .then(({ checklistStatus, report }) => {
+        if (checklistStatus) setChecklist(checklistStatus);
+        // If there's a previous report, pre-populate scores (not result narrative)
+        if (report) {
+          setScores({
+            training: report.score_training ?? 0,
+            diet: report.score_diet ?? 0,
+            sleep: report.score_sleep ?? 0,
+            hydration: report.score_hydration ?? 0,
+            cardio: report.score_cardio ?? 0,
+            overall: report.score_overall ?? 0,
+          });
+          const rd = report.report_data ?? {};
+          setResult({
+            summary: typeof rd.summary === 'string' ? rd.summary : '',
+            strengths: Array.isArray(rd.strengths) ? rd.strengths as string[] : [],
+            improvements: Array.isArray(rd.improvements) ? rd.improvements as string[] : [],
+            recommendations: Array.isArray(report.recommendations) ? report.recommendations as string[] : [],
+            weeklyFocus: typeof rd.weeklyFocus === 'string' ? rd.weeklyFocus : '',
+            estimatedProgressTimeline: typeof rd.estimatedProgressTimeline === 'string' ? rd.estimatedProgressTimeline : null,
+            generatedAt: report.generated_at,
+          });
+          setAnalysisState('done');
+        }
+      })
+      .catch(() => { /* non-fatal */ });
+  }, []);
+
+  // Dynamically build checklist from real data
+  const liveChecklist: ModuleChecklistConfig[] = checklist ? [
+    { module: 'Treinos', icon: Dumbbell, status: checklist.hasSessions ? 'complete' : 'incomplete', text: checklist.hasSessions ? 'Sessões de treino registradas.' : 'Nenhuma sessão registrada.' },
+    { module: 'Dieta', icon: Salad, status: checklist.hasMeals ? 'complete' : 'incomplete', text: checklist.hasMeals ? 'Refeições registradas.' : 'Nenhuma refeição registrada.' },
+    { module: 'Corpo', icon: TrendingUp, status: checklist.hasProfile ? 'complete' : 'incomplete', text: checklist.hasProfile ? 'Perfil corporal preenchido.' : 'Perfil não preenchido.' },
+    { module: 'Cardio', icon: HeartPulse, status: checklist.hasCardio ? 'complete' : 'incomplete', text: checklist.hasCardio ? 'Perfil de cardio cadastrado.' : 'Cardio não configurado (opcional).' },
+    { module: 'Medicamentos', icon: Pill, status: checklist.hasMedications ? 'complete' : 'incomplete', text: checklist.hasMedications ? 'Medicamentos/suplementos cadastrados.' : 'Nenhum medicamento cadastrado.' },
+    { module: 'Exames', icon: FlaskConical, status: checklist.hasExams ? 'complete' : 'empty', text: checklist.hasExams ? 'Exames laboratoriais importados.' : 'Nenhum exame cadastrado.' },
+  ] : MODULE_CHECKLIST;
+
+  const completeCount = liveChecklist.filter((m) => m.status === 'complete').length;
+  const completeness = Math.round((completeCount / liveChecklist.length) * 100);
 
   const handleGenerate = async () => {
     setAnalysisState('loading');
+    setAnalysisError(null);
     setResult(null);
-    // Simulate AI call
-    await new Promise((r) => setTimeout(r, 2800));
-    setScores(MOCK_SCORES);
-    setResult(MOCK_RESULT);
-    setAnalysisState('done');
+    try {
+      const res = await fetch('/api/v1/analise-ia', { method: 'POST' });
+      const report = await res.json() as ApiReport & { error?: string };
+      if (!res.ok) throw new Error(report.error ?? 'Erro ao gerar análise');
+
+      setScores({
+        training: report.score_training ?? 0,
+        diet: report.score_diet ?? 0,
+        sleep: report.score_sleep ?? 0,
+        hydration: report.score_hydration ?? 0,
+        cardio: report.score_cardio ?? 0,
+        overall: report.score_overall ?? 0,
+      });
+      const rd = report.report_data ?? {};
+      setResult({
+        summary: typeof rd.summary === 'string' ? rd.summary : '',
+        strengths: Array.isArray(rd.strengths) ? rd.strengths as string[] : [],
+        improvements: Array.isArray(rd.improvements) ? rd.improvements as string[] : [],
+        recommendations: Array.isArray(report.recommendations) ? report.recommendations as string[] : [],
+        weeklyFocus: typeof rd.weeklyFocus === 'string' ? rd.weeklyFocus : '',
+        estimatedProgressTimeline: typeof rd.estimatedProgressTimeline === 'string' ? rd.estimatedProgressTimeline : null,
+        generatedAt: report.generated_at,
+      });
+      setAnalysisState('done');
+      // Refresh checklist after generation
+      fetch('/api/v1/analise-ia')
+        .then((r) => r.json() as Promise<{ checklistStatus?: ApiChecklistStatus }>)
+        .then(({ checklistStatus }) => { if (checklistStatus) setChecklist(checklistStatus); })
+        .catch(() => {});
+    } catch (err) {
+      setAnalysisError(err instanceof Error ? err.message : 'Erro desconhecido');
+      setAnalysisState('error');
+    }
   };
 
   const handlePrint = () => {
@@ -352,6 +445,15 @@ export default function AnaliseIAPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {analysisState === 'error' && (
+              <div className="space-y-3">
+                <p className="text-sm text-red-400">{analysisError ?? 'Erro ao gerar análise.'}</p>
+                <Button variant="ghost" size="sm" onClick={handleGenerate} className="mx-auto">
+                  Tentar novamente
+                </Button>
               </div>
             )}
 

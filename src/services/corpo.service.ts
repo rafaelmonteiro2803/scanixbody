@@ -171,6 +171,7 @@ const corpoService = {
    */
   async saveBodySegments(
     profileId: string,
+    userId: string,
     segments: BodySegmentInput[],
   ): Promise<BodySegment[]> {
     const supabase = await createClient()
@@ -192,6 +193,7 @@ const corpoService = {
 
     const toInsert = segments.map((s) => ({
       athlete_profile_id: profileId,
+      user_id: userId,
       segment: s.segment,
       lean_mass: s.lean_mass ?? null,
       fat_mass: s.fat_mass ?? null,

@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const extractSchema = z.object({
-  extractionType: z.enum(['workout', 'diet', 'medications', 'exams', 'bioimpedance', 'analysis']),
+  extractionType: z.enum(['workout', 'diet', 'medications', 'exams', 'bioimpedance', 'analysis', 'cardio']),
   content: z.string().min(10, 'Conteúdo muito curto para extração'),
 })
 
@@ -121,6 +121,23 @@ Retorne APENAS o JSON, sem explicações, sem markdown.`,
   }
 }
 Inclua apenas campos que encontrar no documento. Retorne APENAS o JSON, sem explicações, sem markdown.`,
+
+  cardio: `Extraia as sessões de cardio/treino aeróbico deste plano ou registro em JSON:
+{
+  "sessions": [
+    {
+      "sessionDate": "2024-01-15",
+      "type": "Corrida",
+      "durationMinutes": 45,
+      "intensity": "moderate",
+      "notes": "Ritmo constante"
+    }
+  ]
+}
+Tipos válidos: Corrida, Ciclismo, Natação, Elíptico, Caminhada, HIIT, Escada, Outro.
+Intensidades válidas: low (leve), moderate (moderada), high (alta).
+Se a data não estiver especificada, use null. Se a duração não estiver especificada, use null.
+Retorne APENAS o JSON, sem explicações, sem markdown.`,
 
   analysis: `Você é um coach fitness e nutricionista especializado. Analise os dados do atleta abaixo e gere um relatório motivador e prático em português.
 

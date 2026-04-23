@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Plus,
   CalendarDays,
@@ -55,63 +55,6 @@ interface ImportedMeal {
   fat_g?: number;
 }
 
-// ── Mock data ──────────────────────────────────────────────────
-
-let MOCK_ID_COUNTER = 10;
-
-const INITIAL_MEALS: MealsRow[] = [
-  {
-    id: '1',
-    user_id: 'mock',
-    meal_date: format(new Date(), 'yyyy-MM-dd'),
-    meal_name: 'café da manhã',
-    time: '07:30',
-    items: '3 ovos mexidos, 2 fatias de pão integral, 1 xícara de café preto, 1 banana',
-    calories: 520,
-    protein_g: 28,
-    carbs_g: 55,
-    fat_g: 18,
-    source: 'manual',
-    notes: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null,
-  },
-  {
-    id: '2',
-    user_id: 'mock',
-    meal_date: format(new Date(), 'yyyy-MM-dd'),
-    meal_name: 'almoço',
-    time: '12:30',
-    items: '180g peito de frango grelhado, 150g arroz integral, 100g feijão, salada de folhas verdes com azeite',
-    calories: 680,
-    protein_g: 48,
-    carbs_g: 72,
-    fat_g: 12,
-    source: 'manual',
-    notes: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null,
-  },
-  {
-    id: '3',
-    user_id: 'mock',
-    meal_date: format(new Date(), 'yyyy-MM-dd'),
-    meal_name: 'pré-treino',
-    time: '16:00',
-    items: '1 scoop whey protein, 1 banana, 30g aveia',
-    calories: 310,
-    protein_g: 30,
-    carbs_g: 42,
-    fat_g: 4,
-    source: 'manual',
-    notes: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null,
-  },
-];
 
 const DAILY_TARGETS = {
   calories: 2600,
@@ -151,7 +94,21 @@ async function mockAIAnalysis(text: string): Promise<AIAnalysisResult> {
 export default function DietaPage() {
   const [activeTab, setActiveTab] = useState<DietTab>('manual');
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
-  const [meals, setMeals] = useState<MealsRow[]>(INITIAL_MEALS);
+  const [meals, setMeals] = useState<MealsRow[]>([]);
+  const [mealsLoading, setMealsLoading] = useState(true);
+
+  const loadMeals = useCallback(async () => {
+    setMealsLoading(true);
+    try {
+      const res = await fetch('/api/v1/dieta');
+      const json = await res.json() as { meals?: MealsRow[] };
+      setMeals(json.meals ?? []);
+    } catch { /* non-fatal */ } finally {
+      setMealsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void loadMeals(); }, [loadMeals]);
   const [formOpen, setFormOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<MealsRow | undefined>(undefined);
   const [formLoading, setFormLoading] = useState(false);
@@ -197,42 +154,37 @@ export default function DietaPage() {
 
   const handleAddMeal = useCallback(async (dto: CreateMealDTO) => {
     setFormLoading(true);
-    await new Promise((r) => setTimeout(r, 400));
-    const newMeal: MealsRow = {
-      id: String(++MOCK_ID_COUNTER),
-      user_id: 'mock',
-      meal_date: dto.meal_date,
-      meal_name: dto.meal_name,
-      time: dto.time ?? null,
-      items: dto.items ?? null,
-      calories: dto.calories ?? null,
-      protein_g: dto.protein_g ?? null,
-      carbs_g: dto.carbs_g ?? null,
-      fat_g: dto.fat_g ?? null,
-      source: dto.source ?? 'manual',
-      notes: dto.notes ?? null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      deleted_at: null,
-    };
-    if (editingMeal) {
-      setMeals((prev) => prev.map((m) => (m.id === editingMeal.id ? { ...newMeal, id: editingMeal.id } : m)));
-    } else {
-      setMeals((prev) => [...prev, newMeal]);
+    try {
+      const method = editingMeal ? 'PUT' : 'POST';
+      const url = editingMeal ? `/api/v1/dieta/${editingMeal.id}` : '/api/v1/dieta';
+      await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mealDate: dto.meal_date, mealName: dto.meal_name,
+          time: dto.time, items: dto.items,
+          calories: dto.calories, proteinG: dto.protein_g,
+          carbsG: dto.carbs_g, fatG: dto.fat_g,
+          source: dto.source ?? 'manual', notes: dto.notes,
+        }),
+      });
+      await loadMeals();
+    } finally {
+      setFormLoading(false);
+      setFormOpen(false);
+      setEditingMeal(undefined);
     }
-    setFormLoading(false);
-    setFormOpen(false);
-    setEditingMeal(undefined);
-  }, [editingMeal]);
+  }, [editingMeal, loadMeals]);
 
   const handleEdit = useCallback((meal: MealsRow) => {
     setEditingMeal(meal);
     setFormOpen(true);
   }, []);
 
-  const handleDelete = useCallback((meal: MealsRow) => {
-    setMeals((prev) => prev.filter((m) => m.id !== meal.id));
-  }, []);
+  const handleDelete = useCallback(async (meal: MealsRow) => {
+    await fetch(`/api/v1/dieta/${meal.id}`, { method: 'DELETE' });
+    await loadMeals();
+  }, [loadMeals]);
 
   // ── AI Analysis ────────────────────────────────────────────
 
@@ -302,10 +254,10 @@ export default function DietaPage() {
         const json = await res.json() as { data?: MealsRow };
         if (json.data) saved.push(json.data);
       }
-      if (saved.length > 0) setMeals((prev) => [...prev, ...saved]);
       setImportConfirmed(true);
       setImportedMeals(null);
       setImportFile(null);
+      await loadMeals();
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'Erro ao salvar refeições.');
     } finally {
