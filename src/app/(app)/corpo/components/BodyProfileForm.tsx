@@ -274,6 +274,8 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
   const inbody_score_val = safeNum(useWatch({ control, name: 'inbody_score' }));
   const water_per_day_val = safeNum(useWatch({ control, name: 'water_per_day' }));
   const sleep_hours_val = safeNum(useWatch({ control, name: 'sleep_hours' }));
+  const fat_mass_val = safeNum(useWatch({ control, name: 'fat_mass' }));
+  const lean_mass_val = safeNum(useWatch({ control, name: 'lean_mass' }));
 
   // Derived calculations
   const bmi = weight && height ? (() => { try { return calculateBMI(weight, height); } catch { return null; } })() : null;
@@ -292,6 +294,14 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
       setValue('water_per_day', suggestedWaterLiters);
     }
   }, [suggestedWaterLiters, water_per_day_val, setValue]);
+
+  // Auto-calculate lean_mass = weight - fat_mass when field is empty
+  useEffect(() => {
+    if (weight && fat_mass_val && !lean_mass_val) {
+      const calculated = Math.round((weight - fat_mass_val) * 10) / 10;
+      if (calculated > 0) setValue('lean_mass', calculated);
+    }
+  }, [weight, fat_mass_val, lean_mass_val, setValue]);
 
   // Build a partial profile for body state narrative
   const liveProfile: AthleteProfilesRow = {
@@ -462,6 +472,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             step="0.1"
             placeholder="64.8"
             suffix={<span className="text-xs text-text-muted">kg</span>}
+            helperText={lean_mass_val && weight && fat_mass_val && !initialProfile?.lean_mass ? 'Calculado automaticamente (peso − gordura)' : undefined}
             error={errors.lean_mass?.message}
             {...register('lean_mass')}
           />
