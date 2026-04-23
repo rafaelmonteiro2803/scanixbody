@@ -80,7 +80,7 @@ async function saveBodyProfile(
     ].filter((s) => s.lean_mass !== null || s.fat_mass !== null);
 
     if (segments.length > 0) {
-      await corpoService.saveBodySegments(saved.id, segments);
+      await corpoService.saveBodySegments(saved.id, user.id, segments);
     }
 
     return {};

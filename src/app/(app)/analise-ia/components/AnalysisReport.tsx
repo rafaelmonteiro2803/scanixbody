@@ -49,21 +49,20 @@ function scoreColor(score: number): string {
 
 function ScoreRow({ label, score }: { label: string; score: number }) {
   const color = scoreColor(score);
-  const barWidth = `${score}%`;
 
   return (
     <div className="flex items-center gap-3 py-1.5">
-      <span className="text-sm text-gray-700 w-28 flex-shrink-0">{label}</span>
-      <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
+      <span className="text-sm text-text-secondary w-28 flex-shrink-0">{label}</span>
+      <div className="flex-1 h-2 rounded-full bg-surface-1 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
-          style={{ width: barWidth, backgroundColor: color }}
+          style={{ width: `${score}%`, backgroundColor: color }}
         />
       </div>
       <span className="text-sm font-bold w-12 text-right" style={{ color }}>
         {score}/100
       </span>
-      <span className="text-xs text-gray-500 w-16">{scoreLabel(score)}</span>
+      <span className="text-xs text-text-muted w-16">{scoreLabel(score)}</span>
     </div>
   );
 }
@@ -82,7 +81,6 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
 
     return (
       <>
-        {/* Print-only styles */}
         <style>{`
           @media print {
             body * { visibility: hidden; }
@@ -95,62 +93,62 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
         <div
           id="analysis-report"
           ref={ref}
-          className="bg-white text-gray-900 rounded-xl border border-gray-200 overflow-hidden print:border-0 print:rounded-none"
+          className="bg-background-card rounded-xl border border-border overflow-hidden"
         >
           {/* Report Header */}
-          <div className="bg-gray-900 text-text-title px-8 py-6 print:bg-gray-900">
+          <div className="bg-[#0a0a0a] border-b border-border px-6 py-5">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#00ff88] mb-1">
                   SCANIX BODY
                 </p>
-                <h2 className="text-2xl font-black uppercase tracking-wide">
+                <h2 className="text-xl font-black uppercase tracking-wide text-text-title">
                   Relatório de Análise IA
                 </h2>
                 {athleteName && (
-                  <p className="text-gray-400 mt-1">{athleteName}</p>
+                  <p className="text-text-muted text-sm mt-0.5">{athleteName}</p>
                 )}
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-2 text-gray-400 text-xs">
+                <div className="flex items-center gap-2 text-text-muted text-xs">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>{formattedDate}</span>
                 </div>
                 <div className="mt-2 text-right">
                   <span className="text-4xl font-black text-[#00ff88]">{scores.overall}</span>
-                  <span className="text-gray-400 text-sm">/100</span>
+                  <span className="text-text-muted text-sm">/100</span>
                 </div>
-                <p className="text-xs text-gray-400">Score Geral</p>
+                <p className="text-xs text-text-muted">Score Geral</p>
               </div>
             </div>
           </div>
 
-          <div className="px-8 py-6 space-y-7">
+          <div className="px-6 py-5 space-y-6">
 
             {/* Summary */}
             <section>
-              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Target className="w-4 h-4" />
+              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Target className="w-4 h-4 text-[#00ff88]" />
                 Resumo
               </h3>
-              <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-text-secondary leading-relaxed bg-surface-1 rounded-lg p-4 border border-border">
                 {result.summary}
               </p>
             </section>
 
             {/* Scores */}
             <section>
-              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
+              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-[#00ff88]" />
                 Scores por Dimensão
               </h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-1">
+              <div className="bg-surface-1 rounded-lg p-4 space-y-1 border border-border">
                 <ScoreRow label="Treino" score={scores.training} />
                 <ScoreRow label="Dieta" score={scores.diet} />
                 <ScoreRow label="Sono" score={scores.sleep} />
                 <ScoreRow label="Hidratação" score={scores.hydration} />
                 <ScoreRow label="Cardio" score={scores.cardio} />
-                <div className="pt-2 mt-2 border-t border-gray-200">
+                <div className="pt-2 mt-2 border-t border-border">
                   <ScoreRow label="Score Geral" score={scores.overall} />
                 </div>
               </div>
@@ -159,14 +157,14 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
             {/* Strengths */}
             {result.strengths.length > 0 && (
               <section>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00ff88]" />
                   Pontos Fortes
                 </h3>
                 <ul className="space-y-2">
                   {result.strengths.map((s, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
-                      <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-text-secondary">
+                      <CheckCircle2 className="w-4 h-4 text-[#00ff88] flex-shrink-0 mt-0.5" />
                       {s}
                     </li>
                   ))}
@@ -177,14 +175,14 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
             {/* Improvements */}
             {result.improvements.length > 0 && (
               <section>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-400" />
+                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
                   Pontos de Melhoria
                 </h3>
                 <ul className="space-y-2">
                   {result.improvements.map((s, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700">
-                      <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-text-secondary">
+                      <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
                       {s}
                     </li>
                   ))}
@@ -195,14 +193,14 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
             {/* Recommendations */}
             {result.recommendations.length > 0 && (
               <section>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-blue-500" />
+                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-blue-400" />
                   Recomendações
                 </h3>
                 <ol className="space-y-2 list-none">
                   {result.recommendations.map((rec, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-900 text-text-title text-xs font-bold flex-shrink-0 mt-0.5">
+                    <li key={i} className="flex items-start gap-3 text-sm text-text-secondary">
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#00ff88]/15 text-[#00ff88] text-xs font-bold flex-shrink-0 mt-0.5">
                         {i + 1}
                       </span>
                       {rec}
@@ -215,11 +213,11 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
             {/* Weekly focus */}
             {result.weeklyFocus && (
               <section>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">
                   Foco da Semana
                 </h3>
-                <div className="rounded-lg bg-gray-900 text-text-title p-4">
-                  <p className="text-sm font-semibold leading-relaxed">{result.weeklyFocus}</p>
+                <div className="rounded-lg bg-[#00ff88]/5 border border-[#00ff88]/20 p-4">
+                  <p className="text-sm font-semibold text-text-title leading-relaxed">{result.weeklyFocus}</p>
                 </div>
               </section>
             )}
@@ -227,8 +225,8 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
             {/* Macro adjustments */}
             {macroAdjustments && (
               <section>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Droplets className="w-4 h-4" />
+                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Droplets className="w-4 h-4 text-blue-400" />
                   Ajustes Sugeridos
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -241,10 +239,10 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
                   ]
                     .filter((item) => item.value !== null && item.value !== undefined)
                     .map((item) => (
-                      <div key={item.label} className="rounded-lg bg-gray-50 border border-gray-200 p-3 text-center">
-                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">{item.label}</p>
-                        <p className="text-lg font-black text-gray-900">{item.value}</p>
-                        <p className="text-xs text-gray-400">{item.unit}/dia</p>
+                      <div key={item.label} className="rounded-lg bg-surface-1 border border-border p-3 text-center">
+                        <p className="text-xs text-text-muted uppercase tracking-wider mb-1">{item.label}</p>
+                        <p className="text-lg font-black text-text-title">{item.value}</p>
+                        <p className="text-xs text-text-faint">{item.unit}/dia</p>
                       </div>
                     ))}
                 </div>
@@ -254,21 +252,21 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
             {/* Timeline */}
             {result.estimatedProgressTimeline && (
               <section>
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">
                   Projeção de Progresso
                 </h3>
-                <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 italic">
+                <p className="text-sm text-text-secondary bg-surface-1 rounded-lg p-3 border border-border italic">
                   {result.estimatedProgressTimeline}
                 </p>
               </section>
             )}
 
             {/* Footer */}
-            <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
-              <p className="text-xs text-gray-400">
+            <div className="pt-4 border-t border-border flex items-center justify-between">
+              <p className="text-xs text-text-faint">
                 Gerado por SCANIX BODY IA em {formattedDate}
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-text-faint">
                 Análise de uso exclusivo informativo.
               </p>
             </div>

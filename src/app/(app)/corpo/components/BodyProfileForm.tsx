@@ -715,7 +715,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                 <Input
                   label="Massa magra"
                   type="number"
-                  step="0.1"
+                  step="0.01"
                   placeholder="0.0"
                   suffix={<span className="text-xs text-text-muted">kg</span>}
                   size="sm"
@@ -725,7 +725,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                 <Input
                   label="Massa gorda"
                   type="number"
-                  step="0.1"
+                  step="0.01"
                   placeholder="0.0"
                   suffix={<span className="text-xs text-text-muted">kg</span>}
                   size="sm"
