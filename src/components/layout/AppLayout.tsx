@@ -24,6 +24,7 @@ import {
   Users,
   UserCheck,
   ArrowLeftCircle,
+  Heart,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@/types/database.types'
@@ -65,14 +66,15 @@ function useTheme() {
 // ── Navigation items ──────────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { href: '/treinos',   icon: Dumbbell,        label: 'Treinos' },
-  { href: '/dieta',     icon: Utensils,        label: 'Dieta' },
-  { href: '/corpo',     icon: Activity,        label: 'Composição' },
-  { href: '/medicamentos', icon: Pill,         label: 'Medicamentos' },
-  { href: '/analise-ia',icon: Brain,           label: 'Análise IA' },
-  { href: '/exames',    icon: ClipboardList,   label: 'Exames' },
-  { href: '/progresso', icon: TrendingUp,      label: 'Progresso' },
+  { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard', exact: true },
+  { href: '/treinos',      icon: Dumbbell,        label: 'Treinos' },
+  { href: '/dieta',        icon: Utensils,        label: 'Dieta' },
+  { href: '/corpo',        icon: Activity,        label: 'Composição' },
+  { href: '/medicamentos', icon: Pill,            label: 'Medicamentos' },
+  { href: '/exames',       icon: ClipboardList,   label: 'Exames' },
+  { href: '/cardio',       icon: Heart,           label: 'Cardio' },
+  { href: '/analise-ia',   icon: Brain,           label: 'Análise IA' },
+  { href: '/progresso',    icon: TrendingUp,      label: 'Progresso' },
 ]
 
 const ADMIN_NAV_ITEMS = [

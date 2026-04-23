@@ -150,7 +150,7 @@ function DeleteConfirmModal({
 function ImportTab({
   onImported,
 }: {
-  onImported: (meds: ParsedMedication[]) => void;
+  onImported: (meds: ParsedMedication[]) => Promise<void>;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState('');
@@ -187,17 +187,18 @@ function ImportTab({
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     setIsSaving(true);
-    setTimeout(() => {
-      onImported(extracted);
+    try {
+      await onImported(extracted);
       setSaved(true);
-      setIsSaving(false);
       setExtracted([]);
       setPasteText('');
       setFile(null);
       setTimeout(() => setSaved(false), 3000);
-    }, 800);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function removeExtracted(i: number) {

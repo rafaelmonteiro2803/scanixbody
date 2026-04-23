@@ -258,6 +258,7 @@ export default function DietaPage() {
       setImportedMeals(null);
       setImportFile(null);
       await loadMeals();
+      setActiveTab('manual');
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'Erro ao salvar refeições.');
     } finally {
