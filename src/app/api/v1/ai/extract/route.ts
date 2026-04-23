@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import mammoth from 'mammoth'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
@@ -230,16 +231,50 @@ export async function POST(request: NextRequest) {
     // Use Sonnet for analysis (better reasoning), Haiku for structured extraction (faster + cheaper)
     const model = extractionType === 'analysis' ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001'
 
+    // Detect file type by prefix set by import.service.ts
+    const pdfMatch = content.match(/^\[PDF_BASE64\]:(.+)/)
+    const docxMatch = content.match(/^\[DOCX_BASE64\]:(.+)/)
+    const xlsxMatch = content.match(/^\[XLSX_BASE64\]:(.+)/)
+
+    let messageContent: Anthropic.MessageParam['content']
+
+    if (pdfMatch) {
+      // Use Claude's native PDF document API
+      messageContent = [
+        {
+          type: 'document' as const,
+          source: {
+            type: 'base64' as const,
+            media_type: 'application/pdf' as const,
+            data: pdfMatch[1],
+          },
+        },
+        { type: 'text' as const, text: prompt },
+      ]
+    } else if (docxMatch) {
+      // Extract text from DOCX using mammoth, then send as plain text
+      const buffer = Buffer.from(docxMatch[1], 'base64')
+      const result = await mammoth.extractRawText({ buffer })
+      const docxText = result.value.trim()
+      if (!docxText) {
+        return NextResponse.json({ success: false, error: 'Não foi possível extrair texto do arquivo Word.' }, { status: 400 })
+      }
+      messageContent = `${prompt}\n\nDOCUMENTO:\n${docxText.slice(0, 12000)}`
+    } else if (xlsxMatch) {
+      return NextResponse.json({
+        success: false,
+        error: 'Arquivos XLSX não são suportados. Use PDF, Word (.docx) ou cole o texto diretamente.',
+      }, { status: 400 })
+    } else {
+      // Plain text content
+      messageContent = `${prompt}\n\nDOCUMENTO:\n${content.slice(0, 12000)}`
+    }
+
     const message = await anthropic.messages.create({
       model,
       max_tokens: extractionType === 'analysis' ? 2048 : 4096,
       system: 'Você é um assistente especializado em extrair dados estruturados de documentos de saúde e fitness. Sempre retorne JSON válido, sem markdown, sem explicações adicionais.',
-      messages: [
-        {
-          role: 'user',
-          content: `${prompt}\n\nDOCUMENTO:\n${content.slice(0, 12000)}`,
-        },
-      ],
+      messages: [{ role: 'user', content: messageContent }],
     })
 
     const rawText = message.content[0]?.type === 'text' ? message.content[0].text : '{}'
