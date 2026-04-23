@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Upload,
-  FileText,
   Clipboard,
   Loader2,
   ChevronDown,
@@ -25,6 +24,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { ExamMarkerRow } from './components/ExamMarkerRow';
 import type { ExamReport, ExamMarker } from '@/services/exames.service';
 import type { ExamMarkerStatus } from '@/types/domain.types';
+import { importExamReport } from '@/services/import.service';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -42,34 +42,22 @@ interface ReportWithMarkers extends ExamReport {
   loadingMarkers?: boolean;
 }
 
-// ── AI marker simulation ───────────────────────────────────────
+// ── Status badge (read-only) ───────────────────────────────────
 
-function simulateMarkerExtraction(text: string): ParsedMarker[] {
-  // Simulate AI extraction with example lab markers
-  const SAMPLE_MARKERS: ParsedMarker[] = [
-    { marker_name: 'Testosterona Total', value: '850', unit: 'ng/dL', reference_range: '300-1000', status: 'normal' },
-    { marker_name: 'Testosterona Livre', value: '22.5', unit: 'pg/mL', reference_range: '8.7-25.1', status: 'normal' },
-    { marker_name: 'LH', value: '0.2', unit: 'mUI/mL', reference_range: '1.5-9.3', status: 'baixo' },
-    { marker_name: 'FSH', value: '0.4', unit: 'mUI/mL', reference_range: '1.5-12.4', status: 'baixo' },
-    { marker_name: 'Estradiol', value: '58', unit: 'pg/mL', reference_range: '10-40', status: 'alto' },
-    { marker_name: 'Hematócrito', value: '48', unit: '%', reference_range: '40-50', status: 'normal' },
-    { marker_name: 'Hemoglobina', value: '16.2', unit: 'g/dL', reference_range: '13.5-17.5', status: 'normal' },
-    { marker_name: 'PSA Total', value: '0.8', unit: 'ng/mL', reference_range: '0-4.0', status: 'normal' },
-    { marker_name: 'Colesterol Total', value: '195', unit: 'mg/dL', reference_range: '<200', status: 'normal' },
-    { marker_name: 'HDL Colesterol', value: '42', unit: 'mg/dL', reference_range: '>40', status: 'normal' },
-    { marker_name: 'LDL Colesterol', value: '125', unit: 'mg/dL', reference_range: '<100', status: 'alto' },
-    { marker_name: 'Triglicerídeos', value: '160', unit: 'mg/dL', reference_range: '<150', status: 'alto' },
-    { marker_name: 'Glicose', value: '92', unit: 'mg/dL', reference_range: '70-99', status: 'normal' },
-    { marker_name: 'TSH', value: '2.1', unit: 'mUI/L', reference_range: '0.4-4.0', status: 'normal' },
-    { marker_name: 'ALT (TGP)', value: '38', unit: 'U/L', reference_range: '7-56', status: 'normal' },
-    { marker_name: 'AST (TGO)', value: '35', unit: 'U/L', reference_range: '10-40', status: 'normal' },
-    { marker_name: 'Creatinina', value: '1.1', unit: 'mg/dL', reference_range: '0.6-1.2', status: 'normal' },
-    { marker_name: 'IGF-1', value: '320', unit: 'ng/mL', reference_range: '117-330', status: 'normal' },
-  ];
+const STATUS_MAP: Record<ExamMarkerStatus, { label: string; cls: string }> = {
+  normal:  { label: 'Normal',  cls: 'text-[#00ff88] bg-[#00ff88]/10 border-[#00ff88]/30' },
+  alto:    { label: 'Alto',    cls: 'text-red-400 bg-red-500/10 border-red-500/30' },
+  baixo:   { label: 'Baixo',   cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
+  critico: { label: 'Crítico', cls: 'text-red-400 bg-red-500/15 border-red-500/50' },
+};
 
-  // Return a subset based on text content length to simulate real parsing
-  const count = Math.min(SAMPLE_MARKERS.length, Math.max(5, Math.floor(text.length / 50)));
-  return SAMPLE_MARKERS.slice(0, count);
+function StatusBadge({ status }: { status: ExamMarkerStatus }) {
+  const cfg = STATUS_MAP[status] ?? STATUS_MAP.normal;
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${cfg.cls}`}>
+      {cfg.label}
+    </span>
+  );
 }
 
 // ── Delete confirm ─────────────────────────────────────────────
@@ -120,57 +108,35 @@ function ImportSection({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState('');
-  const [currentUser, setCurrentUser] = useState<string>('não identificado');
   const [isExtracting, setIsExtracting] = useState(false);
   const [extracted, setExtracted] = useState<ParsedMarker[]>([]);
+  const [extractError, setExtractError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
 
-  useEffect(() => {
-    async function loadUser() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        setCurrentUser(user.email ?? user.id);
-      }
-    }
-
-    void loadUser();
-  }, []);
-
-  const extractedJson = JSON.stringify(
-    {
-      usuario: currentUser,
-      tipo_de_exames: extracted.length > 0 ? 'laboratoriais' : '',
-      exames: extracted.map((marker) => marker.marker_name),
-      resultado: extracted.map((marker) => ({
-        exame: marker.marker_name,
-        valor: marker.value,
-        unidade: marker.unit,
-        status: marker.status,
-      })),
-      valores_de_referencia: extracted.map((marker) => ({
-        exame: marker.marker_name,
-        referencia: marker.reference_range,
-      })),
-      laudo: pasteText.trim() || file?.name || '',
-    },
-    null,
-    2,
-  );
-
   async function handleExtract() {
-    const text = pasteText.trim() || (file ? await file.text() : '');
-    if (!text && !file) return;
-
+    if (!file && !pasteText.trim()) return;
     setIsExtracting(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    const results = simulateMarkerExtraction(text || file?.name || 'exam');
-    setExtracted(results);
-    setIsExtracting(false);
+    setExtractError(null);
+    try {
+      const input = file ?? pasteText.trim();
+      const result = await importExamReport(input);
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Não foi possível extrair os marcadores.');
+      }
+      const VALID: ExamMarkerStatus[] = ['normal', 'alto', 'baixo', 'critico'];
+      setExtracted(result.data.markers.map((m) => ({
+        marker_name: m.markerName,
+        value: m.value,
+        unit: m.unit ?? '',
+        reference_range: m.referenceRange ?? '',
+        status: VALID.includes(m.status as ExamMarkerStatus) ? (m.status as ExamMarkerStatus) : 'normal',
+      })));
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : 'Erro ao extrair marcadores.');
+    } finally {
+      setIsExtracting(false);
+    }
   }
 
   async function handleSave() {
@@ -222,12 +188,6 @@ function ImportSection({
     } finally {
       setIsSaving(false);
     }
-  }
-
-  function updateMarkerStatus(i: number, status: ExamMarkerStatus) {
-    setExtracted((prev) =>
-      prev.map((m, idx) => (idx === i ? { ...m, status } : m)),
-    );
   }
 
   function removeMarker(i: number) {
@@ -308,23 +268,6 @@ function ImportSection({
         </div>
       )}
 
-      {/* Structured JSON preview */}
-      {extracted.length > 0 && (
-        <div className="rounded-xl border border-border bg-[#161616] p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#00ff88]" />
-            JSON estruturado do laudo
-          </h3>
-          <Textarea
-            value={extractedJson}
-            readOnly
-            rows={14}
-            resize="vertical"
-            className="font-mono text-xs"
-          />
-        </div>
-      )}
-
       {/* Extracted markers review */}
       {extracted.length > 0 && !isExtracting && (
         <div className="rounded-xl border border-[#00ff88]/25 bg-[#00ff88]/4 overflow-hidden">
@@ -368,18 +311,7 @@ function ImportSection({
                       {m.reference_range}
                     </td>
                     <td className="px-4 py-3">
-                      <select
-                        value={m.status}
-                        onChange={(e) =>
-                          updateMarkerStatus(i, e.target.value as ExamMarkerStatus)
-                        }
-                        className="text-xs bg-surface-1 border border-border rounded-lg px-2 py-1 text-text-title focus:outline-none focus:border-[#00ff88]/50"
-                      >
-                        <option value="normal">Normal</option>
-                        <option value="alto">Alto</option>
-                        <option value="baixo">Baixo</option>
-                        <option value="critico">Crítico</option>
-                      </select>
+                      <StatusBadge status={m.status} />
                     </td>
                     <td className="px-4 py-3">
                       <button
