@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import mammoth from 'mammoth'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
@@ -250,11 +251,19 @@ export async function POST(request: NextRequest) {
         },
         { type: 'text' as const, text: prompt },
       ]
-    } else if (docxMatch || xlsxMatch) {
-      // DOCX/XLSX: Claude doesn't read these natively — ask user to paste text instead
+    } else if (docxMatch) {
+      // Extract text from DOCX using mammoth, then send as plain text
+      const buffer = Buffer.from(docxMatch[1], 'base64')
+      const result = await mammoth.extractRawText({ buffer })
+      const docxText = result.value.trim()
+      if (!docxText) {
+        return NextResponse.json({ success: false, error: 'Não foi possível extrair texto do arquivo Word.' }, { status: 400 })
+      }
+      messageContent = `${prompt}\n\nDOCUMENTO:\n${docxText.slice(0, 12000)}`
+    } else if (xlsxMatch) {
       return NextResponse.json({
         success: false,
-        error: 'Arquivos DOCX e XLSX não são suportados. Converta para PDF ou cole o texto diretamente.',
+        error: 'Arquivos XLSX não são suportados. Use PDF, Word (.docx) ou cole o texto diretamente.',
       }, { status: 400 })
     } else {
       // Plain text content
