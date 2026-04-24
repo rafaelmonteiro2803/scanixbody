@@ -14,6 +14,7 @@ import {
   Calendar,
   Weight,
   ChevronRight,
+  Heart,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/utils'
@@ -412,6 +413,13 @@ export default async function DashboardPage() {
             title="Treinos"
             description="Gerencie planos e registre sessões de musculação"
             accentColor="#00ff88"
+          />
+          <ModuleCard
+            href="/cardio"
+            icon={<Heart className="h-5 w-5" />}
+            title="Cardio"
+            description="Registre sessões de cardio e acompanhe seu condicionamento"
+            accentColor="#ff6b6b"
           />
           <ModuleCard
             href="/dieta"
