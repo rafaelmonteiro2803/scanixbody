@@ -474,7 +474,8 @@ export default function MedicamentosPage() {
         source: 'import' as const,
       }));
 
-      await supabase.from('medication_entries').insert(rows);
+      const { error: insertError } = await supabase.from('medication_entries').insert(rows);
+      if (insertError) throw new Error(insertError.message);
       await loadMedications();
       setTab('meus');
     } catch (err) {

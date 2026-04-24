@@ -3,9 +3,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   Plus,
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
   Bot,
   Upload,
   Utensils,
@@ -16,8 +13,7 @@ import {
   AlertTriangle,
   Loader2,
 } from 'lucide-react';
-import { format, addDays, subDays, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format } from 'date-fns';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { Button } from '@/components/ui/Button';
 import { FileUpload } from '@/components/ui/FileUpload';
@@ -93,7 +89,6 @@ async function mockAIAnalysis(text: string): Promise<AIAnalysisResult> {
 
 export default function DietaPage() {
   const [activeTab, setActiveTab] = useState<DietTab>('manual');
-  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [meals, setMeals] = useState<MealsRow[]>([]);
   const [mealsLoading, setMealsLoading] = useState(true);
 
@@ -125,22 +120,9 @@ export default function DietaPage() {
   const [importConfirmed, setImportConfirmed] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
 
-  // ── Date navigation ────────────────────────────────────────
+  const todayDate = format(new Date(), 'yyyy-MM-dd');
 
-  const navigateDate = (delta: number) => {
-    const parsed = parseISO(selectedDate);
-    const newDate = delta > 0 ? addDays(parsed, 1) : subDays(parsed, 1);
-    setSelectedDate(format(newDate, 'yyyy-MM-dd'));
-  };
-
-  const formattedDate = format(parseISO(selectedDate), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR });
-  const isToday = selectedDate === format(new Date(), 'yyyy-MM-dd');
-
-  // ── Meals for selected date ────────────────────────────────
-
-  const dayMeals = meals.filter((m) => m.meal_date === selectedDate);
-
-  const totals = dayMeals.reduce(
+  const totals = meals.reduce(
     (acc, m) => ({
       calories: acc.calories + (m.calories ?? 0),
       protein_g: acc.protein_g + (m.protein_g ?? 0),
@@ -149,6 +131,7 @@ export default function DietaPage() {
     }),
     { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
   );
+
 
   // ── Meal CRUD ──────────────────────────────────────────────
 
@@ -240,7 +223,7 @@ export default function DietaPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            mealDate: selectedDate,
+            mealDate: todayDate,
             mealName: m.meal_name,
             time: m.time ?? null,
             items: m.items ?? null,
@@ -287,7 +270,7 @@ export default function DietaPage() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="primary" dot>
-              {dayMeals.length} refeições
+              {meals.length} refeições
             </Badge>
           </div>
         </div>
@@ -300,46 +283,6 @@ export default function DietaPage() {
         {/* ── MANUAL TAB ── */}
         <TabPanel value="manual" activeValue={activeTab}>
           <div className="space-y-6">
-            {/* Date selector */}
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background-card px-4 py-3">
-              <button
-                type="button"
-                onClick={() => navigateDate(-1)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-3 transition-colors"
-                aria-label="Dia anterior"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
-                <CalendarDays className="w-4 h-4 text-primary flex-shrink-0" />
-                <span className="text-sm font-semibold text-text-primary capitalize truncate">
-                  {formattedDate}
-                </span>
-                {isToday && (
-                  <Badge variant="primary" size="sm">Hoje</Badge>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="sr-only"
-                  id="date-picker"
-                />
-                <button
-                  type="button"
-                  onClick={() => navigateDate(1)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-3 transition-colors"
-                  aria-label="Próximo dia"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
             {/* Meals list + summary layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Meals list */}
@@ -361,7 +304,7 @@ export default function DietaPage() {
                   </Button>
                 </div>
 
-                {dayMeals.length === 0 ? (
+                {meals.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-border bg-background-card p-10 text-center">
                     <div className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center mx-auto mb-3">
                       <Utensils className="w-6 h-6 text-text-muted" />
@@ -383,7 +326,7 @@ export default function DietaPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {dayMeals
+                    {meals
                       .sort((a, b) => (a.time ?? '').localeCompare(b.time ?? ''))
                       .map((meal) => (
                         <MealCard
@@ -650,7 +593,7 @@ export default function DietaPage() {
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-8 text-center animate-slide-up">
                 <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-4" />
                 <p className="text-base font-bold text-text-primary">Refeições importadas com sucesso!</p>
-                <p className="text-sm text-text-muted mt-1">As refeições foram adicionadas ao dia {selectedDate}.</p>
+                <p className="text-sm text-text-muted mt-1">As refeições foram adicionadas ao seu plano alimentar.</p>
                 <Button
                   variant="outline"
                   size="md"
@@ -677,7 +620,7 @@ export default function DietaPage() {
         }}
         onSubmit={handleAddMeal}
         defaultValues={editingMeal}
-        mealDate={selectedDate}
+        mealDate={todayDate}
         loading={formLoading}
       />
     </div>
