@@ -361,29 +361,51 @@ export const workoutSessionService = {
 
     // 2. Insert session exercises + sets
     for (const exercise of dto.exercises) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const exerciseRow: any = {
+        session_id: session.id,
+        exercise_id: exercise.exercise_id,
+        exercise_name: exercise.exercise_name,
+        order_index: exercise.order_index,
+        user_id: user.id,
+      }
+
       const { data: se, error: seError } = await supabase
         .from('workout_session_exercises')
-        .insert({
-          session_id: session.id,
-          exercise_id: exercise.exercise_id,
-          exercise_name: exercise.exercise_name,
-          order_index: exercise.order_index,
-        })
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        .insert(exerciseRow)
         .select()
         .single()
 
-      if (seError || !se) continue
+      if (seError || !se) {
+        console.error('[log] exercise insert failed:', seError?.message, exerciseRow)
+        // Delete the already-created session so we don't leave orphaned records
+        await supabase.from('workout_sessions').delete().eq('id', session.id)
+        return {
+          data: null,
+          error: `Erro ao salvar exercício "${exercise.exercise_name}": ${seError?.message ?? 'erro desconhecido'}`,
+        }
+      }
 
-      const setsToInsert = exercise.sets.map((s) => ({
-        session_exercise_id: se.id,
-        set_number: s.set_number,
-        weight: s.weight ?? null,
-        reps: s.reps ?? null,
-        is_pr: s.is_pr ?? false,
-      }))
+      if (exercise.sets.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const setsToInsert: any[] = exercise.sets.map((s) => ({
+          session_exercise_id: se.id,
+          set_number: s.set_number,
+          weight: s.weight ?? null,
+          reps: s.reps ?? null,
+          is_pr: s.is_pr ?? false,
+          user_id: user.id,
+        }))
 
-      if (setsToInsert.length > 0) {
-        await supabase.from('workout_session_sets').insert(setsToInsert)
+        const { error: setsError } = await supabase
+          .from('workout_session_sets')
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          .insert(setsToInsert)
+
+        if (setsError) {
+          console.error('[log] sets insert failed:', setsError.message)
+        }
       }
     }
 
