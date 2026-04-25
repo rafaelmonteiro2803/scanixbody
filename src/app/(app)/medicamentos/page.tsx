@@ -471,7 +471,7 @@ export default function MedicamentosPage() {
         route: m.route ?? null,
         start_date: null,
         notes: m.notes ?? null,
-        source: 'import' as const,
+        source: 'file_import' as const,
       }));
 
       const { error: insertError } = await supabase.from('medication_entries').insert(rows);
