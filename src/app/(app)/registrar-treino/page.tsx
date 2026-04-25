@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Calendar,
@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Trophy,
   Dumbbell,
+  Timer,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
@@ -35,40 +36,6 @@ interface ExerciseSetsMap {
 }
 
 // ---------------------------------------------------------------------------
-// Timer hook
-// ---------------------------------------------------------------------------
-
-function useSessionTimer() {
-  const [elapsed, setElapsed] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const startedAtRef = useRef<Date | null>(null)
-
-  function start() {
-    startedAtRef.current = new Date()
-    intervalRef.current = setInterval(() => {
-      setElapsed((prev) => prev + 1)
-    }, 1000)
-  }
-
-  function stop() {
-    if (intervalRef.current) clearInterval(intervalRef.current)
-  }
-
-  useEffect(() => () => stop(), [])
-
-  function format() {
-    const h = Math.floor(elapsed / 3600)
-    const m = Math.floor((elapsed % 3600) / 60)
-    const s = elapsed % 60
-    if (h > 0)
-      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-  }
-
-  return { start, stop, format, startedAt: startedAtRef }
-}
-
-// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -85,6 +52,14 @@ function today(): string {
   return new Date().toISOString().split('T')[0]
 }
 
+function formatDurationLabel(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h > 0 && m > 0) return `${h}h ${m}min`
+  if (h > 0) return `${h}h`
+  return `${m}min`
+}
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -96,6 +71,7 @@ export default function RegistrarTreinoPage() {
   const [loadingDays, setLoadingDays] = useState(true)
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null)
   const [sessionDate, setSessionDate] = useState(today())
+  const [durationMinutes, setDurationMinutes] = useState<string>('')
 
   // Sets state: exerciseId → SetRow[]
   const [setsMap, setSetsMap] = useState<ExerciseSetsMap>({})
@@ -106,8 +82,6 @@ export default function RegistrarTreinoPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-
-  const timer = useSessionTimer()
 
   // ── Load workout days ────────────────────────────────────────────────
 
@@ -137,7 +111,6 @@ export default function RegistrarTreinoPage() {
           if (sets.length === 0) {
             results[ex.id] = null
           } else {
-            // find best: highest weight, then highest reps
             const best = sets.reduce<typeof sets[0]>((b, c) => {
               const bw = b.weight ?? 0
               const cw = c.weight ?? 0
@@ -184,7 +157,6 @@ export default function RegistrarTreinoPage() {
 
       const updated = { ...exerciseSets[idx], [field]: value }
 
-      // PR detection
       const w = parseFloat(updated.weight)
       const r = parseInt(updated.reps, 10)
       if (!isNaN(w) && !isNaN(r) && w > 0 && r > 0) {
@@ -231,12 +203,10 @@ export default function RegistrarTreinoPage() {
   function goToStep2() {
     if (!selectedDayId) return
     setStep(2)
-    timer.start()
   }
 
   function goToStep1() {
     setStep(1)
-    timer.stop()
   }
 
   // ── Save session ─────────────────────────────────────────────────────
@@ -246,7 +216,15 @@ export default function RegistrarTreinoPage() {
     setSaving(true)
     setSaveError(null)
 
-    const finishedAt = new Date().toISOString()
+    const now = new Date()
+    const mins = parseInt(durationMinutes, 10)
+    const hasDuration = !isNaN(mins) && mins > 0
+
+    const finishedAt = hasDuration ? now.toISOString() : undefined
+    const startedAt = hasDuration
+      ? new Date(now.getTime() - mins * 60_000).toISOString()
+      : undefined
+
     const exercises = selectedDay.exercises.map((ex, idx) => ({
       exercise_id: ex.id,
       exercise_name: ex.name,
@@ -264,7 +242,7 @@ export default function RegistrarTreinoPage() {
     const { error } = await workoutSessionService.log({
       workout_day_id: selectedDay.id,
       session_date: sessionDate,
-      started_at: timer.startedAt.current?.toISOString(),
+      started_at: startedAt,
       finished_at: finishedAt,
       exercises,
     })
@@ -274,7 +252,6 @@ export default function RegistrarTreinoPage() {
     if (error) {
       setSaveError(error)
     } else {
-      timer.stop()
       setSaved(true)
     }
   }
@@ -284,6 +261,9 @@ export default function RegistrarTreinoPage() {
   const totalPRs = Object.values(setsMap)
     .flat()
     .filter((s) => s.isPR).length
+
+  const parsedDuration = parseInt(durationMinutes, 10)
+  const hasDuration = !isNaN(parsedDuration) && parsedDuration > 0
 
   // ── Saved state ──────────────────────────────────────────────────────
 
@@ -301,15 +281,19 @@ export default function RegistrarTreinoPage() {
             Seu treino foi salvo com sucesso.
           </p>
           {totalPRs > 0 && (
-            <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="flex items-center justify-center gap-2 mb-4">
               <Trophy className="w-4 h-4 text-primary" />
               <span className="text-sm font-bold text-primary">
                 {totalPRs} PR{totalPRs > 1 ? 's' : ''} batido{totalPRs > 1 ? 's' : ''}!
               </span>
             </div>
           )}
-          <p className="text-xs text-text-muted mb-6">Duração: {timer.format()}</p>
-          <div className="flex gap-3 justify-center">
+          {hasDuration && (
+            <p className="text-xs text-text-muted mb-6">
+              Duração: {formatDurationLabel(parsedDuration)}
+            </p>
+          )}
+          <div className="flex gap-3 justify-center mt-6">
             <Button
               variant="secondary"
               size="md"
@@ -326,6 +310,7 @@ export default function RegistrarTreinoPage() {
                 setSelectedDayId(null)
                 setSetsMap({})
                 setSessionDate(today())
+                setDurationMinutes('')
               }}
             >
               Novo Treino
@@ -348,7 +333,7 @@ export default function RegistrarTreinoPage() {
               REGISTRAR TREINO
             </h1>
             <p className="mt-1 text-sm text-text-secondary">
-              Selecione o dia e a data da sessão
+              Selecione o treino e preencha os dados da sessão
             </p>
           </div>
 
@@ -399,6 +384,33 @@ export default function RegistrarTreinoPage() {
                 </div>
               </div>
 
+              {/* Duration field */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-text-secondary">
+                  Duração do treino{' '}
+                  <span className="text-text-muted font-normal">(opcional)</span>
+                </label>
+                <div className="relative flex items-center h-10 rounded-lg border border-border bg-background-secondary hover:border-border-strong transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+                  <Timer className="w-4 h-4 text-text-muted ml-3 flex-shrink-0" />
+                  <input
+                    type="number"
+                    min="1"
+                    max="600"
+                    step="1"
+                    value={durationMinutes}
+                    onChange={(e) => setDurationMinutes(e.target.value)}
+                    placeholder="Ex: 60"
+                    className="flex-1 h-full bg-transparent px-3 text-sm text-text-title focus:outline-none placeholder:text-text-faint"
+                  />
+                  <span className="text-xs text-text-muted pr-3">min</span>
+                </div>
+                {hasDuration && (
+                  <p className="text-xs text-text-muted">
+                    {formatDurationLabel(parsedDuration)}
+                  </p>
+                )}
+              </div>
+
               {/* Selected day preview */}
               {selectedDay && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
@@ -431,7 +443,7 @@ export default function RegistrarTreinoPage() {
                 rightIcon={<ChevronRight className="w-4 h-4" />}
                 onClick={goToStep2}
               >
-                Iniciar Sessão
+                Registrar Exercícios
               </Button>
             </div>
           )}
@@ -460,10 +472,10 @@ export default function RegistrarTreinoPage() {
             <p className="text-xs text-text-muted">{sessionDate}</p>
           </div>
 
-          {/* Timer */}
-          <div className="flex items-center gap-1.5 text-sm font-mono font-bold text-text-title">
+          {/* Duration badge (static) */}
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-text-secondary">
             <Clock className="w-4 h-4 text-primary" />
-            {timer.format()}
+            {hasDuration ? formatDurationLabel(parsedDuration) : '—'}
           </div>
         </div>
       </div>
