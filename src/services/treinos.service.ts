@@ -435,16 +435,24 @@ const treinosService = {
   async getSessionHistory(
     userId: string,
     limit = 20,
-  ): Promise<WorkoutSession[]> {
+    offset = 0,
+  ): Promise<{ data: WorkoutSession[]; total: number }> {
     const supabase = await createClient()
 
-    const { data, error } = await supabase
-      .from('workout_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .order('session_date', { ascending: false })
-      .limit(limit)
+    const [{ data, error }, { count, error: countError }] = await Promise.all([
+      supabase
+        .from('workout_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .is('deleted_at', null)
+        .order('session_date', { ascending: false })
+        .range(offset, offset + limit - 1),
+      supabase
+        .from('workout_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .is('deleted_at', null),
+    ])
 
     if (error) {
       throw new TreinosServiceError(
@@ -452,8 +460,14 @@ const treinosService = {
         error.code,
       )
     }
+    if (countError) {
+      throw new TreinosServiceError(
+        `getSessionHistory count failed: ${countError.message}`,
+        countError.code,
+      )
+    }
 
-    return data ?? []
+    return { data: data ?? [], total: count ?? 0 }
   },
 
   /**

@@ -28,11 +28,13 @@ export const GET = withAuth(async (request: NextRequest, ctx: AuthContext) => {
   const { searchParams } = new URL(request.url)
 
   const limitParam = searchParams.get('limit')
+  const offsetParam = searchParams.get('offset')
   const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 20, 100) : 20
+  const offset = offsetParam ? Math.max(parseInt(offsetParam, 10) || 0, 0) : 0
 
   try {
-    const sessions = await treinosService.getSessionHistory(ctx.userId, limit)
-    return createApiResponse({ sessions, total: sessions.length })
+    const { data: sessions, total } = await treinosService.getSessionHistory(ctx.userId, limit, offset)
+    return createApiResponse({ sessions, total, limit, offset })
   } catch (err) {
     console.error('[GET /sessoes]', err)
     const message = err instanceof Error ? err.message : 'Erro ao buscar sessões'

@@ -29,6 +29,11 @@ import type { AuthContext } from '@/lib/api-helpers'
 export const GET = withAuth(async (request: NextRequest, ctx: AuthContext) => {
   const { searchParams } = new URL(request.url)
 
+  const limitParam = searchParams.get('limit')
+  const offsetParam = searchParams.get('offset')
+  const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 20, 100) : 20
+  const offset = offsetParam ? Math.max(parseInt(offsetParam, 10) || 0, 0) : 0
+
   const queryInput = {
     source: searchParams.get('source') ?? undefined,
     markerName: searchParams.get('markerName') ?? undefined,
@@ -48,14 +53,14 @@ export const GET = withAuth(async (request: NextRequest, ctx: AuthContext) => {
   }
 
   try {
-    const reports = await examesService.getExamReports(ctx.userId)
+    const { data: reports, total } = await examesService.getExamReports(ctx.userId, { limit, offset })
 
     // Optionally filter by source on the result set
     const filtered = query?.source
       ? reports.filter((r) => r.source === query.source)
       : reports
 
-    return createApiResponse({ reports: filtered, total: filtered.length })
+    return createApiResponse({ reports: filtered, total, limit, offset })
   } catch (err) {
     console.error('[GET /exames]', err)
     const message = err instanceof Error ? err.message : 'Erro ao buscar exames'

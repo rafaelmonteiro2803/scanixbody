@@ -51,24 +51,36 @@ const examesService = {
   /**
    * Returns all non-deleted exam reports for a user, newest first.
    */
-  async getExamReports(userId: string): Promise<ExamReport[]> {
+  async getExamReports(
+    userId: string,
+    options: { limit?: number; offset?: number } = {},
+  ): Promise<{ data: ExamReport[]; total: number }> {
     const supabase = await createClient()
+    const { limit = 20, offset = 0 } = options
 
-    const { data, error } = await supabase
-      .from('exam_reports')
-      .select('*')
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false })
+    const [{ data, error }, { count, error: countError }] = await Promise.all([
+      supabase
+        .from('exam_reports')
+        .select('*')
+        .eq('user_id', userId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1),
+      supabase
+        .from('exam_reports')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .is('deleted_at', null),
+    ])
 
     if (error) {
-      throw new ExamesServiceError(
-        `getExamReports failed: ${error.message}`,
-        error.code,
-      )
+      throw new ExamesServiceError(`getExamReports failed: ${error.message}`, error.code)
+    }
+    if (countError) {
+      throw new ExamesServiceError(`getExamReports count failed: ${countError.message}`, countError.code)
     }
 
-    return data ?? []
+    return { data: data ?? [], total: count ?? 0 }
   },
 
   /**
