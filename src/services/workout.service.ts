@@ -245,7 +245,10 @@ export const workoutExerciseService = {
 // ---------------------------------------------------------------------------
 
 export const workoutSessionService = {
-  async list(): Promise<{ data: SessionWithDetails[]; error: string | null }> {
+  async list(options?: {
+    limit?: number
+    offset?: number
+  }): Promise<{ data: SessionWithDetails[]; error: string | null; hasMore: boolean }> {
     const supabase = createClient()
     const {
       data: { user },
@@ -253,8 +256,11 @@ export const workoutSessionService = {
     } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return { data: [], error: 'Usuário não autenticado' }
+      return { data: [], error: 'Usuário não autenticado', hasMore: false }
     }
+
+    const limit = options?.limit ?? 20
+    const offset = options?.offset ?? 0
 
     const { data: sessions, error: sessionsError } = await supabase
       .from('workout_sessions')
@@ -262,9 +268,11 @@ export const workoutSessionService = {
       .eq('user_id', user.id)
       .is('deleted_at', null)
       .order('session_date', { ascending: false })
+      .range(offset, offset + limit - 1)
 
-    if (sessionsError) return { data: [], error: sessionsError.message }
-    if (!sessions || sessions.length === 0) return { data: [], error: null }
+    if (sessionsError) return { data: [], error: sessionsError.message, hasMore: false }
+    if (!sessions || sessions.length === 0) return { data: [], error: null, hasMore: false }
+    const hasMore = sessions.length === limit
 
     const sessionIds = sessions.map((s) => s.id)
     const dayIds = [...new Set(sessions.map((s) => s.workout_day_id))]
@@ -329,7 +337,7 @@ export const workoutSessionService = {
       exercises: exercisesBySession[s.id] ?? [],
     }))
 
-    return { data: result, error: null }
+    return { data: result, error: null, hasMore }
   },
 
   async log(

@@ -375,7 +375,7 @@ O nicho é único: único app brasileiro que integra treino + dieta + hormônios
 | M2 | Todas as list APIs | — | Sem paginação com offset | `.range()` + offset em sessoes/dieta/exames | ✅ |
 | M3 | `analise-ia/route.ts` | — | Sem rate limiting na rota de IA | `rate-limiter.ts` sliding window | ✅ |
 | M4 | `ai.service.ts` | 73-79 | Fallback para localhost quando env ausente | `requireEnv()` em `utils.ts` | ✅ |
-| M5 | `workout.service.ts` | 383 | Session delete sem tratamento de erro no rollback | Aberto |
+| M5 | `workout.service.ts` | 383 | Session delete sem tratamento de erro no rollback | ✅ |
 | M6 | Múltiplos forms | — | Sem validação client-side (peso negativo, idade 0) | Aberto |
 
 ### 🟢 BAIXO
@@ -384,7 +384,7 @@ O nicho é único: único app brasileiro que integra treino + dieta + hormônios
 |---|---------|-------|---------|--------|
 | L1 | `src/domain/` (todos) | — | Zero testes unitários em funções de domínio críticas | Aberto |
 | L2 | Formulários numéricos | — | `inputMode` ausente em inputs numéricos (mobile UX) | ✅ |
-| L3 | `analise-ia/page.tsx` | — | Sem indicação de tempo estimado durante geração | Aberto |
+| L3 | `analise-ia/page.tsx` | — | Sem indicação de tempo estimado durante geração | ✅ |
 | L4 | Dashboard | — | Skeleton loading inconsistente entre módulos | Aberto |
 | L5 | `analise-ia/route.ts` | — | `coach_students` sem verificação de RLS nas migrations | Aberto |
 
@@ -473,11 +473,11 @@ Para mitigar: mover inserts de audit para funções SECURITY DEFINER que validam
 ### Fase 2 — Retenção (1-2 meses)
 > Objetivo: reduzir churn de novos usuários
 
-- [ ] Onboarding wizard (4 passos, coleta dados básicos + objetivo)
-- [ ] Paginação em todas as listas
-- [ ] PR detection em tempo real no client
-- [ ] Progressive overload suggestion no formulário de registro
-- [ ] Streak de treino + badges básicos
+- [x] Onboarding wizard (4 passos, coleta dados básicos + objetivo)
+- [x] Paginação em todas as listas
+- [x] PR detection em tempo real no client
+- [x] Progressive overload suggestion no formulário de registro
+- [x] Streak de treino + badges básicos
 - [ ] Relatório semanal automático (cron + email)
 - [ ] Indicação de tempo estimado na geração de análise IA
 

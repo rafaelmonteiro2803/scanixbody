@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Button, ScoreRing, ProgressBar, Badge } from '@/components/ui';
 import { ChecklistItem, type ChecklistStatus as ModuleChecklistStatus } from './components/ChecklistItem';
-import { AnalysisReport, type MacroAdjustments } from './components/AnalysisReport';
+import { AnalysisReport, type MacroAdjustments, type CurrentMacros } from './components/AnalysisReport';
 import type { ScoreBreakdown } from '@/types/domain.types';
 import type { AnalysisResult } from '@/services/ai.service';
 import { cn } from '@/lib/utils';
@@ -171,6 +171,87 @@ interface ApiReport {
   generated_at: string;
 }
 
+// ── Macro food examples (view-layer: practical suggestions by macro + direction) ──
+
+interface MacroExample {
+  threshold: number
+  example: string
+}
+
+const MACRO_EXAMPLES: Record<string, { increase: MacroExample[]; decrease: MacroExample[] }> = {
+  calories: {
+    increase: [
+      { threshold: 100, example: '1 banana média' },
+      { threshold: 200, example: '1 iogurte grego + fruta' },
+      { threshold: 300, example: '1 banana + pasta de amendoim' },
+      { threshold: 500, example: 'refeição extra leve' },
+    ],
+    decrease: [
+      { threshold: 100, example: 'remover 1 suco industrializado' },
+      { threshold: 200, example: 'remover snack processado' },
+      { threshold: 300, example: 'reduzir porção de carboidrato no jantar' },
+      { threshold: 500, example: 'eliminar refeição extra desnecessária' },
+    ],
+  },
+  protein: {
+    increase: [
+      { threshold: 10, example: '2 claras de ovo' },
+      { threshold: 20, example: '1 dose de whey' },
+      { threshold: 35, example: '1 dose de whey + 1 ovo' },
+      { threshold: 55, example: '200g de frango grelhado' },
+      { threshold: 80, example: '300g de frango grelhado' },
+    ],
+    decrease: [
+      { threshold: 15, example: 'remover 1 dose de whey' },
+      { threshold: 30, example: 'reduzir carne/ovos no jantar' },
+    ],
+  },
+  carbs: {
+    increase: [
+      { threshold: 15, example: '1 fatia de pão integral' },
+      { threshold: 30, example: '1 banana média' },
+      { threshold: 50, example: '½ xícara de arroz cozido' },
+      { threshold: 80, example: '1 xícara de arroz cozido' },
+    ],
+    decrease: [
+      { threshold: 15, example: 'remover 1 fatia de pão' },
+      { threshold: 30, example: 'remover 1 banana' },
+      { threshold: 50, example: 'reduzir ½ xícara de arroz' },
+      { threshold: 80, example: 'remover doce de leite do cardápio' },
+    ],
+  },
+  fat: {
+    increase: [
+      { threshold: 10, example: '1 col. chá de azeite extra' },
+      { threshold: 20, example: '1 col. sopa de azeite' },
+      { threshold: 30, example: '1 porção de castanhas (30g)' },
+    ],
+    decrease: [
+      { threshold: 10, example: 'reduzir 1 col. de azeite/dia' },
+      { threshold: 20, example: 'remover castanhas do lanche' },
+      { threshold: 30, example: 'remover doce de leite' },
+    ],
+  },
+  water: {
+    increase: [
+      { threshold: 250, example: '1 copo extra ao dia' },
+      { threshold: 500, example: '1 garrafinha extra (500ml)' },
+      { threshold: 1000, example: '2 garrafinhas extras ao dia' },
+    ],
+    decrease: [
+      { threshold: 500, example: 'reduzir 1 garrafinha' },
+    ],
+  },
+}
+
+function getMacroExample(macro: keyof typeof MACRO_EXAMPLES, delta: number): string {
+  const direction = delta > 0 ? 'increase' : 'decrease'
+  const abs = Math.abs(delta)
+  const examples = MACRO_EXAMPLES[macro][direction]
+  const match = examples.find((e) => abs <= e.threshold)
+  return match?.example ?? examples[examples.length - 1]?.example ?? ''
+}
+
 export default function AnaliseIAPage() {
   const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -182,6 +263,11 @@ export default function AnaliseIAPage() {
   const [canRerun, setCanRerun] = useState(true);
   const [lastGeneratedAt, setLastGeneratedAt] = useState<string | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
+
+  // Current actual macros from today's meals
+  const [currentMacros, setCurrentMacros] = useState<{
+    calories: number; protein_g: number; carbs_g: number; fat_g: number; water_ml: number
+  } | null>(null);
 
   // ── Loading progress state ────────────────────────────────────
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -248,14 +334,35 @@ export default function AnaliseIAPage() {
   // Cleanup timers on unmount
   useEffect(() => () => stopLoadingTimers(), [stopLoadingTimers]);
 
-  // Load checklist status on mount
+  // Load checklist status + today's macros on mount
   useEffect(() => {
+    // Checklist + existing report
     fetch('/api/v1/analise-ia')
       .then((r) => r.json() as Promise<{ data?: { checklistStatus?: ApiChecklistStatus; report?: ApiReport | null; canRerun?: boolean } }>)
       .then(({ data }) => {
         if (data?.checklistStatus) setChecklist(data.checklistStatus);
         if (typeof data?.canRerun === 'boolean') setCanRerun(data.canRerun);
         if (data?.report) applyReport(data.report);
+      })
+      .catch(() => { /* non-fatal */ });
+
+    // Today's actual macro totals from meals
+    const today = new Date().toISOString().slice(0, 10);
+    fetch(`/api/v1/dieta?date=${today}`)
+      .then((r) => r.json() as Promise<{ data?: { meals?: Array<{ calories?: number | null; protein_g?: number | null; carbs_g?: number | null; fat_g?: number | null }> } }>)
+      .then(({ data }) => {
+        const meals = data?.meals ?? [];
+        const totals = meals.reduce(
+          (acc, m) => ({
+            calories: acc.calories + (m.calories ?? 0),
+            protein_g: acc.protein_g + (m.protein_g ?? 0),
+            carbs_g: acc.carbs_g + (m.carbs_g ?? 0),
+            fat_g: acc.fat_g + (m.fat_g ?? 0),
+            water_ml: acc.water_ml,
+          }),
+          { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0, water_ml: 0 },
+        );
+        setCurrentMacros(totals);
       })
       .catch(() => { /* non-fatal */ });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -590,26 +697,114 @@ export default function AnaliseIAPage() {
                 <Zap className="w-3.5 h-3.5 text-[#00ff88]" />
                 Ajustes Sugeridos
               </h3>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                {[
-                  { label: 'Calorias', value: MOCK_MACRO_ADJUSTMENTS.calories, unit: 'kcal', color: '#ff9500' },
-                  { label: 'Proteína', value: MOCK_MACRO_ADJUSTMENTS.protein_g, unit: 'g', color: '#5ac8fa' },
-                  { label: 'Carbs', value: MOCK_MACRO_ADJUSTMENTS.carbs_g, unit: 'g', color: '#ffaa00' },
-                  { label: 'Gordura', value: MOCK_MACRO_ADJUSTMENTS.fat_g, unit: 'g', color: '#ff6b6b' },
-                  { label: 'Água', value: MOCK_MACRO_ADJUSTMENTS.water_ml, unit: 'ml', color: '#00d4ff' },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-lg bg-background border border-border p-3 text-center"
-                  >
-                    <p className="text-2xs text-text-muted uppercase tracking-wider mb-1">{item.label}</p>
-                    <p className="text-lg font-black" style={{ color: item.color }}>
-                      {item.value?.toLocaleString('pt-BR') ?? '—'}
-                    </p>
-                    <p className="text-2xs text-text-muted">{item.unit}/dia</p>
-                  </div>
-                ))}
+
+              <div className="space-y-3">
+                {(
+                  [
+                    {
+                      label: 'Calorias',
+                      macroKey: 'calories' as const,
+                      target: MOCK_MACRO_ADJUSTMENTS.calories,
+                      current: currentMacros?.calories,
+                      unit: 'kcal',
+                      color: '#ff9500',
+                    },
+                    {
+                      label: 'Proteína',
+                      macroKey: 'protein' as const,
+                      target: MOCK_MACRO_ADJUSTMENTS.protein_g,
+                      current: currentMacros?.protein_g,
+                      unit: 'g',
+                      color: '#5ac8fa',
+                    },
+                    {
+                      label: 'Carboidratos',
+                      macroKey: 'carbs' as const,
+                      target: MOCK_MACRO_ADJUSTMENTS.carbs_g,
+                      current: currentMacros?.carbs_g,
+                      unit: 'g',
+                      color: '#ffaa00',
+                    },
+                    {
+                      label: 'Gordura',
+                      macroKey: 'fat' as const,
+                      target: MOCK_MACRO_ADJUSTMENTS.fat_g,
+                      current: currentMacros?.fat_g,
+                      unit: 'g',
+                      color: '#ff6b6b',
+                    },
+                    {
+                      label: 'Água',
+                      macroKey: 'water' as const,
+                      target: MOCK_MACRO_ADJUSTMENTS.water_ml,
+                      current: currentMacros?.water_ml,
+                      unit: 'ml',
+                      color: '#00d4ff',
+                    },
+                  ] as const
+                ).map((item) => {
+                  const hasCurrent = item.current != null && item.current > 0
+                  const delta = hasCurrent ? (item.target ?? 0) - (item.current ?? 0) : null
+                  const absDelta = delta != null ? Math.abs(delta) : null
+                  const direction = delta != null ? (delta > 0 ? 'aumentar' : 'reduzir') : null
+                  const example = delta != null && absDelta != null && absDelta >= 5
+                    ? getMacroExample(item.macroKey, delta)
+                    : null
+
+                  return (
+                    <div
+                      key={item.label}
+                      className="rounded-xl border border-border bg-background p-4 flex items-center gap-4"
+                    >
+                      {/* Target value */}
+                      <div className="w-20 flex-shrink-0 text-center">
+                        <p className="text-[10px] text-text-muted uppercase tracking-wider mb-0.5">{item.label}</p>
+                        <p className="text-xl font-black tabular-nums" style={{ color: item.color }}>
+                          {item.target?.toLocaleString('pt-BR') ?? '—'}
+                        </p>
+                        <p className="text-[10px] text-text-faint">{item.unit}/dia</p>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="w-px h-10 bg-border flex-shrink-0" />
+
+                      {/* Delta + example */}
+                      <div className="flex-1 min-w-0">
+                        {delta != null && absDelta != null && absDelta >= 5 ? (
+                          <>
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span
+                                className={`text-sm font-bold ${delta > 0 ? 'text-[#00ff88]' : 'text-[#ff6b6b]'}`}
+                              >
+                                {delta > 0 ? '▲' : '▼'} {direction} {absDelta.toLocaleString('pt-BR')}{item.unit}/dia
+                              </span>
+                              <span className="text-xs text-text-muted">
+                                (atual: {Math.round(item.current ?? 0).toLocaleString('pt-BR')}{item.unit})
+                              </span>
+                            </div>
+                            {example && (
+                              <p className="text-xs text-text-muted truncate">
+                                ex:{' '}
+                                <span className="text-text-secondary font-medium">{example}</span>
+                              </p>
+                            )}
+                          </>
+                        ) : delta != null && absDelta != null && absDelta < 5 ? (
+                          <p className="text-sm text-[#00ff88] font-medium">✓ Dentro da meta</p>
+                        ) : (
+                          <p className="text-xs text-text-muted italic">
+                            Registre suas refeições para ver o ajuste necessário
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
+
+              <p className="text-[10px] text-text-faint mt-3">
+                Baseado nas refeições registradas hoje. Registre refeições diariamente para ajustes precisos.
+              </p>
             </div>
           </section>
         )}
@@ -647,6 +842,7 @@ export default function AnaliseIAPage() {
               scores={scores}
               result={result}
               macroAdjustments={MOCK_MACRO_ADJUSTMENTS}
+              currentMacros={currentMacros as CurrentMacros | null}
             />
           </section>
         )}

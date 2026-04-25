@@ -23,10 +23,19 @@ export interface MacroAdjustments {
   water_ml?: number | null;
 }
 
+export interface CurrentMacros {
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  water_ml: number;
+}
+
 export interface AnalysisReportProps {
   scores: ScoreBreakdown;
   result: AnalysisResult;
   macroAdjustments?: MacroAdjustments;
+  currentMacros?: CurrentMacros | null;
   athleteName?: string;
 }
 
@@ -70,7 +79,7 @@ function ScoreRow({ label, score }: { label: string; score: number }) {
 // ── Component ─────────────────────────────────────────────────
 
 export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
-  ({ scores, result, macroAdjustments, athleteName }, ref) => {
+  ({ scores, result, macroAdjustments, currentMacros, athleteName }, ref) => {
     const formattedDate = new Date(result.generatedAt).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'long',
@@ -229,22 +238,42 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
                   <Droplets className="w-4 h-4 text-blue-400" />
                   Ajustes Sugeridos
                 </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="space-y-2">
                   {[
-                    { label: 'Calorias', value: macroAdjustments.calories, unit: 'kcal' },
-                    { label: 'Proteína', value: macroAdjustments.protein_g, unit: 'g' },
-                    { label: 'Carboidrato', value: macroAdjustments.carbs_g, unit: 'g' },
-                    { label: 'Gordura', value: macroAdjustments.fat_g, unit: 'g' },
-                    { label: 'Água', value: macroAdjustments.water_ml, unit: 'ml' },
+                    { label: 'Calorias', target: macroAdjustments.calories, current: currentMacros?.calories, unit: 'kcal', color: '#ff9500' },
+                    { label: 'Proteína', target: macroAdjustments.protein_g, current: currentMacros?.protein_g, unit: 'g', color: '#5ac8fa' },
+                    { label: 'Carboidratos', target: macroAdjustments.carbs_g, current: currentMacros?.carbs_g, unit: 'g', color: '#ffaa00' },
+                    { label: 'Gordura', target: macroAdjustments.fat_g, current: currentMacros?.fat_g, unit: 'g', color: '#ff6b6b' },
+                    { label: 'Água', target: macroAdjustments.water_ml, current: currentMacros?.water_ml, unit: 'ml', color: '#00d4ff' },
                   ]
-                    .filter((item) => item.value !== null && item.value !== undefined)
-                    .map((item) => (
-                      <div key={item.label} className="rounded-lg bg-surface-1 border border-border p-3 text-center">
-                        <p className="text-xs text-text-muted uppercase tracking-wider mb-1">{item.label}</p>
-                        <p className="text-lg font-black text-text-title">{item.value}</p>
-                        <p className="text-xs text-text-faint">{item.unit}/dia</p>
-                      </div>
-                    ))}
+                    .filter((item) => item.target !== null && item.target !== undefined)
+                    .map((item) => {
+                      const hasCurrent = item.current != null && item.current > 0
+                      const delta = hasCurrent ? (item.target ?? 0) - (item.current ?? 0) : null
+                      const absDelta = delta != null ? Math.abs(delta) : null
+                      return (
+                        <div key={item.label} className="rounded-lg bg-surface-1 border border-border p-3 flex items-center gap-4">
+                          <div className="w-24 flex-shrink-0">
+                            <p className="text-[10px] text-text-muted uppercase tracking-wider">{item.label}</p>
+                            <p className="text-base font-black" style={{ color: item.color }}>
+                              {item.target?.toLocaleString('pt-BR')} <span className="text-xs font-normal text-text-faint">{item.unit}/dia</span>
+                            </p>
+                          </div>
+                          <div className="flex-1 text-xs">
+                            {delta != null && absDelta != null && absDelta >= 5 ? (
+                              <span className={delta > 0 ? 'text-[#00ff88]' : 'text-[#ff6b6b]'}>
+                                {delta > 0 ? '▲ aumentar' : '▼ reduzir'} {absDelta.toLocaleString('pt-BR')}{item.unit}/dia
+                                <span className="text-text-muted ml-1">(atual: {Math.round(item.current ?? 0)}{item.unit})</span>
+                              </span>
+                            ) : delta != null && absDelta != null && absDelta < 5 ? (
+                              <span className="text-[#00ff88]">✓ Dentro da meta</span>
+                            ) : (
+                              <span className="text-text-faint italic">Sem dados de consumo atual</span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                 </div>
               </section>
             )}

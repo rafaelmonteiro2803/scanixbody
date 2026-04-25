@@ -15,9 +15,11 @@ import {
   Weight,
   ChevronRight,
   Heart,
+  Flame,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate } from '@/lib/utils'
+import { calculateWeeklyStreak } from '@/domain/workout-calculations'
 import type { UserRole } from '@/types/database.types'
 
 export const metadata: Metadata = {
@@ -200,6 +202,7 @@ export default async function DashboardPage() {
     { data: recentSessions },
     { data: latestAiReportRaw },
     { count: totalSessions },
+    { data: allSessionDatesRaw },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -234,6 +237,15 @@ export default async function DashboardPage() {
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .is('deleted_at', null),
+
+    // For streak & this-month count (last 365 sessions is more than enough)
+    supabase
+      .from('workout_sessions')
+      .select('session_date')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .order('session_date', { ascending: false })
+      .limit(365),
   ])
 
   // Type-assert query results (Supabase client is untyped without generated types)
@@ -252,10 +264,27 @@ export default async function DashboardPage() {
   const isProfileComplete = !!athleteProfile?.weight && !!athleteProfile?.body_fat_percentage
   const lastSession = recentSessions?.[0] as { id: string; session_date: string; workout_days: { name: string } | null } | undefined
   const aiScore = latestAiReport?.score_overall
-
-  // Compute total volume (approximate from session count × avg session volume)
-  // For a real app, this would join session_sets. Placeholder for now.
   const sessionCount = totalSessions ?? 0
+
+  // Streak + this-month computations (server-side, pure domain function)
+  const today = new Date().toISOString().slice(0, 10)
+  const sessionDates = (allSessionDatesRaw ?? []).map((s) => (s as { session_date: string }).session_date)
+  const weekStreak = calculateWeeklyStreak(sessionDates, today)
+  const thisMonth = today.slice(0, 7) // "YYYY-MM"
+  const thisMonthCount = sessionDates.filter((d) => d.startsWith(thisMonth)).length
+
+  // Badges (computed, no DB)
+  const BADGES = [
+    { id: 'first',   icon: '🏋️', label: 'Primeira Sessão',   earned: sessionCount >= 1   },
+    { id: 'ten',     icon: '💪', label: '10 Treinos',         earned: sessionCount >= 10  },
+    { id: 'fifty',   icon: '🔥', label: '50 Treinos',         earned: sessionCount >= 50  },
+    { id: 'hundred', icon: '⚡', label: '100 Treinos',        earned: sessionCount >= 100 },
+    { id: 'streak1', icon: '📅', label: '1 Semana Seguida',   earned: weekStreak >= 1     },
+    { id: 'streak4', icon: '🌟', label: '4 Semanas Seguidas', earned: weekStreak >= 4     },
+    { id: 'streak12',icon: '🏆', label: '12 Semanas Seguidas',earned: weekStreak >= 12    },
+  ]
+  const earnedBadges = BADGES.filter((b) => b.earned)
+  const nextBadge = BADGES.find((b) => !b.earned)
 
   // Get hour for greeting
   const hour = new Date().getHours()
@@ -355,6 +384,76 @@ export default async function DashboardPage() {
           />
         </div>
       </section>
+
+      {/* ── Streak + Badges ── */}
+      {sessionCount > 0 && (
+        <section>
+          <SectionHeading
+            title="Sequência de treino"
+            action={{ label: 'Ver histórico', href: '/historico' }}
+          />
+
+          {/* Streak counters */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="rounded-2xl border border-[#ff6b00]/20 bg-[#ff6b00]/6 p-5 flex items-center gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#ff6b00]/15 border border-[#ff6b00]/20">
+                <Flame className="h-6 w-6 text-[#ff6b00]" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-text-faint">Semanas seguidas</p>
+                <p
+                  className="text-3xl font-bold text-[#ff6b00] tabular-nums"
+                  style={{ fontFamily: 'var(--font-orbitron), monospace' }}
+                >
+                  {weekStreak}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-border-subtle bg-background-secondary p-5 flex items-center gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+                <Calendar className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-text-faint">Este mês</p>
+                <p
+                  className="text-3xl font-bold text-primary tabular-nums"
+                  style={{ fontFamily: 'var(--font-orbitron), monospace' }}
+                >
+                  {thisMonthCount}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Badges */}
+          <div className="rounded-2xl border border-border-subtle bg-background-secondary p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-text-faint mb-3">
+              Conquistas
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {BADGES.map((badge) => (
+                <div
+                  key={badge.id}
+                  title={badge.label}
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                    badge.earned
+                      ? 'border-primary/30 bg-primary/10 text-primary'
+                      : 'border-border bg-background text-text-faint opacity-40'
+                  }`}
+                >
+                  <span>{badge.icon}</span>
+                  <span>{badge.label}</span>
+                </div>
+              ))}
+            </div>
+            {nextBadge && earnedBadges.length < BADGES.length && (
+              <p className="mt-3 text-xs text-text-muted">
+                Próxima conquista: <span className="text-text-secondary font-medium">{nextBadge.icon} {nextBadge.label}</span>
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── Body quick stats ── */}
       {athleteProfile && isProfileComplete && (

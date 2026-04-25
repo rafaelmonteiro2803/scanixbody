@@ -1,9 +1,10 @@
 'use client'
 
 import React from 'react'
-import { Plus, Trash2, Trophy, Dumbbell } from 'lucide-react'
+import { Plus, Trash2, Trophy, Dumbbell, TrendingUp } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import type { WorkoutExercisesRow } from '@/types/database.types'
+import type { WorkoutSet } from '@/types/domain.types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -19,6 +20,7 @@ export interface SetRow {
 interface SessionExerciseCardProps {
   exercise: WorkoutExercisesRow
   sets: SetRow[]
+  bestLift?: WorkoutSet | null
   onSetChange: (exerciseId: string, setNumber: number, field: 'weight' | 'reps', value: string) => void
   onAddSet: (exerciseId: string) => void
   onRemoveSet: (exerciseId: string, setNumber: number) => void
@@ -31,6 +33,7 @@ interface SessionExerciseCardProps {
 export function SessionExerciseCard({
   exercise,
   sets,
+  bestLift,
   onSetChange,
   onAddSet,
   onRemoveSet,
@@ -62,6 +65,22 @@ export function SessionExerciseCard({
             {exercise.target_reps ? ` × ${exercise.target_reps} reps` : ''}
             {exercise.load ? ` @ ${exercise.load} kg${exercise.load_type === 'per_side' ? ' /lado' : ''}` : ''}
           </p>
+          {/* Progressive overload reference */}
+          {bestLift !== undefined && (
+            <div className="mt-1.5">
+              {bestLift && bestLift.weight > 0 ? (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-warning bg-warning/10 rounded-md px-2 py-0.5">
+                  <TrendingUp className="w-3 h-3" />
+                  Recorde: {bestLift.weight} kg × {bestLift.reps} reps
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 rounded-md px-2 py-0.5">
+                  <TrendingUp className="w-3 h-3" />
+                  Primeiro registro!
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
