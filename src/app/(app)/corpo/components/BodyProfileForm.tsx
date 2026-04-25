@@ -50,34 +50,34 @@ import { cn } from '@/lib/utils';
 const schema = z.object({
   // Section 1: Personal data
   full_name: z.string().max(100).optional().nullable(),
-  weight: z.coerce.number().min(20).max(500).optional().nullable(),
-  height: z.coerce.number().min(50).max(300).optional().nullable(),
-  age: z.coerce.number().int().min(1).max(150).optional().nullable(),
+  weight: z.coerce.number().min(20, 'Peso mínimo: 20 kg').max(500, 'Peso máximo: 500 kg').optional().nullable(),
+  height: z.coerce.number().min(50, 'Altura mínima: 50 cm').max(300, 'Altura máxima: 300 cm').optional().nullable(),
+  age: z.coerce.number().int('Idade deve ser um número inteiro').min(1, 'Idade mínima: 1 ano').max(150, 'Idade máxima: 150 anos').optional().nullable(),
   sex: z.enum(['M', 'F']).optional().nullable(),
 
   // Section 2: Body composition
-  body_fat_percentage: z.coerce.number().min(1).max(70).optional().nullable(),
-  fat_mass: z.coerce.number().min(0).max(400).optional().nullable(),
-  skeletal_muscle_mass: z.coerce.number().min(0).max(200).optional().nullable(),
-  lean_mass: z.coerce.number().min(0).max(400).optional().nullable(),
-  body_water: z.coerce.number().min(0).max(300).optional().nullable(),
-  protein_mass: z.coerce.number().min(0).max(100).optional().nullable(),
-  minerals_mass: z.coerce.number().min(0).max(50).optional().nullable(),
+  body_fat_percentage: z.coerce.number().min(1, 'Mínimo: 1%').max(70, 'Máximo: 70%').optional().nullable(),
+  fat_mass: z.coerce.number().min(0, 'Valor não pode ser negativo').max(400, 'Máximo: 400 kg').optional().nullable(),
+  skeletal_muscle_mass: z.coerce.number().min(0, 'Valor não pode ser negativo').max(200, 'Máximo: 200 kg').optional().nullable(),
+  lean_mass: z.coerce.number().min(0, 'Valor não pode ser negativo').max(400, 'Máximo: 400 kg').optional().nullable(),
+  body_water: z.coerce.number().min(0, 'Valor não pode ser negativo').max(300, 'Máximo: 300 L').optional().nullable(),
+  protein_mass: z.coerce.number().min(0, 'Valor não pode ser negativo').max(100, 'Máximo: 100 kg').optional().nullable(),
+  minerals_mass: z.coerce.number().min(0, 'Valor não pode ser negativo').max(50, 'Máximo: 50 kg').optional().nullable(),
 
   // Section 3: Indices
-  visceral_fat: z.coerce.number().min(1).max(20).optional().nullable(),
-  waist: z.coerce.number().min(40).max(250).optional().nullable(),
-  hip: z.coerce.number().min(40).max(250).optional().nullable(),
-  inbody_score: z.coerce.number().min(0).max(100).optional().nullable(),
+  visceral_fat: z.coerce.number().min(1, 'Mínimo: 1').max(20, 'Máximo: 20').optional().nullable(),
+  waist: z.coerce.number().min(40, 'Mínimo: 40 cm').max(250, 'Máximo: 250 cm').optional().nullable(),
+  hip: z.coerce.number().min(40, 'Mínimo: 40 cm').max(250, 'Máximo: 250 cm').optional().nullable(),
+  inbody_score: z.coerce.number().min(0, 'Mínimo: 0').max(100, 'Máximo: 100').optional().nullable(),
 
   // Section 4: Goals & lifestyle
   goal: z.string().optional().nullable(),
   activity_level: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active', 'lightly_active', 'moderately_active', 'super_active']).optional().nullable(),
-  goal_period_weeks: z.coerce.number().int().min(1).max(104).optional().nullable(),
-  water_per_day: z.coerce.number().min(0).max(20).optional().nullable(),
-  sleep_hours: z.coerce.number().min(0).max(24).optional().nullable(),
+  goal_period_weeks: z.coerce.number().int('Deve ser um número inteiro').min(1, 'Mínimo: 1 semana').max(104, 'Máximo: 104 semanas').optional().nullable(),
+  water_per_day: z.coerce.number().min(0, 'Valor não pode ser negativo').max(20, 'Máximo: 20 L').optional().nullable(),
+  sleep_hours: z.coerce.number().min(0, 'Valor não pode ser negativo').max(24, 'Máximo: 24 horas').optional().nullable(),
   sleep_quality: z.enum(['5', '4', '3', '2', '1']).optional().nullable(),
-  notes: z.string().max(2000).optional().nullable(),
+  notes: z.string().max(2000, 'Máximo de 2000 caracteres').optional().nullable(),
 
   // Section 5: Segments
   seg_right_arm_lean: z.coerce.number().min(0).max(200).optional().nullable(),

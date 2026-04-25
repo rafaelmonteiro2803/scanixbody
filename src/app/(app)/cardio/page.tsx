@@ -40,8 +40,8 @@ const profileSchema = z.object({
   practices: z.boolean(),
   type: z.string().optional().nullable(),
   intensity: z.enum(['low', 'moderate', 'high']).optional().nullable(),
-  duration_minutes: z.coerce.number().int().min(1).max(600).optional().nullable(),
-  frequency_per_week: z.coerce.number().int().min(1).max(14).optional().nullable(),
+  duration_minutes: z.coerce.number().int('Deve ser um número inteiro').min(1, 'Mínimo: 1 min').max(600, 'Máximo: 600 min').optional().nullable(),
+  frequency_per_week: z.coerce.number().int('Deve ser um número inteiro').min(1, 'Mínimo: 1 vez').max(14, 'Máximo: 14 vezes').optional().nullable(),
   timing: z.string().optional().nullable(),
   goal: z.string().optional().nullable(),
 });
@@ -49,9 +49,9 @@ const profileSchema = z.object({
 const sessionSchema = z.object({
   session_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
   type: z.string().optional().nullable(),
-  duration_minutes: z.coerce.number().int().min(1).max(600).optional().nullable(),
+  duration_minutes: z.coerce.number().int('Deve ser um número inteiro').min(1, 'Mínimo: 1 min').max(600, 'Máximo: 600 min').optional().nullable(),
   intensity: z.enum(['low', 'moderate', 'high']).optional().nullable(),
-  notes: z.string().max(500).optional().nullable(),
+  notes: z.string().max(500, 'Máximo de 500 caracteres').optional().nullable(),
 });
 
 type ProfileValues = z.infer<typeof profileSchema>;

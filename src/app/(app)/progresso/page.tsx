@@ -21,6 +21,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { Spinner } from '@/components/ui/Spinner'
+import { SkeletonStatRow, SkeletonCard } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 import { workoutSessionService } from '@/services/workout.service'
@@ -211,8 +212,10 @@ export default function ProgressoPage() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-24">
-            <Spinner size="lg" label="Carregando dados..." />
+          <div className="space-y-4">
+            <SkeletonStatRow count={4} />
+            <SkeletonCard lines={5} className="h-56" />
+            <SkeletonCard lines={5} className="h-56" />
           </div>
         ) : error ? (
           <div className="flex items-center gap-3 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">

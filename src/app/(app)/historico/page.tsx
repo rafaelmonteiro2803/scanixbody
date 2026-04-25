@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Spinner } from '@/components/ui/Spinner'
+import { SkeletonPageList } from '@/components/ui/Skeleton'
 import { workoutSessionService, type SessionWithDetails } from '@/services/workout.service'
 import { calculateSessionVolume } from '@/domain/workout-calculations'
 import { formatDate } from '@/lib/utils'
@@ -355,9 +355,7 @@ export default function HistoricoPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-24">
-            <Spinner size="lg" label="Carregando histórico..." />
-          </div>
+          <SkeletonPageList rows={6} />
         ) : sessions.length === 0 ? (
           <EmptyState
             icon={<Calendar />}

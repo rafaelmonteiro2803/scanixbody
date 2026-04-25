@@ -50,6 +50,16 @@ export type { TableProps, ColumnDef, SortDirection } from './Table';
 export { Tabs, TabPanel } from './Tabs';
 export type { TabsProps, TabPanelProps, TabItem, TabsVariant, TabsSize } from './Tabs';
 
+// ── Skeleton loading ──────────────────────────────────────
+export {
+  SkeletonLine,
+  SkeletonStat,
+  SkeletonCard,
+  SkeletonListItem,
+  SkeletonStatRow,
+  SkeletonPageList,
+} from './Skeleton';
+
 // ── Upload ────────────────────────────────────────────────
 export { FileUpload } from './FileUpload';
 export type { FileUploadProps } from './FileUpload';
