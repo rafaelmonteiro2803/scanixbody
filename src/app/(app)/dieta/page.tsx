@@ -96,8 +96,8 @@ export default function DietaPage() {
     setMealsLoading(true);
     try {
       const res = await fetch('/api/v1/dieta');
-      const json = await res.json() as { meals?: MealsRow[] };
-      setMeals(json.meals ?? []);
+      const json = await res.json() as { data?: { meals?: MealsRow[] } };
+      setMeals(json.data?.meals ?? []);
     } catch { /* non-fatal */ } finally {
       setMealsLoading(false);
     }

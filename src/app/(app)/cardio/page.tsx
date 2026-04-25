@@ -260,6 +260,7 @@ type Tab = 'perfil' | 'sessoes' | 'importar';
 export default function CardioPage() {
   const [activeTab, setActiveTab] = useState<Tab>('perfil');
   const [saved, setSaved] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   // ── Profile state ─────────────────────
   const {
@@ -329,8 +330,8 @@ export default function CardioPage() {
     void (async () => {
       try {
         const res = await fetch('/api/v1/cardio');
-        const json = await res.json() as { profile?: CardioProfilesRow | null };
-        const p = json.profile;
+        const json = await res.json() as { data?: { profile?: CardioProfilesRow | null } };
+        const p = json.data?.profile;
         if (p) {
           setValue('practices', p.practices);
           setValue('type', p.type ?? null);
@@ -351,8 +352,8 @@ export default function CardioPage() {
     setSessionsLoading(true);
     try {
       const res = await fetch('/api/v1/cardio/sessions');
-      const json = await res.json() as { sessions?: CardioSessionsRow[] };
-      setSessions(json.sessions ?? []);
+      const json = await res.json() as { data?: { sessions?: CardioSessionsRow[] } };
+      setSessions(json.data?.sessions ?? []);
     } catch {
       // non-fatal
     } finally {
@@ -367,8 +368,9 @@ export default function CardioPage() {
   // ── Handlers ──────────────────────────
 
   const onSubmitProfile = async (data: ProfileValues) => {
+    setProfileError(null);
     try {
-      await fetch('/api/v1/cardio', {
+      const res = await fetch('/api/v1/cardio', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -381,10 +383,18 @@ export default function CardioPage() {
           goal: data.goal ?? null,
         }),
       });
+      if (!res.ok) {
+        const errJson = await res.json() as { error?: { message?: string } | string };
+        const msg = typeof errJson.error === 'string'
+          ? errJson.error
+          : errJson.error?.message ?? 'Erro ao salvar perfil de cardio';
+        setProfileError(msg);
+        return;
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {
-      // surface error via UI if needed
+      setProfileError('Erro de conexão. Tente novamente.');
     }
   };
 
@@ -738,6 +748,9 @@ export default function CardioPage() {
 
                 <SummaryBanner data={watchedData} />
 
+                {profileError && (
+                  <p className="text-xs text-red-400 bg-red-400/10 rounded-lg px-3 py-2">{profileError}</p>
+                )}
                 <div className="flex justify-end">
                   <Button
                     type="submit"
