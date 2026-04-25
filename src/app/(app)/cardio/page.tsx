@@ -321,6 +321,7 @@ export default function CardioPage() {
   }>>([]);
   const [savingImport, setSavingImport] = useState(false);
   const [importSaved, setImportSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Load profile on mount ─────────────
@@ -448,9 +449,10 @@ export default function CardioPage() {
 
   const handleSaveImported = async () => {
     setSavingImport(true);
+    setSaveError(null);
     try {
       const today = new Date().toISOString().split('T')[0];
-      await Promise.all(
+      const results = await Promise.all(
         importedSessions.map((s) =>
           fetch('/api/v1/cardio/sessions', {
             method: 'POST',
@@ -465,6 +467,10 @@ export default function CardioPage() {
           }),
         ),
       );
+      const failed = results.filter((r) => !r.ok).length;
+      if (failed > 0) {
+        throw new Error(`${failed} sessão(ões) não puderam ser salvas. Verifique os dados e tente novamente.`);
+      }
       setImportedSessions([]);
       setImportText('');
       setImportFile(null);
@@ -472,8 +478,8 @@ export default function CardioPage() {
       setTimeout(() => setImportSaved(false), 3000);
       void loadSessions();
       setActiveTab('sessoes');
-    } catch {
-      // non-fatal
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Erro ao salvar sessões.');
     } finally {
       setSavingImport(false);
     }
@@ -1047,10 +1053,13 @@ export default function CardioPage() {
                   ))}
                 </div>
 
+                {saveError && (
+                  <p className="text-xs text-red-400 bg-red-400/10 rounded-lg px-3 py-2">{saveError}</p>
+                )}
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setImportedSessions([])}
+                    onClick={() => { setImportedSessions([]); setSaveError(null); }}
                     className="flex-1 py-2 rounded-lg border border-border text-sm text-text-muted hover:text-text-secondary transition-colors"
                   >
                     Descartar

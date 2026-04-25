@@ -185,6 +185,17 @@ export default function DietaPage() {
 
   // ── Import ─────────────────────────────────────────────────
 
+  /** Normaliza horário para HH:MM (24h) ou retorna null se inválido. */
+  function sanitizeTime(t?: string | null): string | null {
+    if (!t) return null;
+    const match = t.match(/^(\d{1,2}):(\d{2})/);
+    if (!match) return null;
+    const h = match[1].padStart(2, '0');
+    const min = match[2];
+    if (parseInt(h) > 23 || parseInt(min) > 59) return null;
+    return `${h}:${min}`;
+  }
+
   const handleImportFile = async (file: File) => {
     setImportFile(file);
     setImportLoading(true);
@@ -217,7 +228,6 @@ export default function DietaPage() {
     setImportLoading(true);
     setImportError(null);
     try {
-      const saved: MealsRow[] = [];
       for (const m of importedMeals) {
         const res = await fetch('/api/v1/dieta', {
           method: 'POST',
@@ -225,7 +235,7 @@ export default function DietaPage() {
           body: JSON.stringify({
             mealDate: todayDate,
             mealName: m.meal_name,
-            time: m.time ?? null,
+            time: sanitizeTime(m.time),
             items: m.items ?? null,
             calories: m.calories ?? null,
             proteinG: m.protein_g ?? null,
@@ -234,8 +244,10 @@ export default function DietaPage() {
             source: 'import',
           }),
         });
-        const json = await res.json() as { data?: MealsRow };
-        if (json.data) saved.push(json.data);
+        if (!res.ok) {
+          const errJson = await res.json() as { error?: { message?: string } };
+          throw new Error(errJson.error?.message ?? `Erro ao salvar "${m.meal_name}"`);
+        }
       }
       setImportConfirmed(true);
       setImportedMeals(null);

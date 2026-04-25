@@ -52,6 +52,7 @@ const mainNavItems: NavItem[] = [
   { label: 'Dashboard',        href: '/dashboard',         icon: LayoutDashboard },
   { label: 'Treinos',          href: '/treinos',           icon: Dumbbell         },
   { label: 'Registrar Treino', href: '/treinos/registrar', icon: ClipboardList    },
+  { label: 'Cardio',           href: '/cardio',            icon: Heart            },
   { label: 'Progresso',        href: '/progresso',         icon: TrendingUp       },
   { label: 'Histórico',        href: '/historico',         icon: History          },
   { label: 'Dieta',            href: '/dieta',             icon: Utensils         },
@@ -59,7 +60,6 @@ const mainNavItems: NavItem[] = [
   { label: 'Bioimpedância',    href: '/bioimpedancia',     icon: Scan             },
   { label: 'Medicamentos',     href: '/medicamentos',      icon: Pill             },
   { label: 'Exames',           href: '/exames',            icon: FileText         },
-  { label: 'Cardio',           href: '/cardio',            icon: Heart            },
   { label: 'Análise IA',       href: '/analise',           icon: Brain            },
 ];
 
