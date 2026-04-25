@@ -60,7 +60,7 @@ export function SessionExerciseCard({
           <p className="text-xs text-text-muted mt-0.5">
             Planejado: {exercise.sets} série{exercise.sets > 1 ? 's' : ''}
             {exercise.target_reps ? ` × ${exercise.target_reps} reps` : ''}
-            {exercise.load ? ` @ ${exercise.load} kg` : ''}
+            {exercise.load ? ` @ ${exercise.load} kg${exercise.load_type === 'per_side' ? ' /lado' : ''}` : ''}
           </p>
         </div>
       </div>

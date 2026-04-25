@@ -256,6 +256,7 @@ export interface CreateExerciseDTO {
   sets: number;
   target_reps?: string;
   load?: number;
+  load_type?: 'total' | 'per_side';
   rest_seconds?: number;
   order_index?: number;
   notes?: string;

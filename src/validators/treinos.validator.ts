@@ -53,6 +53,10 @@ export const createExerciseSchema = z.object({
     .number()
     .min(0, 'Carga não pode ser negativa')
     .optional(),
+  loadType: z
+    .enum(['total', 'per_side'])
+    .optional()
+    .default('total'),
   restSeconds: z
     .number()
     .int('Tempo de descanso deve ser inteiro')
