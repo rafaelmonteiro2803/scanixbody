@@ -10,7 +10,7 @@ import { z } from 'zod'
 // Allowed values (mirrors database enums)
 // ---------------------------------------------------------------------------
 
-const mealSourceValues = ['manual', 'ai', 'import'] as const
+const mealSourceValues = ['manual', 'ai_analysis', 'file_import'] as const
 
 // ---------------------------------------------------------------------------
 // Create Meal

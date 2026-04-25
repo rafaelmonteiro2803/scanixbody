@@ -241,7 +241,7 @@ export default function DietaPage() {
             proteinG: m.protein_g ?? null,
             carbsG: m.carbs_g ?? null,
             fatG: m.fat_g ?? null,
-            source: 'import',
+            source: 'file_import',
           }),
         });
         if (!res.ok) {
