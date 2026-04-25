@@ -9,8 +9,6 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
-  ThumbsUp,
-  AlertTriangle,
   Loader2,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -59,31 +57,6 @@ const DAILY_TARGETS = {
   fat_g: 70,
 };
 
-// ── AI Mock ────────────────────────────────────────────────────
-
-async function mockAIAnalysis(text: string): Promise<AIAnalysisResult> {
-  await new Promise((r) => setTimeout(r, 2000));
-  return {
-    meals: [
-      { name: 'Café da Manhã', items: text.slice(0, 60) + '…', calories: 480, protein_g: 25, carbs_g: 50, fat_g: 16 },
-      { name: 'Almoço', items: 'Refeição identificada pela IA', calories: 650, protein_g: 44, carbs_g: 68, fat_g: 11 },
-    ],
-    total_calories: 1130,
-    total_protein_g: 69,
-    total_carbs_g: 118,
-    total_fat_g: 27,
-    positive_points: [
-      'Boa fonte de proteína magra identificada',
-      'Presença de vegetais e fibras na alimentação',
-      'Carboidratos complexos como fonte energética',
-    ],
-    improvement_points: [
-      'Aumentar ingestão hídrica ao longo do dia',
-      'Considerar adicionar gorduras saudáveis (abacate, castanhas)',
-      'Incluir mais refeições distribuídas para melhor síntese proteica',
-    ],
-  };
-}
 
 // ── Page Component ─────────────────────────────────────────────
 
@@ -171,15 +144,83 @@ export default function DietaPage() {
 
   // ── AI Analysis ────────────────────────────────────────────
 
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiSaving, setAiSaving] = useState(false);
+  const [aiSaved, setAiSaved] = useState(false);
+
   const handleAIAnalyze = async () => {
     if (!aiText.trim()) return;
     setAiLoading(true);
     setAiResult(null);
+    setAiError(null);
     try {
-      const result = await mockAIAnalysis(aiText);
-      setAiResult(result);
+      const result = await importDiet(aiText);
+      if (!result.success || !result.data) {
+        setAiError(result.error ?? 'Não foi possível analisar a refeição.');
+        return;
+      }
+      const meals = result.data.meals;
+      setAiResult({
+        meals: meals.map((m) => ({
+          name: m.mealName,
+          items: m.items ?? '',
+          calories: m.calories ?? 0,
+          protein_g: m.proteinG ?? 0,
+          carbs_g: m.carbsG ?? 0,
+          fat_g: m.fatG ?? 0,
+        })),
+        total_calories: result.data.totalCalories ?? meals.reduce((s, m) => s + (m.calories ?? 0), 0),
+        total_protein_g: result.data.totalProteinG ?? meals.reduce((s, m) => s + (m.proteinG ?? 0), 0),
+        total_carbs_g: result.data.totalCarbsG ?? meals.reduce((s, m) => s + (m.carbsG ?? 0), 0),
+        total_fat_g: result.data.totalFatG ?? meals.reduce((s, m) => s + (m.fatG ?? 0), 0),
+        positive_points: [],
+        improvement_points: [],
+      });
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Erro ao analisar com IA.');
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleSaveAIResult = async () => {
+    if (!aiResult) return;
+    setAiSaving(true);
+    setAiError(null);
+    try {
+      for (const m of aiResult.meals) {
+        const res = await fetch('/api/v1/dieta', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mealDate: todayDate,
+            mealName: m.name,
+            time: null,
+            items: m.items || null,
+            calories: m.calories || null,
+            proteinG: m.protein_g || null,
+            carbsG: m.carbs_g || null,
+            fatG: m.fat_g || null,
+            source: 'ai_analysis',
+          }),
+        });
+        if (!res.ok) {
+          const errJson = await res.json() as { error?: { message?: string } };
+          throw new Error(errJson.error?.message ?? `Erro ao salvar "${m.name}"`);
+        }
+      }
+      setAiSaved(true);
+      setAiResult(null);
+      setAiText('');
+      await loadMeals();
+      setTimeout(() => {
+        setAiSaved(false);
+        setActiveTab('manual');
+      }, 1500);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Erro ao salvar refeições.');
+    } finally {
+      setAiSaving(false);
     }
   };
 
@@ -402,6 +443,9 @@ export default function DietaPage() {
               >
                 {aiLoading ? 'Analisando com IA...' : 'Analisar com IA'}
               </Button>
+              {aiError && (
+                <p className="text-xs text-danger bg-danger/10 rounded-lg px-3 py-2">{aiError}</p>
+              )}
             </div>
 
             {/* AI Loading state */}
@@ -418,6 +462,13 @@ export default function DietaPage() {
             {/* AI Result */}
             {aiResult && !aiLoading && (
               <div className="space-y-4 animate-slide-up">
+                {aiSaved && (
+                  <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-primary font-semibold">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Refeições salvas! Redirecionando...
+                  </div>
+                )}
+
                 {/* Extracted meals */}
                 <div className="rounded-xl border border-border bg-background-card p-4">
                   <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -434,10 +485,10 @@ export default function DietaPage() {
                           <p className="text-sm font-semibold text-text-primary">{meal.name}</p>
                           <p className="text-xs text-text-muted">{meal.items}</p>
                           <div className="flex flex-wrap gap-1.5 mt-1.5">
-                            <span className="text-2xs px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400 font-semibold">{meal.calories} kcal</span>
-                            <span className="text-2xs px-1.5 py-0.5 rounded bg-blue-400/10 text-blue-400 font-semibold">{meal.protein_g}g prot</span>
-                            <span className="text-2xs px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400 font-semibold">{meal.carbs_g}g carb</span>
-                            <span className="text-2xs px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500 font-semibold">{meal.fat_g}g gord</span>
+                            {meal.calories > 0 && <span className="text-2xs px-1.5 py-0.5 rounded bg-orange-400/10 text-orange-400 font-semibold">{meal.calories} kcal</span>}
+                            {meal.protein_g > 0 && <span className="text-2xs px-1.5 py-0.5 rounded bg-blue-400/10 text-blue-400 font-semibold">{meal.protein_g}g prot</span>}
+                            {meal.carbs_g > 0 && <span className="text-2xs px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400 font-semibold">{meal.carbs_g}g carb</span>}
+                            {meal.fat_g > 0 && <span className="text-2xs px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500 font-semibold">{meal.fat_g}g gord</span>}
                           </div>
                         </div>
                       </div>
@@ -457,39 +508,26 @@ export default function DietaPage() {
                   target_fat_g={DAILY_TARGETS.fat_g}
                 />
 
-                {/* Feedback panels */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Positive points */}
-                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-                    <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                      Pontos Positivos
-                    </h4>
-                    <ul className="space-y-2">
-                      {aiResult.positive_points.map((point, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Improvement points */}
-                  <div className="rounded-xl border border-warning/20 bg-warning/5 p-4">
-                    <h4 className="text-xs font-bold text-warning uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      Pontos de Melhoria
-                    </h4>
-                    <ul className="space-y-2">
-                      {aiResult.improvement_points.map((point, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-text-secondary">
-                          <AlertTriangle className="w-3.5 h-3.5 text-warning flex-shrink-0 mt-0.5" />
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                {/* Save button */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    onClick={() => { setAiResult(null); setAiText(''); }}
+                    disabled={aiSaving}
+                  >
+                    Descartar
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    leftIcon={<CheckCircle2 className="w-4 h-4" />}
+                    onClick={handleSaveAIResult}
+                    loading={aiSaving}
+                    className="flex-1"
+                  >
+                    Salvar {aiResult.meals.length} refeição{aiResult.meals.length !== 1 ? 'ões' : ''} no diário
+                  </Button>
                 </div>
               </div>
             )}
