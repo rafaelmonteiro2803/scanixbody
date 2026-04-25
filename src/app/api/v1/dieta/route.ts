@@ -28,6 +28,11 @@ import type { AuthContext } from '@/lib/api-helpers'
 export const GET = withAuth(async (request: NextRequest, ctx: AuthContext) => {
   const { searchParams } = new URL(request.url)
 
+  const limitParam = searchParams.get('limit')
+  const offsetParam = searchParams.get('offset')
+  const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 50, 200) : 50
+  const offset = offsetParam ? Math.max(parseInt(offsetParam, 10) || 0, 0) : 0
+
   const queryInput = {
     date: searchParams.get('date') ?? undefined,
     startDate: searchParams.get('startDate') ?? undefined,
@@ -48,8 +53,12 @@ export const GET = withAuth(async (request: NextRequest, ctx: AuthContext) => {
   }
 
   try {
-    const meals = await dietaService.getMeals(ctx.userId, query?.date)
-    return createApiResponse({ meals, total: meals.length })
+    const { data: meals, total } = await dietaService.getMeals(ctx.userId, {
+      date: query?.date,
+      limit,
+      offset,
+    })
+    return createApiResponse({ meals, total, limit, offset })
   } catch (err) {
     console.error('[GET /dieta]', err)
     const message = err instanceof Error ? err.message : 'Erro ao buscar refeições'

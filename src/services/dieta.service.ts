@@ -59,10 +59,14 @@ const dietaService = {
    * date (ISO string, e.g. `"2024-03-15"`).  Results are ordered by meal_date
    * descending and then by time ascending within the same day.
    */
-  async getMeals(userId: string, date?: string): Promise<Meal[]> {
+  async getMeals(
+    userId: string,
+    options: { date?: string; limit?: number; offset?: number } = {},
+  ): Promise<{ data: Meal[]; total: number }> {
     const supabase = await createClient()
+    const { date, limit = 50, offset = 0 } = options
 
-    let query = supabase
+    let baseQuery = supabase
       .from('meals')
       .select('*')
       .eq('user_id', userId)
@@ -70,20 +74,31 @@ const dietaService = {
       .order('meal_date', { ascending: false })
       .order('time', { ascending: true })
 
+    let countQuery = supabase
+      .from('meals')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+
     if (date) {
-      query = query.eq('meal_date', date)
+      baseQuery = baseQuery.eq('meal_date', date)
+      countQuery = countQuery.eq('meal_date', date)
     }
 
-    const { data, error } = await query
+    // When filtering by a specific date, return all rows for that day (no pagination needed)
+    const [{ data, error }, { count, error: countError }] = await Promise.all([
+      date ? baseQuery : baseQuery.range(offset, offset + limit - 1),
+      countQuery,
+    ])
 
     if (error) {
-      throw new DietaServiceError(
-        `getMeals failed: ${error.message}`,
-        error.code,
-      )
+      throw new DietaServiceError(`getMeals failed: ${error.message}`, error.code)
+    }
+    if (countError) {
+      throw new DietaServiceError(`getMeals count failed: ${countError.message}`, countError.code)
     }
 
-    return data ?? []
+    return { data: data ?? [], total: count ?? 0 }
   },
 
   /**

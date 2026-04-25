@@ -19,6 +19,7 @@ import {
   createApiResponse,
   createErrorResponse,
 } from '@/lib/api-helpers'
+import { analysisRateLimiter } from '@/lib/rate-limiter'
 import { createClient } from '@/lib/supabase/server'
 import {
   calculateTrainingScore,
@@ -147,9 +148,62 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
 // ---------------------------------------------------------------------------
 
 export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
+  // Rate limit: 3 full analyses per 10 min per user
+  const rateLimit = analysisRateLimiter.check(ctx.userId)
+  if (!rateLimit.allowed) {
+    const retryAfter = Math.ceil(rateLimit.resetInMs / 1000)
+    return createErrorResponse(
+      `Muitas análises geradas. Aguarde ${Math.ceil(retryAfter / 60)} minuto(s) antes de tentar novamente.`,
+      429,
+    )
+  }
+
   const supabase = await createClient()
 
   try {
+    // Guard: enforce canRerun server-side (prevents bypassing the client-side lock)
+    const { data: lastReport } = await supabase
+      .from('ai_analysis_reports')
+      .select('generated_at')
+      .eq('user_id', ctx.userId)
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (lastReport) {
+      const since = lastReport.generated_at
+      const changeChecks = await Promise.all([
+        supabase.from('meals').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('workout_days').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('workout_exercises').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).eq('is_active', true).gt('created_at', since),
+        supabase.from('medication_entries').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).eq('is_active', true).gt('created_at', since),
+        supabase.from('exam_reports').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('athlete_profiles').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).gt('updated_at', since),
+        supabase.from('meals').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('updated_at', since),
+        supabase.from('workout_exercises').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('updated_at', since),
+        supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).eq('is_active', true).gt('updated_at', since),
+      ])
+      const hasChanges = changeChecks.some((r) => (r.count ?? 0) > 0)
+      if (!hasChanges) {
+        return createErrorResponse(
+          'Nenhuma alteração nos dados desde a última análise.',
+          422,
+          'NO_DATA_CHANGES',
+        )
+      }
+    }
+
     // ── 1. Fetch all user data in parallel ───────────────────���────────────
     const [
       profileResult,

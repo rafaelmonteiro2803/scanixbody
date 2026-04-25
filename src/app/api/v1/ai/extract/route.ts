@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import mammoth from 'mammoth'
 import { createClient } from '@/lib/supabase/server'
+import { extractRateLimiter } from '@/lib/rate-limiter'
 import { z } from 'zod'
 
 const extractSchema = z.object({
@@ -225,6 +226,16 @@ export async function POST(request: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
     return NextResponse.json({ success: false, error: 'Não autorizado' }, { status: 401 })
+  }
+
+  // Rate limit: 10 extractions / 60 s per user
+  const rateLimit = extractRateLimiter.check(user.id)
+  if (!rateLimit.allowed) {
+    const retryAfter = Math.ceil(rateLimit.resetInMs / 1000)
+    return NextResponse.json(
+      { success: false, error: `Muitas requisições. Aguarde ${retryAfter}s antes de tentar novamente.` },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } },
+    )
   }
 
   let body: unknown
