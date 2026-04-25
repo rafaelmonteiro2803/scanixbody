@@ -22,6 +22,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { FileUpload } from '@/components/ui/FileUpload';
@@ -571,8 +572,8 @@ export default function MedicamentosPage() {
         {/* ── Tab: Meus Medicamentos ── */}
         <TabPanel value="meus" activeValue={tab}>
           {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <Spinner size="lg" label="Carregando medicamentos..." />
+            <div className="space-y-4">
+              {[0, 1, 2].map((i) => <SkeletonCard key={i} lines={3} />)}
             </div>
           ) : medications.length === 0 ? (
             <EmptyState

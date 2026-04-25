@@ -213,6 +213,25 @@ export default function RegistrarTreinoPage() {
 
   async function handleSave() {
     if (!selectedDay) return
+
+    // Client-side validation: reject negative or non-numeric weight/reps
+    for (const ex of selectedDay.exercises) {
+      const sets = setsMap[ex.id] ?? []
+      for (const s of sets) {
+        if (s.weight === '' && s.reps === '') continue // empty set → filtered out later
+        const w = parseFloat(s.weight)
+        const r = parseInt(s.reps, 10)
+        if (s.weight !== '' && (isNaN(w) || w < 0)) {
+          setSaveError(`Peso inválido em "${ex.name}" (série ${s.setNumber}): use um valor ≥ 0.`)
+          return
+        }
+        if (s.reps !== '' && (isNaN(r) || r < 0)) {
+          setSaveError(`Reps inválidas em "${ex.name}" (série ${s.setNumber}): use um valor ≥ 0.`)
+          return
+        }
+      }
+    }
+
     setSaving(true)
     setSaveError(null)
 

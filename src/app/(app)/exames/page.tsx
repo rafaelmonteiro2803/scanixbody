@@ -18,6 +18,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { SkeletonPageList } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { Textarea } from '@/components/ui/Textarea';
@@ -589,9 +590,7 @@ export default function ExamesPage() {
           </h2>
 
           {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <Spinner size="lg" label="Carregando exames..." />
-            </div>
+            <SkeletonPageList rows={4} />
           ) : reports.length === 0 ? (
             <EmptyState
               icon={<FlaskConical />}

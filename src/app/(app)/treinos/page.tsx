@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Spinner } from '@/components/ui/Spinner'
+import { SkeletonCard } from '@/components/ui/Skeleton'
 import { WorkoutDayCard } from './components/WorkoutDayCard'
 import { WorkoutDayForm } from './components/WorkoutDayForm'
 import { ExerciseForm } from './components/ExerciseForm'
@@ -571,8 +571,8 @@ export default function TreinosPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Spinner size="lg" label="Carregando treinos..." />
+          <div className="space-y-4">
+            {[0, 1, 2].map((i) => <SkeletonCard key={i} lines={4} />)}
           </div>
         ) : workoutDays.length === 0 ? (
           <EmptyState
