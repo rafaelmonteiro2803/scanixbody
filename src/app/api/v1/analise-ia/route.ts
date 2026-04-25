@@ -108,15 +108,15 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
         supabase.from('workout_sessions').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
         supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
-          .eq('user_id', ctx.userId).gt('created_at', since),
+          .eq('user_id', ctx.userId).eq('is_active', true).gt('created_at', since),
         supabase.from('medication_entries').select('id', { count: 'exact', head: true })
-          .eq('user_id', ctx.userId).gt('created_at', since),
+          .eq('user_id', ctx.userId).eq('is_active', true).gt('created_at', since),
         supabase.from('exam_reports').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
         supabase.from('athlete_profiles').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).gt('updated_at', since),
         supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
-          .eq('user_id', ctx.userId).gt('updated_at', since),
+          .eq('user_id', ctx.userId).eq('is_active', true).gt('updated_at', since),
       ])
       canRerun = changeChecks.some((r) => (r.count ?? 0) > 0)
     }
@@ -188,7 +188,7 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
         .from('medication_entries')
         .select('name, category, dose, frequency')
         .eq('user_id', ctx.userId)
-        .is('deleted_at', null),
+        .eq('is_active', true),
       supabase
         .from('exam_reports')
         .select('id, report_date, source')
