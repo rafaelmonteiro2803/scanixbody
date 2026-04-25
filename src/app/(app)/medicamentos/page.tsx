@@ -196,6 +196,8 @@ function ImportTab({
       setPasteText('');
       setFile(null);
       setTimeout(() => setSaved(false), 3000);
+    } catch {
+      // erro já exibido pelo banner do componente pai via setError
     } finally {
       setIsSaving(false);
     }
@@ -480,6 +482,7 @@ export default function MedicamentosPage() {
       setTab('meus');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar importação');
+      throw err; // propaga para ImportTab não mostrar falso sucesso
     }
   }
 
