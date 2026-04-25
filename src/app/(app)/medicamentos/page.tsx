@@ -413,7 +413,8 @@ export default function MedicamentosPage() {
           frequency: dto.frequency ?? null,
           route: dto.route ?? null,
           start_date: dto.start_date ?? null,
-          notes: dto.notes ?? null,
+          observations: dto.notes ?? null,
+          is_active: true,
           source: 'manual',
         });
         if (err) throw new Error(err.message);
@@ -472,7 +473,8 @@ export default function MedicamentosPage() {
         frequency: m.frequency ?? null,
         route: m.route ?? null,
         start_date: null,
-        notes: m.notes ?? null,
+        observations: m.notes ?? null,
+        is_active: true,
         source: 'file_import' as const,
       }));
 

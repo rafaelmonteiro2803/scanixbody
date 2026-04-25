@@ -9,7 +9,6 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Select } from '@/components/ui/Select';
 import type { MealsRow } from '@/types/database.types';
 import type { CreateMealDTO } from '@/types/domain.types';
 import { cn } from '@/lib/utils';
@@ -58,15 +57,16 @@ export type MealFormValues = z.infer<typeof mealFormSchema>;
 
 // ── Options ────────────────────────────────────────────────────
 
-const MEAL_OPTIONS = [
-  { value: 'café da manhã', label: 'Café da Manhã' },
-  { value: 'almoço', label: 'Almoço' },
-  { value: 'jantar', label: 'Jantar' },
-  { value: 'lanche', label: 'Lanche' },
-  { value: 'pré-treino', label: 'Pré-Treino' },
-  { value: 'pós-treino', label: 'Pós-Treino' },
-  { value: 'suplemento', label: 'Suplemento' },
-  { value: 'outro', label: 'Outro' },
+const MEAL_SUGGESTIONS = [
+  'Café da Manhã',
+  'Almoço',
+  'Jantar',
+  'Lanche da Manhã',
+  'Lanche da Tarde',
+  'Pré-Treino',
+  'Pós-Treino',
+  'Ceia',
+  'Suplemento',
 ];
 
 // ── Props ──────────────────────────────────────────────────────
@@ -93,8 +93,6 @@ export function MealForm({
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     reset,
     formState: { errors },
   } = useForm<MealFormValues>({
@@ -110,7 +108,6 @@ export function MealForm({
     },
   });
 
-  const mealNameValue = watch('meal_name');
 
   // Reset form when opened with new defaults
   useEffect(() => {
@@ -176,16 +173,31 @@ export function MealForm({
       }
     >
       <form id="meal-form" onSubmit={handleFormSubmit} className="space-y-4">
-        {/* Meal type */}
+        {/* Meal name — free text with quick-pick datalist */}
         <div>
-          <Select
-            label="Tipo de Refeição"
-            options={MEAL_OPTIONS}
-            value={mealNameValue as string}
-            onChange={(v) => setValue('meal_name', v, { shouldValidate: true })}
-            error={errors.meal_name?.message}
-            placeholder="Selecionar refeição..."
+          <label className="block text-sm font-medium text-text-secondary mb-1.5">
+            Nome da Refeição <span className="text-danger">*</span>
+          </label>
+          <input
+            {...register('meal_name')}
+            list="meal-suggestions"
+            placeholder="Ex: Café da Manhã, Pré-Treino, Lanche..."
+            autoComplete="off"
+            className={cn(
+              'w-full h-10 rounded-lg border bg-background-secondary px-3 text-sm text-text-title placeholder:text-text-faint transition-colors focus:outline-none focus:ring-1',
+              errors.meal_name
+                ? 'border-danger focus:border-danger focus:ring-danger'
+                : 'border-border hover:border-border-strong focus:border-primary focus:ring-primary',
+            )}
           />
+          <datalist id="meal-suggestions">
+            {MEAL_SUGGESTIONS.map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
+          {errors.meal_name && (
+            <p className="mt-1 text-xs text-danger">{errors.meal_name.message}</p>
+          )}
         </div>
 
         {/* Time picker */}

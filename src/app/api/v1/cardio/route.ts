@@ -26,6 +26,7 @@ import type { CardioProfilesRow } from '@/types/database.types'
 const cardioIntensityValues = ['low', 'moderate', 'high'] as const
 
 const saveCardioProfileSchema = z.object({
+  id: z.string().uuid().optional().nullable(),  // if provided, update existing row
   practices: z.boolean({ required_error: 'practices é obrigatório' }),
   type: z.string().max(100).optional().nullable(),
   intensity: z.enum(cardioIntensityValues).optional().nullable(),
@@ -61,23 +62,16 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
       .from('cardio_profiles')
       .select('*')
       .eq('user_id', ctx.userId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single()
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
 
-    if (error) {
-      // PGRST116 = no rows found – not an error, just no profile yet
-      if (error.code === 'PGRST116') {
-        return createApiResponse({ profile: null })
-      }
-      throw error
-    }
+    if (error) throw error
 
-    return createApiResponse({ profile: data ?? null })
+    return createApiResponse({ profiles: data ?? [] })
   } catch (err) {
     console.error('[GET /cardio]', err)
     const message =
-      err instanceof Error ? err.message : 'Erro ao buscar perfil de cardio'
+      err instanceof Error ? err.message : 'Erro ao buscar perfis de cardio'
     return createErrorResponse(message, 500)
   }
 })
@@ -106,32 +100,29 @@ export const PUT = withAuth(async (request: NextRequest, ctx: AuthContext) => {
   }
 
   const supabase = await createClient()
+  const typedInput = input as SaveCardioProfileInput
 
   try {
-    // Check whether a cardio profile already exists
-    const { data: existing } = await supabase
-      .from('cardio_profiles')
-      .select('id')
-      .eq('user_id', ctx.userId)
-      .single()
+    const profileData = {
+      practices: typedInput.practices,
+      type: typedInput.type ?? null,
+      intensity: typedInput.intensity ?? null,
+      duration_minutes: typedInput.durationMinutes ?? null,
+      frequency_per_week: typedInput.frequencyPerWeek ?? null,
+      timing: typedInput.timing ?? null,
+      goal: typedInput.goal ?? null,
+      is_active: true,
+    }
 
     let result: CardioProfilesRow
 
-    const profileData = {
-      practices: (input as SaveCardioProfileInput).practices,
-      type: (input as SaveCardioProfileInput).type ?? null,
-      intensity: (input as SaveCardioProfileInput).intensity ?? null,
-      duration_minutes: (input as SaveCardioProfileInput).durationMinutes ?? null,
-      frequency_per_week: (input as SaveCardioProfileInput).frequencyPerWeek ?? null,
-      timing: (input as SaveCardioProfileInput).timing ?? null,
-      goal: (input as SaveCardioProfileInput).goal ?? null,
-    }
-
-    if (existing) {
+    if (typedInput.id) {
+      // Update existing profile
       const { data: updated, error: updateError } = await supabase
         .from('cardio_profiles')
         .update({ ...profileData, updated_at: new Date().toISOString() })
-        .eq('id', existing.id)
+        .eq('id', typedInput.id)
+        .eq('user_id', ctx.userId)
         .select()
         .single()
 
@@ -140,6 +131,7 @@ export const PUT = withAuth(async (request: NextRequest, ctx: AuthContext) => {
       }
       result = updated
     } else {
+      // Create new profile
       const { data: created, error: createError } = await supabase
         .from('cardio_profiles')
         .insert({ user_id: ctx.userId, ...profileData })
@@ -159,4 +151,24 @@ export const PUT = withAuth(async (request: NextRequest, ctx: AuthContext) => {
       err instanceof Error ? err.message : 'Erro ao salvar perfil de cardio'
     return createErrorResponse(message, 500)
   }
+})
+
+// ---------------------------------------------------------------------------
+// DELETE /api/v1/cardio?id=<profile-id>  – deactivate a profile
+// ---------------------------------------------------------------------------
+
+export const DELETE = withAuth(async (request: NextRequest, ctx: AuthContext) => {
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get('id')
+  if (!id) return createErrorResponse('id é obrigatório', 400)
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('cardio_profiles')
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('user_id', ctx.userId)
+
+  if (error) return createErrorResponse(error.message, 500)
+  return createApiResponse({ success: true })
 })

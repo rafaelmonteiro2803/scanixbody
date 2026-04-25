@@ -262,18 +262,24 @@ export default function CardioPage() {
   const [saved, setSaved] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  // ── Profile state ─────────────────────
+  // ── Saved profiles list ───────────────
+  const [profiles, setProfiles] = useState<CardioProfilesRow[]>([]);
+  const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // ── Profile form ──────────────────────
   const {
     register,
     handleSubmit,
     control,
     watch,
     setValue,
+    reset: resetProfileForm,
     formState: { errors, isSubmitting },
   } = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      practices: false,
+      practices: true,
       type: null,
       intensity: null,
       duration_minutes: null,
@@ -325,27 +331,20 @@ export default function CardioPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Load profile on mount ─────────────
+  // ── Load profiles ─────────────────────
+  const loadProfiles = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/cardio');
+      const json = await res.json() as { data?: { profiles?: CardioProfilesRow[] } };
+      setProfiles(json.data?.profiles ?? []);
+    } catch {
+      // non-fatal
+    }
+  }, []);
+
   useEffect(() => {
-    void (async () => {
-      try {
-        const res = await fetch('/api/v1/cardio');
-        const json = await res.json() as { data?: { profile?: CardioProfilesRow | null } };
-        const p = json.data?.profile;
-        if (p) {
-          setValue('practices', p.practices);
-          setValue('type', p.type ?? null);
-          setValue('intensity', (p.intensity as ProfileValues['intensity']) ?? null);
-          setValue('duration_minutes', p.duration_minutes ?? null);
-          setValue('frequency_per_week', p.frequency_per_week ?? null);
-          setValue('timing', p.timing ?? null);
-          setValue('goal', p.goal ?? null);
-        }
-      } catch {
-        // non-fatal
-      }
-    })();
-  }, [setValue]);
+    void loadProfiles();
+  }, [loadProfiles]);
 
   // ── Load sessions ─────────────────────
   const loadSessions = useCallback(async () => {
@@ -374,6 +373,7 @@ export default function CardioPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          ...(editingProfileId ? { id: editingProfileId } : {}),
           practices: data.practices,
           type: data.type ?? null,
           intensity: data.intensity ?? null,
@@ -391,11 +391,60 @@ export default function CardioPage() {
         setProfileError(msg);
         return;
       }
+      // Reset form for a new entry and reload the list
+      setEditingProfileId(null);
+      resetProfileForm({
+        practices: true,
+        type: null,
+        intensity: null,
+        duration_minutes: null,
+        frequency_per_week: null,
+        timing: null,
+        goal: null,
+      });
+      void loadProfiles();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {
       setProfileError('Erro de conexão. Tente novamente.');
     }
+  };
+
+  const handleDeleteProfile = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await fetch(`/api/v1/cardio?id=${id}`, { method: 'DELETE' });
+      setProfiles((prev) => prev.filter((p) => p.id !== id));
+      if (editingProfileId === id) {
+        setEditingProfileId(null);
+        resetProfileForm({
+          practices: true,
+          type: null,
+          intensity: null,
+          duration_minutes: null,
+          frequency_per_week: null,
+          timing: null,
+          goal: null,
+        });
+      }
+    } catch {
+      void loadProfiles();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleEditProfile = (p: CardioProfilesRow) => {
+    setEditingProfileId(p.id);
+    resetProfileForm({
+      practices: p.practices,
+      type: p.type ?? null,
+      intensity: (p.intensity as ProfileValues['intensity']) ?? null,
+      duration_minutes: p.duration_minutes ?? null,
+      frequency_per_week: p.frequency_per_week ?? null,
+      timing: p.timing ?? null,
+      goal: p.goal ?? null,
+    });
   };
 
   const onSubmitSession = async (data: SessionValues) => {
@@ -544,227 +593,362 @@ export default function CardioPage() {
 
         {/* ── TAB: PERFIL ── */}
         {activeTab === 'perfil' && (
-          <form onSubmit={handleSubmit(onSubmitProfile)} className="space-y-6">
-            {/* Practices Toggle */}
-            <div className="rounded-xl bg-background-card border border-border p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-bold text-text-title">Pratica cardio regularmente?</h2>
-                  <p className="text-sm text-text-muted mt-0.5">
-                    Ative para configurar seu perfil de cardio
-                  </p>
+          <div className="space-y-6">
+            {/* Saved profiles list */}
+            {profiles.length > 0 && (
+              <div className="rounded-xl bg-background-card border border-border overflow-hidden">
+                <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-text-title flex items-center gap-2">
+                    <HeartPulse className="w-4 h-4 text-[#00ff88]" />
+                    Tipos de cardio cadastrados
+                  </h3>
+                  <span className="text-xs text-text-muted">{profiles.length} {profiles.length === 1 ? 'tipo' : 'tipos'}</span>
                 </div>
-                <Controller
-                  control={control}
-                  name="practices"
-                  render={({ field }) => (
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={field.value}
-                      onClick={() => field.onChange(!field.value)}
-                      className={cn(
-                        'relative inline-flex w-16 h-8 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff88] focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]',
-                        field.value
-                          ? 'bg-[#00ff88] shadow-[0_0_16px_rgba(0,255,136,0.4)]'
-                          : 'bg-surface-3',
-                      )}
-                    >
-                      <span
+                <div className="divide-y divide-border">
+                  {profiles.map((p) => {
+                    const timingLabel = TIMING_OPTIONS.find((o) => o.value === p.timing)?.label;
+                    const goalLabel = GOAL_OPTIONS.find((o) => o.value === p.goal)?.label;
+                    const intensityOpt = INTENSITY_OPTIONS.find((o) => o.value === p.intensity);
+                    return (
+                      <div
+                        key={p.id}
                         className={cn(
-                          'absolute top-1 w-6 h-6 rounded-full transition-all duration-300 shadow-md',
-                          field.value ? 'left-9 bg-background' : 'left-1 bg-text-secondary',
+                          'flex items-center gap-3 px-5 py-4 transition-colors',
+                          editingProfileId === p.id ? 'bg-[#00ff88]/5' : 'hover:bg-surface-1',
+                        )}
+                      >
+                        <div className="w-9 h-9 rounded-lg bg-[#00ff88]/10 flex items-center justify-center flex-shrink-0 text-[#00ff88]">
+                          {TYPE_ICONS[p.type ?? 'Outro'] ?? <Activity className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-bold text-text-title">
+                              {p.type ?? 'Cardio'}
+                            </p>
+                            {intensityOpt && (
+                              <span
+                                className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                                style={{
+                                  color: intensityOpt.color,
+                                  backgroundColor: `${intensityOpt.color}15`,
+                                }}
+                              >
+                                {intensityOpt.label}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                            {p.duration_minutes && (
+                              <span className="text-xs text-text-muted">{p.duration_minutes} min</span>
+                            )}
+                            {p.frequency_per_week && (
+                              <span className="text-xs text-text-muted">{p.frequency_per_week}x/sem</span>
+                            )}
+                            {timingLabel && (
+                              <span className="text-xs text-text-muted">{timingLabel}</span>
+                            )}
+                            {goalLabel && (
+                              <span className="text-xs text-text-secondary">{goalLabel}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleEditProfile(p)}
+                            className="p-1.5 rounded-lg text-text-faint hover:text-[#00ff88] hover:bg-[#00ff88]/10 transition-colors"
+                            aria-label="Editar"
+                          >
+                            <Target className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProfile(p.id)}
+                            disabled={deletingId === p.id}
+                            className="p-1.5 rounded-lg text-text-faint hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-40"
+                            aria-label="Remover"
+                          >
+                            {deletingId === p.id
+                              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              : <Trash2 className="w-3.5 h-3.5" />
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Add new type button */}
+                <div className="px-5 py-3 border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingProfileId(null);
+                      resetProfileForm({
+                        practices: true,
+                        type: null,
+                        intensity: null,
+                        duration_minutes: null,
+                        frequency_per_week: null,
+                        timing: null,
+                        goal: null,
+                      });
+                    }}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#00ff88] hover:text-[#00e87a] transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Adicionar outro tipo de cardio
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Profile form */}
+            <form onSubmit={handleSubmit(onSubmitProfile)} className="space-y-6">
+              {/* Form header */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-text-title flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[#00ff88]" />
+                  {editingProfileId ? 'Editar tipo de cardio' : profiles.length > 0 ? 'Adicionar tipo de cardio' : 'Configurar cardio'}
+                </h3>
+                {editingProfileId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingProfileId(null);
+                      resetProfileForm({
+                        practices: true,
+                        type: null,
+                        intensity: null,
+                        duration_minutes: null,
+                        frequency_per_week: null,
+                        timing: null,
+                        goal: null,
+                      });
+                    }}
+                    className="text-xs text-text-muted hover:text-text-secondary transition-colors"
+                  >
+                    Cancelar edição
+                  </button>
+                )}
+              </div>
+
+              {/* Practices Toggle */}
+              <div className="rounded-xl bg-background-card border border-border p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-base font-bold text-text-title">Pratica cardio regularmente?</h2>
+                    <p className="text-sm text-text-muted mt-0.5">
+                      Ative para configurar seu perfil de cardio
+                    </p>
+                  </div>
+                  <Controller
+                    control={control}
+                    name="practices"
+                    render={({ field }) => (
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={field.value}
+                        onClick={() => field.onChange(!field.value)}
+                        className={cn(
+                          'relative inline-flex w-16 h-8 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff88] focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]',
+                          field.value
+                            ? 'bg-[#00ff88] shadow-[0_0_16px_rgba(0,255,136,0.4)]'
+                            : 'bg-surface-3',
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'absolute top-1 w-6 h-6 rounded-full transition-all duration-300 shadow-md',
+                            field.value ? 'left-9 bg-background' : 'left-1 bg-text-secondary',
+                          )}
+                        />
+                      </button>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* No Cardio State */}
+              {!practices && profiles.length === 0 && (
+                <div className="rounded-xl border border-dashed border-border bg-background-card p-10 text-center">
+                  <div className="w-14 h-14 rounded-full bg-background-card flex items-center justify-center mx-auto mb-4">
+                    <HeartPulse className="w-7 h-7 text-text-faint" />
+                  </div>
+                  <p className="text-base font-bold text-text-secondary">Nenhum cardio cadastrado</p>
+                  <p className="text-sm text-text-muted mt-1.5 max-w-xs mx-auto">
+                    Ative o toggle acima para configurar sua rotina de cardio e melhorar seu score.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setValue('practices', true)}
+                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#00ff88]/30 text-[#00ff88] text-sm font-semibold hover:bg-[#00ff88]/10 transition-colors"
+                  >
+                    Adicionar cardio
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Cardio Config */}
+              {practices && (
+                <>
+                  <div className="rounded-xl bg-background-card border border-border p-5 space-y-5">
+                    {/* Type */}
+                    <div>
+                      <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                        Tipo de cardio
+                      </label>
+                      <Controller
+                        control={control}
+                        name="type"
+                        render={({ field }) => (
+                          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                            {TYPE_OPTIONS.map((opt) => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => field.onChange(opt.value)}
+                                className={cn(
+                                  'flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border transition-all duration-150 text-center',
+                                  field.value === opt.value
+                                    ? 'border-[#00ff88] bg-[#00ff88]/10 text-[#00ff88]'
+                                    : 'border-border bg-background text-text-muted hover:border-border-strong hover:text-text-secondary',
+                                )}
+                              >
+                                <span>{TYPE_ICONS[opt.value]}</span>
+                                <span className="text-xs font-semibold leading-tight">{opt.label}</span>
+                              </button>
+                            ))}
+                          </div>
                         )}
                       />
-                    </button>
-                  )}
-                />
-              </div>
-            </div>
+                    </div>
 
-            {/* No Cardio State */}
-            {!practices && (
-              <div className="rounded-xl border border-dashed border-border bg-background-card p-10 text-center">
-                <div className="w-14 h-14 rounded-full bg-background-card flex items-center justify-center mx-auto mb-4">
-                  <HeartPulse className="w-7 h-7 text-text-faint" />
-                </div>
-                <p className="text-base font-bold text-text-secondary">Nenhum cardio cadastrado</p>
-                <p className="text-sm text-text-muted mt-1.5 max-w-xs mx-auto">
-                  Ative o toggle acima para configurar sua rotina de cardio e melhorar seu score.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setValue('practices', true)}
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#00ff88]/30 text-[#00ff88] text-sm font-semibold hover:bg-[#00ff88]/10 transition-colors"
-                >
-                  Adicionar cardio
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Cardio Config */}
-            {practices && (
-              <>
-                <div className="rounded-xl bg-background-card border border-border p-5 space-y-5">
-                  <h3 className="text-sm font-bold text-text-title uppercase tracking-widest flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-[#00ff88]" />
-                    Configuração
-                  </h3>
-
-                  {/* Type */}
-                  <div>
-                    <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-                      Tipo de cardio
-                    </label>
-                    <Controller
-                      control={control}
-                      name="type"
-                      render={({ field }) => (
-                        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-                          {TYPE_OPTIONS.map((opt) => (
-                            <button
-                              key={opt.value}
-                              type="button"
-                              onClick={() => field.onChange(opt.value)}
-                              className={cn(
-                                'flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border transition-all duration-150 text-center',
-                                field.value === opt.value
-                                  ? 'border-[#00ff88] bg-[#00ff88]/10 text-[#00ff88]'
-                                  : 'border-border bg-background text-text-muted hover:border-border-strong hover:text-text-secondary',
-                              )}
-                            >
-                              <span>{TYPE_ICONS[opt.value]}</span>
-                              <span className="text-xs font-semibold leading-tight">{opt.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    />
-                  </div>
-
-                  {/* Intensity */}
-                  <div>
-                    <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-                      Intensidade
-                    </label>
-                    <Controller
-                      control={control}
-                      name="intensity"
-                      render={({ field }) => (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          {INTENSITY_OPTIONS.map((opt) => (
-                            <button
-                              key={opt.value}
-                              type="button"
-                              onClick={() => field.onChange(opt.value)}
-                              className={cn(
-                                'flex items-start gap-3 p-4 rounded-xl border-2 transition-all duration-150 text-left',
-                                field.value === opt.value
-                                  ? `${opt.borderColor} ${opt.bgColor}`
-                                  : 'border-border bg-background hover:border-border-strong',
-                              )}
-                            >
-                              <span
-                                style={{ color: field.value === opt.value ? opt.color : '#666' }}
-                                className="mt-0.5 flex-shrink-0"
+                    {/* Intensity */}
+                    <div>
+                      <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                        Intensidade
+                      </label>
+                      <Controller
+                        control={control}
+                        name="intensity"
+                        render={({ field }) => (
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {INTENSITY_OPTIONS.map((opt) => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => field.onChange(opt.value)}
+                                className={cn(
+                                  'flex items-start gap-3 p-4 rounded-xl border-2 transition-all duration-150 text-left',
+                                  field.value === opt.value
+                                    ? `${opt.borderColor} ${opt.bgColor}`
+                                    : 'border-border bg-background hover:border-border-strong',
+                                )}
                               >
-                                {opt.icon}
-                              </span>
-                              <div>
-                                <p
-                                  className="text-sm font-bold"
-                                  style={{ color: field.value === opt.value ? opt.color : '#a0a0a0' }}
+                                <span
+                                  style={{ color: field.value === opt.value ? opt.color : '#666' }}
+                                  className="mt-0.5 flex-shrink-0"
                                 >
-                                  {opt.label}
-                                </p>
-                                <p className="text-xs text-text-muted mt-0.5">{opt.description}</p>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    />
+                                  {opt.icon}
+                                </span>
+                                <div>
+                                  <p
+                                    className="text-sm font-bold"
+                                    style={{ color: field.value === opt.value ? opt.color : '#a0a0a0' }}
+                                  >
+                                    {opt.label}
+                                  </p>
+                                  <p className="text-xs text-text-muted mt-0.5">{opt.description}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      />
+                    </div>
+
+                    {/* Duration + Frequency */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input
+                        label="Duração"
+                        type="number"
+                        step="1"
+                        min="1"
+                        max="600"
+                        placeholder="30"
+                        prefix={<Timer className="w-4 h-4 text-text-muted" />}
+                        suffix={<span className="text-xs text-text-muted pr-3">minutos</span>}
+                        error={errors.duration_minutes?.message}
+                        {...register('duration_minutes')}
+                      />
+                      <Input
+                        label="Frequência"
+                        type="number"
+                        step="1"
+                        min="1"
+                        max="14"
+                        placeholder="3"
+                        prefix={<BarChart2 className="w-4 h-4 text-text-muted" />}
+                        suffix={<span className="text-xs text-text-muted pr-3">vezes/sem.</span>}
+                        error={errors.frequency_per_week?.message}
+                        {...register('frequency_per_week')}
+                      />
+                    </div>
+
+                    {/* Timing + Goal */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Controller
+                        control={control}
+                        name="timing"
+                        render={({ field }) => (
+                          <Select
+                            label="Momento"
+                            options={TIMING_OPTIONS}
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                            error={errors.timing?.message}
+                          />
+                        )}
+                      />
+                      <Controller
+                        control={control}
+                        name="goal"
+                        render={({ field }) => (
+                          <Select
+                            label="Objetivo do cardio"
+                            options={GOAL_OPTIONS}
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                            error={errors.goal?.message}
+                          />
+                        )}
+                      />
+                    </div>
                   </div>
 
-                  {/* Duration + Frequency */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                      label="Duração"
-                      type="number"
-                      step="1"
-                      min="1"
-                      max="600"
-                      placeholder="30"
-                      prefix={<Timer className="w-4 h-4 text-text-muted" />}
-                      suffix={<span className="text-xs text-text-muted pr-3">minutos</span>}
-                      error={errors.duration_minutes?.message}
-                      {...register('duration_minutes')}
-                    />
-                    <Input
-                      label="Frequência"
-                      type="number"
-                      step="1"
-                      min="1"
-                      max="14"
-                      placeholder="3"
-                      prefix={<BarChart2 className="w-4 h-4 text-text-muted" />}
-                      suffix={<span className="text-xs text-text-muted pr-3">vezes/sem.</span>}
-                      error={errors.frequency_per_week?.message}
-                      {...register('frequency_per_week')}
-                    />
+                  <SummaryBanner data={watchedData} />
+
+                  {profileError && (
+                    <p className="text-xs text-red-400 bg-red-400/10 rounded-lg px-3 py-2">{profileError}</p>
+                  )}
+                  <div className="flex justify-end">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      loading={isSubmitting}
+                      leftIcon={isSubmitting ? <Loader2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                    >
+                      {editingProfileId ? 'Salvar Alterações' : 'Salvar Tipo de Cardio'}
+                    </Button>
                   </div>
-
-                  {/* Timing + Goal */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Controller
-                      control={control}
-                      name="timing"
-                      render={({ field }) => (
-                        <Select
-                          label="Momento"
-                          options={TIMING_OPTIONS}
-                          value={field.value ?? ''}
-                          onChange={field.onChange}
-                          error={errors.timing?.message}
-                        />
-                      )}
-                    />
-                    <Controller
-                      control={control}
-                      name="goal"
-                      render={({ field }) => (
-                        <Select
-                          label="Objetivo do cardio"
-                          options={GOAL_OPTIONS}
-                          value={field.value ?? ''}
-                          onChange={field.onChange}
-                          error={errors.goal?.message}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <SummaryBanner data={watchedData} />
-
-                {profileError && (
-                  <p className="text-xs text-red-400 bg-red-400/10 rounded-lg px-3 py-2">{profileError}</p>
-                )}
-                <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    loading={isSubmitting}
-                    leftIcon={isSubmitting ? <Loader2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                  >
-                    Salvar Perfil de Cardio
-                  </Button>
-                </div>
-              </>
-            )}
-          </form>
+                </>
+              )}
+            </form>
+          </div>
         )}
 
         {/* ── TAB: SESSÕES ── */}
