@@ -90,11 +90,11 @@ export function MealCard({ meal, onEdit, onDelete, className }: MealCardProps) {
               {displayLabel}
             </span>
 
-            {/* Time badge */}
+            {/* Time badge — show HH:MM only */}
             {meal.time && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-text-secondary border border-border bg-surface-2 shrink-0">
                 <Clock className="w-3 h-3" />
-                {meal.time}
+                {meal.time.slice(0, 5)}
               </span>
             )}
           </div>
