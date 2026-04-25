@@ -48,7 +48,8 @@ export type UserStatus =
   | 'active'
   | 'inactive'
   | 'blocked'
-  | 'first_access';
+  | 'first_access'
+  | 'pending_verification';
 
 export type Sex = 'M' | 'F';
 
@@ -57,7 +58,11 @@ export type ActivityLevel =
   | 'light'
   | 'moderate'
   | 'active'
-  | 'very_active';
+  | 'very_active'
+  // Legacy DB values present before migration 010
+  | 'lightly_active'
+  | 'moderately_active'
+  | 'super_active';
 
 export type BodySegment =
   | 'right_arm'
@@ -68,7 +73,7 @@ export type BodySegment =
 
 export type CardioIntensity = 'low' | 'moderate' | 'high';
 
-export type MealSource = 'manual' | 'ai' | 'import';
+export type MealSource = 'manual' | 'ai_analysis' | 'file_import';
 
 export type BioimpedanceStatus =
   | 'pending'

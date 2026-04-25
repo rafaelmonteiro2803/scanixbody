@@ -484,10 +484,10 @@ const treinosService = {
       .eq('id', session.workout_day_id)
       .single()
 
-    // Fetch the session exercises.
+    // Fetch session exercises with their sets in a single join query (fixes N+1).
     const { data: sessionExercises, error: exError } = await supabase
       .from('workout_session_exercises')
-      .select('*')
+      .select('*, workout_session_sets(*)')
       .eq('session_id', sessionId)
       .order('order_index', { ascending: true })
 
@@ -498,18 +498,13 @@ const treinosService = {
       )
     }
 
-    // Fetch sets for every exercise.
-    const exercisesWithSets = await Promise.all(
-      (sessionExercises ?? []).map(async (ex: WorkoutSessionExercisesRow) => {
-        const { data: sets } = await supabase
-          .from('workout_session_sets')
-          .select('*')
-          .eq('session_exercise_id', ex.id)
-          .order('set_number', { ascending: true })
-
-        return { ...ex, sets: sets ?? [] }
-      }),
-    )
+    const exercisesWithSets = (sessionExercises ?? []).map((ex) => {
+      const sets = Array.isArray(ex.workout_session_sets)
+        ? [...ex.workout_session_sets].sort((a, b) => a.set_number - b.set_number)
+        : []
+      const { workout_session_sets: _, ...exerciseFields } = ex
+      return { ...exerciseFields, sets }
+    })
 
     return {
       ...session,

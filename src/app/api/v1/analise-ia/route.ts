@@ -98,11 +98,12 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
     }
 
     // Determine if the user can rerun the analysis
-    // (allowed only if data has changed since the last report)
+    // (allowed if any data was created OR updated since the last report)
     let canRerun = true
     if (report) {
       const since = report.generated_at
       const changeChecks = await Promise.all([
+        // New rows
         supabase.from('meals').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
         supabase.from('workout_days').select('id', { count: 'exact', head: true })
@@ -115,8 +116,13 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
           .eq('user_id', ctx.userId).eq('is_active', true).gt('created_at', since),
         supabase.from('exam_reports').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        // Updated rows (edits to existing data also count as a change)
         supabase.from('athlete_profiles').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).gt('updated_at', since),
+        supabase.from('meals').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('updated_at', since),
+        supabase.from('workout_exercises').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('updated_at', since),
         supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).eq('is_active', true).gt('updated_at', since),
       ])
@@ -171,7 +177,7 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
         .limit(60),
       supabase
         .from('workout_days')
-        .select('id, name, muscle_groups')
+        .select('*')
         .eq('user_id', ctx.userId)
         .is('deleted_at', null),
       supabase
@@ -240,7 +246,7 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
         }
       : undefined
 
-    const trainingScore = calculateTrainingScore(sessions, workoutDays)
+    const trainingScore = calculateTrainingScore(sessions, workoutDays, workoutExercises.length)
     const dietScore = calculateDietScore(
       meals,
       macroTargets,

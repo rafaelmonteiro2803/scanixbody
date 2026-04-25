@@ -83,53 +83,91 @@ function mealsInLastDays(meals: MealsRow[], days: number): number {
 // ---------------------------------------------------------------------------
 
 /**
- * Calculates a training consistency and program completeness score (0–100).
+ * Calculates a training program completeness and consistency score (0–100).
  *
- * Scoring criteria:
- * - Base score starts at 100
- * - No sessions in the last 7 days  → −40
- * - 1 session in the last 7 days    → −20
- * - No workout days configured      → −30
- * - Fewer than 2 workout days        → −15
- * - No sessions in the last 30 days → −20 (applied on top of weekly deficit)
+ * Philosophy: the configured workout program is the primary evidence of
+ * training commitment. Logged sessions are a secondary tracking bonus —
+ * an athlete who has a well-structured program should not be penalised
+ * heavily simply because they don't log every session.
  *
- * @param sessions    - All workout session records for the athlete
- * @param workoutDays - All workout day templates for the athlete
+ * Scoring tiers:
+ *
+ * Program structure (primary — up to −50):
+ *   - 0 workout days configured            → −50
+ *   - 1 workout day, no exercises          → −30
+ *   - 1 workout day with exercises         → −20
+ *   - 2+ workout days, no exercises        → −15
+ *   - 2+ workout days with exercises       →   0  (complete program)
+ *
+ * Session tracking (secondary — mild when program exists):
+ *   With complete program (2+ days + exercises):
+ *     - No sessions in last 30 days        → −10
+ *     - Sessions last 30 days, none last 7 →  −5
+ *     - Sessions last 7 days               →   0
+ *   Without complete program:
+ *     - No sessions in last 30 days        → −30
+ *     - 1 session last 7 days              → −20
+ *     - 2 sessions last 7 days             → −10
+ *     - 3+ sessions last 7 days            →   0
+ *
+ * @param sessions       - Logged workout session records
+ * @param workoutDays    - Configured workout day templates
+ * @param exercisesCount - Total exercises configured across all days
  * @returns Training score 0–100
  *
  * @example
- * calculateTrainingScore(sessions, workoutDays) // → 85
+ * // Good program, no sessions logged → 90
+ * calculateTrainingScore([], workoutDays, 18)
+ * // Good program + active sessions → 100
+ * calculateTrainingScore(sessions, workoutDays, 18)
  */
 export function calculateTrainingScore(
   sessions: WorkoutSessionsRow[],
   workoutDays: WorkoutDaysRow[],
+  exercisesCount = 0,
 ): number {
   let score = 100;
 
   const activeDays = workoutDays.filter((d) => d.deleted_at === null).length;
+  const hasExercises = exercisesCount > 0;
+  const hasCompleteProgram = activeDays >= 2 && hasExercises;
+
   const sessionsLast7 = sessionsInLastDays(sessions, 7);
   const sessionsLast30 = sessionsInLastDays(sessions, 30);
 
-  // Program structure
+  // ── Program structure (primary signal) ──────────────────────────────────
   if (activeDays === 0) {
+    score -= 50;
+  } else if (activeDays === 1 && !hasExercises) {
     score -= 30;
-  } else if (activeDays < 2) {
+  } else if (activeDays === 1) {
+    score -= 20;
+  } else if (!hasExercises) {
+    // 2+ days but no exercises configured
     score -= 15;
   }
+  // 2+ days with exercises → no penalty
 
-  // Weekly consistency
-  if (sessionsLast7 === 0) {
-    score -= 40;
-  } else if (sessionsLast7 === 1) {
-    score -= 20;
-  } else if (sessionsLast7 === 2) {
-    score -= 10;
-  }
-  // 3+ sessions/week → no penalty
-
-  // Monthly recency (stale account)
-  if (sessionsLast30 === 0) {
-    score -= 20;
+  // ── Session tracking (secondary signal) ─────────────────────────────────
+  if (hasCompleteProgram) {
+    // Athlete has a real program — sessions are a bonus, not a requirement
+    if (sessionsLast30 === 0) {
+      score -= 10; // Mild: program exists but no recent tracking
+    } else if (sessionsLast7 === 0) {
+      score -= 5;  // Very mild: tracked last month, not last week
+    }
+  } else {
+    // No complete program — sessions are the only training evidence
+    if (sessionsLast30 === 0) {
+      score -= 30;
+    } else if (sessionsLast7 === 0) {
+      score -= 15;
+    } else if (sessionsLast7 === 1) {
+      score -= 20;
+    } else if (sessionsLast7 === 2) {
+      score -= 10;
+    }
+    // 3+ sessions/week → no penalty
   }
 
   return clampScore(score);
