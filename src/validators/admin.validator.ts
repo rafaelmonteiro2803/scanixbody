@@ -128,3 +128,17 @@ export const listUsersQuerySchema = z.object({
 })
 
 export type ListUsersQueryInput = z.infer<typeof listUsersQuerySchema>
+
+// ---------------------------------------------------------------------------
+// Admin user action (PATCH)
+// ---------------------------------------------------------------------------
+
+const userActionValues = ['reset-password', 'block', 'unblock'] as const
+
+export const userActionSchema = z.object({
+  action: z.enum(userActionValues, {
+    errorMap: () => ({ message: 'Ação inválida. Use: reset-password, block ou unblock' }),
+  }),
+})
+
+export type UserActionInput = z.infer<typeof userActionSchema>

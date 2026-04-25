@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { updateWorkoutDaySchema } from '@/validators/treinos.validator'
 
 interface RouteParams {
   params: { id: string }
@@ -32,7 +33,12 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const body = await req.json() as { name?: string; muscleGroups?: string[]; orderIndex?: number }
+  const rawBody = await req.json()
+  const parsed = updateWorkoutDaySchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 })
+  }
+  const body = parsed.data
 
   const { data, error } = await supabase
     .from('workout_days')

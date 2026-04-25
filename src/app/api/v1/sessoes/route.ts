@@ -16,7 +16,7 @@ import {
 } from '@/lib/api-helpers'
 import { logSessionSchema } from '@/validators/treinos.validator'
 import treinosService from '@/services/treinos.service'
-import { detectPR, findBestLift } from '@/domain/workout-calculations'
+import { detectPR } from '@/domain/workout-calculations'
 import type { AuthContext } from '@/lib/api-helpers'
 import type { WorkoutSet } from '@/types/domain.types'
 
@@ -95,13 +95,6 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
             is_pr: detectPR(currentSet, previousBestAsSet),
           }
         })
-
-        // Update previousBestAsSet to the best set so far in this session
-        // so within-session PRs are also detected in sequence
-        const sessionBest = findBestLift(setsWithPR)
-        if (sessionBest && previousBestAsSet) {
-          // Already done via detectPR above
-        }
 
         return {
           exercise_id: exercise.exerciseId,

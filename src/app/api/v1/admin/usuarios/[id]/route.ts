@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { updateUserSchema, userActionSchema } from '@/validators/admin.validator'
 
 interface RouteParams {
   params: { id: string }
@@ -44,14 +45,20 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   const { user: admin, error: authError } = await requireAdmin(supabase)
   if (authError || !admin) return NextResponse.json({ error: authError }, { status: 401 })
 
-  const body = await req.json() as { full_name?: string; role?: string; status?: string }
+  const rawBody = await req.json()
+  const parsed = updateUserSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 })
+  }
+  const body = parsed.data
 
   const { data, error } = await supabase
     .from('profiles')
     .update({
-      ...(body.full_name !== undefined && { full_name: body.full_name }),
+      ...(body.fullName !== undefined && { full_name: body.fullName }),
       ...(body.role !== undefined && { role: body.role }),
       ...(body.status !== undefined && { status: body.status }),
+      ...(body.avatarUrl !== undefined && { avatar_url: body.avatarUrl }),
       updated_at: new Date().toISOString(),
     })
     .eq('user_id', params.id)
@@ -101,9 +108,14 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const { user: admin, error: authError } = await requireAdmin(supabase)
   if (authError || !admin) return NextResponse.json({ error: authError }, { status: 401 })
 
-  const body = await req.json() as { action: string }
+  const rawBody = await req.json()
+  const parsed = userActionSchema.safeParse(rawBody)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.flatten() }, { status: 400 })
+  }
+  const { action } = parsed.data
 
-  if (body.action === 'reset-password') {
+  if (action === 'reset-password') {
     // Generate temporary password
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'
 
@@ -136,7 +148,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ data: { tempPassword } })
   }
 
-  if (body.action === 'block') {
+  if (action === 'block') {
     await supabase
       .from('profiles')
       .update({ status: 'blocked', updated_at: new Date().toISOString() })
@@ -152,7 +164,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ success: true })
   }
 
-  if (body.action === 'unblock') {
+  if (action === 'unblock') {
     await supabase
       .from('profiles')
       .update({ status: 'active', updated_at: new Date().toISOString() })
