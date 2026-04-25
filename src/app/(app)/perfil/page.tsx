@@ -16,7 +16,7 @@ import { createClient } from '@/lib/supabase/client'
 const ROLE_OPTIONS = [
   { value: 'usuario_final', label: 'Usuário Final' },
   { value: 'coach', label: 'Coach' },
-  { value: 'operador', label: 'Operador' },
+  { value: 'operator', label: 'Operador' },
   { value: 'admin', label: 'Admin' },
   { value: 'super_admin', label: 'Super Admin' },
 ]
@@ -24,7 +24,7 @@ const ROLE_OPTIONS = [
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   usuario_final: 'Acesso padrão de atleta — gerencia apenas seus próprios dados de treino, dieta e saúde.',
   coach: 'Pode visualizar e editar dados de treino e corpo dos atletas sob sua supervisão.',
-  operador: 'Acesso operacional básico — gerencia dados próprios e visualiza informações limitadas.',
+  operator: 'Acesso operacional básico — gerencia dados próprios e visualiza informações limitadas.',
   admin: 'Gerencia usuários, visualiza logs de auditoria e tem acesso a dados de todos os atletas.',
   super_admin: 'Acesso irrestrito a todas as funcionalidades do sistema. Cargo protegido.',
 }

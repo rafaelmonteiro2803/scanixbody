@@ -38,6 +38,7 @@ export const UserStatus = {
   INACTIVE: 'inactive',
   BLOCKED: 'blocked',
   FIRST_ACCESS: 'first_access',
+  PENDING_VERIFICATION: 'pending_verification',
 } as const;
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
 
@@ -48,13 +49,20 @@ export const Sex = {
 } as const;
 export type Sex = (typeof Sex)[keyof typeof Sex];
 
-/** Physical activity level used for TDEE estimation */
+/** Physical activity level used for TDEE estimation.
+ *  Canonical values: sedentary, light, moderate, active, very_active.
+ *  Legacy DB aliases (pre-migration): lightly_active, moderately_active, super_active.
+ */
 export const ActivityLevel = {
   SEDENTARY: 'sedentary',
   LIGHT: 'light',
   MODERATE: 'moderate',
   ACTIVE: 'active',
   VERY_ACTIVE: 'very_active',
+  // Legacy DB values — kept for backward compatibility until migration cleans them up
+  LIGHTLY_ACTIVE: 'lightly_active',
+  MODERATELY_ACTIVE: 'moderately_active',
+  SUPER_ACTIVE: 'super_active',
 } as const;
 export type ActivityLevel = (typeof ActivityLevel)[keyof typeof ActivityLevel];
 
@@ -79,8 +87,8 @@ export type CardioIntensity = (typeof CardioIntensity)[keyof typeof CardioIntens
 /** Origin source of a meal entry */
 export const MealSource = {
   MANUAL: 'manual',
-  AI: 'ai',
-  IMPORT: 'import',
+  AI_ANALYSIS: 'ai_analysis',
+  FILE_IMPORT: 'file_import',
 } as const;
 export type MealSource = (typeof MealSource)[keyof typeof MealSource];
 

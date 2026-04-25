@@ -40,6 +40,13 @@ const statusConfig: Record<
     border: 'border-yellow-500/25',
     dotColor: 'bg-yellow-400',
   },
+  pending_verification: {
+    label: 'Aguardando',
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-400',
+    border: 'border-blue-500/25',
+    dotColor: 'bg-blue-400',
+  },
 }
 
 export function UserStatusBadge({

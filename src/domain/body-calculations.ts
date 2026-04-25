@@ -131,14 +131,20 @@ export function calculateBMR(
 
 /**
  * Activity multipliers for the Mifflin–St Jeor / Harris-Benedict TDEE model.
+ * Canonical values and their legacy DB aliases both map to the same multiplier.
  * @internal
  */
 const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
+  // Canonical values (saved by the form since 2024)
   sedentary: 1.2,
   light: 1.375,
   moderate: 1.55,
   active: 1.725,
   very_active: 1.9,
+  // Legacy DB aliases (original enum before migration 010 renames them)
+  lightly_active: 1.375,    // same as 'light'
+  moderately_active: 1.55,  // same as 'moderate'
+  super_active: 1.9,        // same as 'very_active'
 };
 
 /**

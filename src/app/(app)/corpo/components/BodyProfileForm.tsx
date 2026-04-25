@@ -72,7 +72,7 @@ const schema = z.object({
 
   // Section 4: Goals & lifestyle
   goal: z.string().optional().nullable(),
-  activity_level: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional().nullable(),
+  activity_level: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active', 'lightly_active', 'moderately_active', 'super_active']).optional().nullable(),
   goal_period_weeks: z.coerce.number().int().min(1).max(104).optional().nullable(),
   water_per_day: z.coerce.number().min(0).max(20).optional().nullable(),
   sleep_hours: z.coerce.number().min(0).max(24).optional().nullable(),
