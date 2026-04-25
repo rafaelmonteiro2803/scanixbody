@@ -200,6 +200,7 @@ export const workoutExerciseService = {
         sets: dto.sets,
         target_reps: dto.target_reps ?? null,
         load: dto.load ?? null,
+        load_type: dto.load_type ?? 'total',
         rest_seconds: dto.rest_seconds ?? null,
         order_index: dto.order_index ?? nextIndex,
         notes: dto.notes ?? null,

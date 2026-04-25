@@ -152,7 +152,7 @@ function PriorityBadge({ priority }: { priority: 'Alta' | 'Média' | 'Baixa' }) 
 
 interface ApiChecklistStatus {
   hasProfile: boolean;
-  hasSessions: boolean;
+  hasWorkoutDays: boolean;
   hasMeals: boolean;
   hasCardio: boolean;
   hasMedications: boolean;
@@ -220,7 +220,7 @@ export default function AnaliseIAPage() {
 
   // Dynamically build checklist from real data
   const liveChecklist: ModuleChecklistConfig[] = checklist ? [
-    { module: 'Treinos', icon: Dumbbell, status: checklist.hasSessions ? 'complete' : 'incomplete', text: checklist.hasSessions ? 'Sessões de treino registradas.' : 'Nenhuma sessão registrada.' },
+    { module: 'Treinos', icon: Dumbbell, status: checklist.hasWorkoutDays ? 'complete' : 'incomplete', text: checklist.hasWorkoutDays ? 'Programa de treino configurado.' : 'Nenhum treino configurado.' },
     { module: 'Dieta', icon: Salad, status: checklist.hasMeals ? 'complete' : 'incomplete', text: checklist.hasMeals ? 'Refeições registradas.' : 'Nenhuma refeição registrada.' },
     { module: 'Corpo', icon: TrendingUp, status: checklist.hasProfile ? 'complete' : 'incomplete', text: checklist.hasProfile ? 'Perfil corporal preenchido.' : 'Perfil não preenchido.' },
     { module: 'Cardio', icon: HeartPulse, status: checklist.hasCardio ? 'complete' : 'incomplete', text: checklist.hasCardio ? 'Perfil de cardio cadastrado.' : 'Cardio não configurado (opcional).' },

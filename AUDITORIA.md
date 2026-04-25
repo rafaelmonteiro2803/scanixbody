@@ -1,0 +1,514 @@
+# SCANIX BODY — AUDITORIA TÉCNICA E DE PRODUTO
+**Data:** Abril 2026  
+**Escopo:** Análise multidisciplinar completa — código, arquitetura, UX, produto, segurança, escalabilidade  
+**Status:** Documento vivo — atualizar conforme issues são resolvidos
+
+---
+
+## STATUS DOS BUGS CRÍTICOS
+
+| # | Problema | Arquivo(s) | Status |
+|---|---------|-----------|--------|
+| C1 | `ActivityLevel` desalinhado DB ↔ TS → TDEE = NaN | `domain.types.ts`, `body-calculations.ts`, migration 001 | 🔴 Aberto |
+| C2 | `MealSource` desalinhado DB ↔ TS → erro TS em dieta | `domain.types.ts`, `dieta/route.ts`, `dieta/[id]/route.ts` | 🔴 Aberto |
+| C3 | `UserRole: 'operator'` vs DB `'operador'` | `domain.types.ts`, `admin.validator.ts` | 🔴 Aberto |
+| C4 | `UserStatus` sem `'pending_verification'` | `domain.types.ts` | 🟡 Aberto |
+| C5 | N+1 query em `getSessionDetail` | `treinos.service.ts:502` | 🔴 Aberto |
+
+---
+
+## 1. VISÃO GERAL DO SISTEMA
+
+**O que o app faz:** Plataforma de gestão de performance esportiva para atletas de alta performance. Cobre treino (log de sessões + PR detection), dieta (tracking + IA automática de macros), composição corporal, bioimpedância, medicamentos/hormônios, exames laboratoriais, análise de cardio e análise geral por IA. Multi-role (super_admin, admin, coach, operador, usuario_final).
+
+**Nível atual:** Intermediário-Avançado para MVP. A estrutura de camadas (domain/service/API/UI) é sólida, o design system é coerente, e o escopo de features é impressionante para um MVP. Há bugs críticos de dados silenciosos que impedem operação correta em produção.
+
+**Stack verificada:** Next.js 14 App Router · TypeScript strict · Tailwind CSS · Supabase (Postgres + RLS) · Zustand · React Hook Form + Zod · Recharts · Lucide · date-fns (pt-BR)
+
+---
+
+## 2. ARQUITETURA E BACKEND
+
+### ✅ O que está bem
+- Separação domain/service/API respeitada na maioria dos módulos
+- `api-helpers.ts` com `withAuth`, `withRole`, `createApiResponse`, `validateParams` é o padrão correto
+- Validators Zod existem para a maioria das rotas
+- RLS **completamente implementado** com políticas para todos os 16+ tables
+- Soft-delete consistente (meals/sessions usam `deleted_at`; medication_entries/cardio_profiles usam `is_active`)
+- Audit logging em ações críticas de admin
+
+### ❌ Bug Crítico #1 — ActivityLevel: TDEE retorna NaN em produção
+
+**Causa raiz:** Mismatch entre enum do DB e constantes do domain TypeScript.
+
+```
+DB enum (migration 001):    'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'super_active'
+domain.types.ts ActivityLevel: 'sedentary' | 'light'         | 'moderate'          | 'very_active' | (sem 'super_active')
+```
+
+`ACTIVITY_MULTIPLIERS` em `body-calculations.ts` usa as chaves do domain. Quando `calculateTDEE(bmr, 'lightly_active')` recebe valor do DB, `ACTIVITY_MULTIPLIERS['lightly_active']` = `undefined`. `Math.round(1896 * undefined) = NaN`. TDEE salvo como NaN. Macro targets quebrados. Score de dieta e análise de IA recebem dados inválidos.
+
+**Opção A — Migração SQL (recomendado):**
+```sql
+-- supabase/migrations/004_fix_enums.sql
+ALTER TYPE activity_level RENAME VALUE 'lightly_active'    TO 'light';
+ALTER TYPE activity_level RENAME VALUE 'moderately_active' TO 'moderate';
+ALTER TYPE activity_level RENAME VALUE 'very_active'       TO 'active';
+ALTER TYPE activity_level ADD VALUE IF NOT EXISTS 'very_active';
+-- Atualizar registros existentes se necessário:
+UPDATE athlete_profiles SET activity_level = 'light'     WHERE activity_level = 'lightly_active';
+UPDATE athlete_profiles SET activity_level = 'moderate'  WHERE activity_level = 'moderately_active';
+UPDATE athlete_profiles SET activity_level = 'active'    WHERE activity_level = 'very_active';
+UPDATE athlete_profiles SET activity_level = 'very_active' WHERE activity_level = 'super_active';
+```
+
+**Opção B — Adapter no service (sem migração, menos invasivo):**
+```typescript
+// src/lib/activity-level-adapter.ts
+import type { ActivityLevel } from '@/types/domain.types'
+
+const DB_TO_DOMAIN: Record<string, ActivityLevel> = {
+  lightly_active:    'light',
+  moderately_active: 'moderate',
+  very_active:       'active',
+  super_active:      'very_active',
+  sedentary:         'sedentary',
+  // pass-through para valores já corretos
+  light:             'light',
+  moderate:          'moderate',
+  active:            'active',
+}
+
+export function mapActivityLevel(dbValue: string | null): ActivityLevel {
+  return DB_TO_DOMAIN[dbValue ?? ''] ?? 'sedentary'
+}
+```
+
+### ❌ Bug Crítico #2 — MealSource desalinhado (TypeScript já reporta)
+
+```
+DB enum:        'manual' | 'ai_analysis' | 'file_import'
+domain.types.ts: 'manual' | 'ai'          | 'import'
+```
+
+Erros TS presentes em produção:
+```
+src/app/api/v1/dieta/route.ts(93,7): error TS2322: Type '"ai_analysis"' is not assignable to type 'MealSource'
+src/app/api/v1/dieta/[id]/route.ts(79,9): error TS2322: Type '"ai_analysis" | "file_import"' is not assignable to type 'MealSource'
+```
+
+**Fix:**
+```typescript
+// src/types/domain.types.ts
+export const MealSource = {
+  MANUAL:      'manual',
+  AI_ANALYSIS: 'ai_analysis',   // era 'ai'
+  FILE_IMPORT: 'file_import',   // era 'import'
+} as const;
+export type MealSource = (typeof MealSource)[keyof typeof MealSource];
+
+// src/types/database.types.ts
+export type MealSource = 'manual' | 'ai_analysis' | 'file_import';
+```
+
+### ❌ Bug Crítico #3 — UserRole: `'operator'` vs DB `'operador'`
+
+```
+DB enum:              'operador'  (Português)
+domain.types.ts Role: 'operator'  (Inglês)
+admin.validator.ts:   'operator'  (na validação PUT /admin/usuarios/[id])
+```
+
+`updateUserSchema` rejeita `role: 'operador'` com erro 400. Qualquer usuário com role `'operador'` no DB é tratado incorretamente nas comparações TypeScript.
+
+**Fix:**
+```typescript
+// src/types/domain.types.ts
+export const Role = {
+  SUPER_ADMIN:    'super_admin',
+  ADMIN:          'admin',
+  COACH:          'coach',
+  OPERADOR:       'operador',         // era 'operator'
+  USUARIO_FINAL:  'usuario_final',
+} as const;
+
+// src/types/database.types.ts
+export type UserRole = 'super_admin' | 'admin' | 'coach' | 'operador' | 'usuario_final';
+
+// src/validators/admin.validator.ts
+const userRoleValues = ['super_admin', 'admin', 'coach', 'operador', 'usuario_final'] as const;
+//                                                               ^^^^^^^^ era 'operator'
+```
+
+### ❌ Bug Crítico #4 — UserStatus sem `'pending_verification'`
+
+DB define `'pending_verification'` na migration 001 (linha 32) mas `domain.types.ts` e `UserStatus` não incluem o valor. Usuários nesse status ficam invisíveis para filtros TypeScript.
+
+**Fix:**
+```typescript
+// src/types/domain.types.ts
+export const UserStatus = {
+  ACTIVE:                'active',
+  INACTIVE:              'inactive',
+  BLOCKED:               'blocked',
+  FIRST_ACCESS:          'first_access',
+  PENDING_VERIFICATION:  'pending_verification', // adicionar
+} as const;
+
+// src/types/database.types.ts
+export type UserStatus = 'active' | 'inactive' | 'blocked' | 'first_access' | 'pending_verification';
+```
+
+### ❌ Bug Crítico #5 — N+1 Query em getSessionDetail
+
+`src/services/treinos.service.ts:502` — para cada sessão com N exercícios, faz N queries de sets:
+
+```typescript
+// ATUAL — 1 + N queries
+const exercisesWithSets = await Promise.all(
+  sessionExercises.map(async (ex) => {
+    const { data: sets } = await supabase
+      .from('workout_session_sets')
+      .select('*')
+      .eq('session_exercise_id', ex.id) // N queries separadas
+    return { ...ex, sets: sets ?? [] }
+  }),
+)
+
+// CORRETO — 1 query com join
+const { data: exercisesWithSets, error } = await supabase
+  .from('workout_session_exercises')
+  .select('*, workout_session_sets(*)')
+  .eq('session_id', sessionId)
+  .order('order_index', { ascending: true })
+```
+
+Com 10 exercícios por sessão e 100 usuários simultâneos: de 1000 → 100 queries.
+
+### ⚠️ Sem Rate Limiting nas Rotas de IA
+
+`POST /api/v1/analise-ia` e `POST /api/v1/ai/extract` chamam Claude sem throttle. Um loop de requests gera custo ilimitado.
+
+**Fix mínimo sem infra adicional (in-memory para single instance):**
+```typescript
+// src/lib/rate-limit.ts
+const callMap = new Map<string, number>()
+
+export function checkRateLimit(key: string, windowMs: number): boolean {
+  const last = callMap.get(key)
+  const now = Date.now()
+  if (last && now - last < windowMs) return false
+  callMap.set(key, now)
+  return true
+}
+
+// Em analise-ia/route.ts POST
+if (!checkRateLimit(`analise:${ctx.userId}`, 60 * 60 * 1000)) {
+  return createErrorResponse('Aguarde 1 hora antes de gerar nova análise', 429)
+}
+```
+
+Para produção multi-instance: usar Upstash Redis ou Supabase como store.
+
+### ⚠️ Sem Paginação em Listas
+
+`getSessionHistory`, `getMeals`, `getExamReports` têm parâmetro `limit` mas sem `offset`. Com 1000+ registros por usuário, carrega tudo em memória.
+
+**Fix — adicionar offset em todos os list endpoints:**
+```typescript
+// src/services/treinos.service.ts
+async getSessionHistory(
+  userId: string,
+  options: { limit?: number; offset?: number } = {}
+): Promise<WorkoutSession[]> {
+  const { limit = 20, offset = 0 } = options
+  const { data } = await supabase
+    .from('workout_sessions')
+    .select('...')
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+    .order('session_date', { ascending: false })
+    .range(offset, offset + limit - 1)  // Supabase range-based pagination
+  return data ?? []
+}
+```
+
+### ⚠️ Indexes de Performance Ausentes
+
+```sql
+-- supabase/migrations/004_fix_enums.sql (adicionar junto)
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_workout_sessions_user_date
+  ON workout_sessions (user_id, session_date DESC)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_meals_user_date
+  ON meals (user_id, meal_date DESC)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_workout_session_sets_exercise
+  ON workout_session_sets (session_exercise_id, set_number);
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_exam_markers_report
+  ON exam_markers (exam_report_id, marker_name);
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_medication_entries_user_active
+  ON medication_entries (user_id)
+  WHERE is_active = true;
+```
+
+### ⚠️ Validação de Environment Variables
+
+`ai.service.ts` faz fallback silencioso para `http://localhost:3000` quando `NEXT_PUBLIC_APP_URL` não está definido. Em produção, todas as extrações de IA falham sem erro visível.
+
+**Fix:**
+```typescript
+// src/lib/env.ts (criar)
+export function requireEnv(key: string): string {
+  const value = process.env[key]
+  if (!value && process.env.NODE_ENV === 'production') {
+    throw new Error(`[env] Required environment variable "${key}" is not set`)
+  }
+  return value ?? ''
+}
+```
+
+---
+
+## 3. FRONTEND E UX/UI
+
+### ✅ O que está bem
+- Design system dark/tech/atlético coerente e visualmente premium
+- Tokens Tailwind consistentes (primary, accent, success, warning, danger)
+- Estados de loading presentes na maioria dos fluxos
+- Badges e cards visualmente densos mas legíveis
+- Mobile-first estruturalmente, mas com lacunas de detalhe
+
+### ❌ Tempo até Valor (Time to Value) alto demais
+
+Usuário novo precisa completar 6 passos independentes antes de ver qualquer valor. Sem wizard de onboarding, encontra dashboards vazios sem contexto.
+
+**Fix:** Wizard de primeiro acesso em 4 passos:
+1. Dados básicos (peso, altura, idade, sexo)
+2. Objetivo principal
+3. Nível de atividade + sono/hidratação
+4. Cardio (pratica ou não)
+
+Cada passo salva incrementalmente. Ao completar: mostra primeiro score calculado como momento "aha".
+
+### ❌ Formulários sem validação client-side
+
+Campos como `weight`, `height`, `age` chegam na API sem validação no formulário. Dados como `weight: -5` ou `age: 0` são tecnicamente aceitos.
+
+### ❌ PR Detection não é em tempo real
+
+A detecção de PR acontece no servidor após salvar. Apps premium (Strong, Hevy) mostram "🏆 NOVO RECORDE!" enquanto o usuário digita. `detectPR` é uma função pura — pode ser chamada no client sem nenhuma mudança de arquitetura.
+
+### ❌ inputs numéricos sem `inputMode` (UX mobile)
+
+Em iOS, inputs de peso/reps abrem teclado alfabético por padrão.
+
+```tsx
+// Formulário de registro de treino
+<Input inputMode="decimal" pattern="[0-9]*\.?[0-9]*" placeholder="Peso (kg)" />
+<Input inputMode="numeric" pattern="[0-9]*" placeholder="Reps" />
+```
+
+### ⚠️ Análise de IA sem indicação de tempo
+
+`POST /analise-ia` pode levar 5-15s. UI mostra spinner genérico. Usuários abortam após 3-5s achando que travou.
+
+**Fix:** Adicionar texto contextual: *"Analisando seus dados... isso pode levar até 15 segundos"* + progress steps animados.
+
+---
+
+## 4. PRODUTO E MONETIZAÇÃO
+
+### O app é vendável hoje? Não ainda.
+
+Os bugs críticos de dados (TDEE = NaN) comprometem a credibilidade. Um usuário que vê macros quebradas abandona sem saber o motivo — pior que um bug visível.
+
+### Proposta de Valor Diferenciada
+
+O nicho é único: único app brasileiro que integra treino + dieta + hormônios/peptídeos + exames laboratoriais com análise de IA. Atletas de alta performance que usam TRT/peptídeos têm alto poder aquisitivo e zero ferramentas adequadas.
+
+### Modelo de Monetização Recomendado
+
+**Freemium com 3 tiers:**
+
+| Tier | Preço Sugerido | Features |
+|------|---------------|---------|
+| **Free** | R$0 | Treino (3 dias), Dieta (30 dias histórico), Dashboard básico |
+| **Pro** | R$49-79/mês | Tudo desbloqueado, IA ilimitada, Exames, Medicamentos |
+| **Elite** | R$99-129/mês | Pro + Coach acesso, relatórios PDF, correlação exames × performance, suporte prioritário |
+
+### Features de Maior Retenção (ROI Alto)
+
+1. **Streak de treino** — contador de dias consecutivos, badges de milestones. Baixo custo, alta retenção
+2. **Relatório semanal automático** — email/WhatsApp com resumo + recomendação IA. Usuários voltam sem precisar lembrar
+3. **Progressive overload automático** — sugerir carga baseada em histórico (`getBestLift` já existe)
+4. **Correlação exames × performance** — gráfico testosterona/IGF-1 × volume de treino. **Feature killer do nicho**, sem equivalente no mercado
+
+---
+
+## 5. BUGS E PROBLEMAS — TABELA COMPLETA
+
+### 🔴 CRÍTICO
+
+| # | Arquivo | Linha | Problema | Fix |
+|---|---------|-------|---------|-----|
+| C1 | `domain.types.ts` + `body-calculations.ts` | — | `ActivityLevel` desalinhado DB ↔ TS → TDEE = NaN | Migração SQL ou adapter |
+| C2 | `domain.types.ts` + `dieta/route.ts` | 93 | `MealSource` desalinhado DB ↔ TS | Corrigir enum em domain.types |
+| C3 | `domain.types.ts` + `admin.validator.ts` | — | `UserRole: 'operator'` vs DB `'operador'` | Corrigir enum + validator |
+| C4 | `treinos.service.ts` | 502 | N+1 query em getSessionDetail | Single join query |
+
+### 🟡 MÉDIO
+
+| # | Arquivo | Linha | Problema | Fix |
+|---|---------|-------|---------|-----|
+| M1 | `domain.types.ts` | — | `UserStatus` sem `'pending_verification'` | Adicionar ao enum |
+| M2 | Todas as list APIs | — | Sem paginação com offset | Adicionar `.range()` em todos os list endpoints |
+| M3 | `analise-ia/route.ts` | — | Sem rate limiting na rota de IA | Rate limit por userId |
+| M4 | `ai.service.ts` | 73-79 | Fallback para localhost quando env ausente | `requireEnv()` helper |
+| M5 | `workout.service.ts` | 383 | Session delete sem tratamento de erro no rollback | Verificar erro do delete |
+| M6 | Múltiplos forms | — | Sem validação client-side (peso negativo, idade 0) | Zod + React Hook Form no client |
+
+### 🟢 BAIXO
+
+| # | Arquivo | Linha | Problema |
+|---|---------|-------|---------|
+| L1 | `src/domain/` (todos) | — | Zero testes unitários em funções de domínio críticas |
+| L2 | Formulários de treino | — | `inputMode` ausente em inputs numéricos (mobile UX) |
+| L3 | `analise-ia/page.tsx` | — | Sem indicação de tempo estimado durante geração |
+| L4 | Dashboard | — | Skeleton loading inconsistente entre módulos |
+| L5 | `analise-ia/route.ts` | — | `coach_students` sem verificação de RLS nas migrations |
+
+---
+
+## 6. PERFORMANCE E ESCALABILIDADE
+
+### Gargalos Identificados
+
+- **N+1 em `getSessionDetail`** (confirmado, linha 502) — 10 exercícios × 100 usuários = 1000 queries desnecessárias
+- **Dashboard faz 6+ queries paralelas** — OK agora, escala com features
+- **`analise-ia` GET faz 13 queries** no mesmo handler — consolidar checklist + canRerun
+- **Sem cache de TDEE/BMR/IMC** — recalculados a cada request; deveriam ser cached em `athlete_profiles`
+- **Sem paginação** em sessões, refeições, exames
+
+### Indexes Prioritários
+
+Ver seção 2 — Indexes de Performance Ausentes.
+
+---
+
+## 7. SEGURANÇA
+
+### ✅ Protegido
+- RLS completo em 16+ tables com SELECT/INSERT/UPDATE/DELETE por usuário
+- `is_admin()` com SECURITY DEFINER correto
+- `withAuth` / `withRole` na maioria das rotas
+- Service role key usada apenas server-side
+- Soft-delete preserva histórico de auditoria
+- Zod validation em rotas críticas (após fixes desta sessão)
+
+### ⚠️ Pontos de Atenção
+
+**audit_logs INSERT aberto para qualquer usuário autenticado:**
+```sql
+-- Atual: qualquer usuário pode inserir logs falsos
+CREATE POLICY "audit_logs_insert_authenticated"
+  ON audit_logs FOR INSERT
+  WITH CHECK ( auth.uid() IS NOT NULL );
+```
+Para mitigar: mover inserts de audit para funções SECURITY DEFINER que validam o contexto.
+
+**coach_students table:** Aparece nos tipos TypeScript mas sem confirmação de política RLS nas migrations. Verificar se tabela existe e se está coberta.
+
+---
+
+## 8. SUPER APP FITNESS — FEATURES FUTURAS
+
+### Tier 1 — Alto Impacto, Baixo Custo (1-2 semanas cada)
+- Streak de treino + badges de milestones
+- Relatório semanal automático (domingo → email/WhatsApp)
+- PR detection em tempo real no formulário de registro
+- Progressive overload suggestion (usar `getBestLift` já existente)
+
+### Tier 2 — Diferenciação de Mercado (1-2 meses cada)
+- **Correlação exames × performance** — gráfico testosterona/IGF-1 × volume/força ao longo do tempo. Feature killer, sem equivalente no mercado brasileiro
+- Plano alimentar gerado por IA (TDEE + objetivo + preferências → plano semanal)
+- Coach dashboard funcional com alertas de alunos com score baixo
+
+### Tier 3 — Escala (3-6 meses)
+- Integração Apple Health / Google Fit (remover fricção de input manual)
+- Export PDF de dados (LGPD compliance + upsell emocional)
+- Feature gates por plano (Stripe billing + freemium infrastructure)
+- Testes automatizados (Jest para domain, Cypress para fluxos críticos)
+
+---
+
+## 9. ROADMAP DE MELHORIA
+
+### Fase 1 — Estabilização (1-2 semanas, zero features novas)
+> Objetivo: tornar os dados confiáveis em produção
+
+- [ ] **Fix enum ActivityLevel** — migração SQL + corrigir domain.types + testar manualmente TDEE
+- [ ] **Fix enum MealSource** — domain.types + database.types
+- [ ] **Fix enum UserRole** — domain.types + admin.validator + database.types
+- [ ] **Fix UserStatus** — adicionar `'pending_verification'`
+- [ ] **Fix N+1 em getSessionDetail** — single join query
+- [ ] **Rate limiting em rotas de IA** — mínimo 1x/hora por usuário
+- [ ] **Indexes de performance** — 5 índices compostos
+- [ ] **`inputMode` em formulários mobile** — 10 minutos de trabalho
+- [ ] **`requireEnv()` helper** — prevenir fallback para localhost
+
+### Fase 2 — Retenção (1-2 meses)
+> Objetivo: reduzir churn de novos usuários
+
+- [ ] Onboarding wizard (4 passos, coleta dados básicos + objetivo)
+- [ ] Paginação em todas as listas
+- [ ] PR detection em tempo real no client
+- [ ] Progressive overload suggestion no formulário de registro
+- [ ] Streak de treino + badges básicos
+- [ ] Relatório semanal automático (cron + email)
+- [ ] Indicação de tempo estimado na geração de análise IA
+
+### Fase 3 — Monetização (3-6 meses)
+> Objetivo: produto vendável
+
+- [ ] Correlação exames × performance (feature killer)
+- [ ] Export PDF de dados (compliance + upsell)
+- [ ] Coach dashboard funcional
+- [ ] Freemium feature gates (Stripe)
+- [ ] Testes automatizados em domain functions
+- [ ] Integração Apple Health / Google Fit
+
+---
+
+## 10. ANÁLISE FINAL
+
+### Nota: **6.5/10**
+
+| Dimensão | Nota | Observação |
+|----------|------|-----------|
+| Ideia / Nicho | 9/10 | Diferenciado, mercado mal-atendido no Brasil |
+| Arquitetura | 7/10 | Sólida, com falhas pontuais graves (enums) |
+| Qualidade dos dados | 4/10 | Enums quebrados corrompem cálculos silenciosamente |
+| UX / Design | 7.5/10 | Visualmente premium, fluxos com atrito de onboarding |
+| Escopo de features | 7/10 | Breadth impressionante para MVP |
+| Escalabilidade | 5/10 | N+1, sem paginação, sem cache |
+| Segurança | 7.5/10 | RLS completo, pontos menores a ajustar |
+| Testabilidade | 2/10 | Zero testes em código crítico |
+| Monetização | 3/10 | Estrutura existe, modelo não implementado |
+| Retenção | 4/10 | Sem onboarding, sem gamificação |
+
+### Veredicto
+
+O SCANIX BODY tem o DNA de um produto premium — nicho correto, stack correto, design correto, feature set ambicioso. Os bugs críticos de enums são o único bloqueador real para produção e se resolvem em poucos dias de trabalho cirúrgico.
+
+**Com os enums corrigidos + onboarding + um feature de retenção** (streak ou relatório semanal), esse app tem condição de cobrar R$79-129/mês de um nicho que paga bem e não tem alternativa equivalente no mercado brasileiro.
+
+---
+
+*Última atualização: Abril 2026 | Gerado por: análise multidisciplinar completa do codebase*  
+*Atualizar status da tabela de bugs conforme issues são resolvidos.*

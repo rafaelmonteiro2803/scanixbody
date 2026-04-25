@@ -388,6 +388,7 @@ export interface WorkoutExercisesRow {
   sets: number;
   target_reps: string | null;
   load: number | null;
+  load_type: 'total' | 'per_side';
   rest_seconds: number | null;
   order_index: number;
   notes: string | null;
@@ -404,6 +405,7 @@ export interface WorkoutExercisesInsert {
   sets: number;
   target_reps?: string | null;
   load?: number | null;
+  load_type?: 'total' | 'per_side';
   rest_seconds?: number | null;
   order_index?: number;
   notes?: string | null;
@@ -420,6 +422,7 @@ export interface WorkoutExercisesUpdate {
   sets?: number;
   target_reps?: string | null;
   load?: number | null;
+  load_type?: 'total' | 'per_side';
   rest_seconds?: number | null;
   order_index?: number;
   notes?: string | null;

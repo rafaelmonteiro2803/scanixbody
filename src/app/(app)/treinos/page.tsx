@@ -452,6 +452,7 @@ export default function TreinosPage() {
     sets: number
     target_reps?: string
     load?: number
+    load_type?: 'total' | 'per_side'
     rest_seconds?: number
     notes?: string
   }) {
@@ -463,6 +464,7 @@ export default function TreinosPage() {
       sets: values.sets,
       target_reps: values.target_reps,
       load: values.load,
+      load_type: values.load_type ?? 'total',
       rest_seconds: values.rest_seconds,
       notes: values.notes,
     })
@@ -480,12 +482,21 @@ export default function TreinosPage() {
     sets: number
     target_reps?: string
     load?: number
+    load_type?: 'total' | 'per_side'
     rest_seconds?: number
     notes?: string
   }) {
     if (modal.type !== 'edit-exercise') return
     setIsSubmitting(true)
-    const { error: err } = await workoutExerciseService.update(modal.exercise.id, values)
+    const { error: err } = await workoutExerciseService.update(modal.exercise.id, {
+      name: values.name,
+      sets: values.sets,
+      target_reps: values.target_reps,
+      load: values.load,
+      load_type: values.load_type ?? 'total',
+      rest_seconds: values.rest_seconds,
+      notes: values.notes,
+    })
     setIsSubmitting(false)
     if (err) {
       setError(err)

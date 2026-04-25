@@ -1,13 +1,14 @@
 'use client'
 
 import React from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { X, Dumbbell } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { cn } from '@/lib/utils'
 import type { WorkoutExercisesRow } from '@/types/database.types'
 
 // ---------------------------------------------------------------------------
@@ -26,6 +27,7 @@ const exerciseSchema = z.object({
     (v) => (v === '' || v === null || v === undefined || (typeof v === 'number' && isNaN(v)) ? undefined : Number(v)),
     z.number().min(0, 'Mínimo 0 kg').max(1000, 'Máximo 1000 kg').optional()
   ),
+  load_type: z.enum(['total', 'per_side']).default('total'),
   rest_seconds: z.preprocess(
     (v) => (v === '' || v === null || v === undefined || (typeof v === 'number' && isNaN(v)) ? undefined : Number(v)),
     z.number().int('Deve ser inteiro').min(0, 'Mínimo 0 segundos').max(600, 'Máximo 600 segundos').optional()
@@ -62,6 +64,8 @@ export function ExerciseForm({
   const {
     register,
     handleSubmit,
+    control,
+    watch,
     formState: { errors },
   } = useForm<ExerciseFormValues>({
     resolver: zodResolver(exerciseSchema),
@@ -70,10 +74,13 @@ export function ExerciseForm({
       sets: initialData?.sets ?? 3,
       target_reps: initialData?.target_reps ?? '',
       load: initialData?.load ?? undefined,
+      load_type: (initialData?.load_type as 'total' | 'per_side') ?? 'total',
       rest_seconds: initialData?.rest_seconds ?? 60,
       notes: initialData?.notes ?? '',
     },
   })
+
+  const loadType = watch('load_type')
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -138,25 +145,71 @@ export function ExerciseForm({
             />
           </div>
 
-          {/* Load + Rest */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Load */}
+          <div className="space-y-2">
             <Input
               label="Carga (kg)"
               type="number"
-              placeholder="Ex: 80"
+              inputMode="decimal"
+              step="0.5"
+              placeholder="Ex: 17.5"
               error={errors.load?.message}
               suffix={<span className="text-xs">kg</span>}
               {...register('load', { valueAsNumber: true })}
             />
-            <Input
-              label="Descanso (seg)"
-              type="number"
-              placeholder="60"
-              error={errors.rest_seconds?.message}
-              suffix={<span className="text-xs">s</span>}
-              {...register('rest_seconds', { valueAsNumber: true })}
+
+            {/* Per side / total toggle — only shown when load is set */}
+            <Controller
+              name="load_type"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-text-muted">Carga informada é:</span>
+                  <div className="flex rounded-lg border border-border overflow-hidden text-xs">
+                    <button
+                      type="button"
+                      onClick={() => field.onChange('total')}
+                      className={cn(
+                        'px-3 py-1.5 font-medium transition-colors',
+                        loadType === 'total'
+                          ? 'bg-primary text-black'
+                          : 'bg-transparent text-text-muted hover:text-text-secondary',
+                      )}
+                    >
+                      Total
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => field.onChange('per_side')}
+                      className={cn(
+                        'px-3 py-1.5 font-medium transition-colors border-l border-border',
+                        loadType === 'per_side'
+                          ? 'bg-primary text-black'
+                          : 'bg-transparent text-text-muted hover:text-text-secondary',
+                      )}
+                    >
+                      Por lado
+                    </button>
+                  </div>
+                  {loadType === 'per_side' && (
+                    <span className="text-xs text-primary/70">
+                      (cada lado)
+                    </span>
+                  )}
+                </div>
+              )}
             />
           </div>
+
+          {/* Rest */}
+          <Input
+            label="Descanso (seg)"
+            type="number"
+            placeholder="60"
+            error={errors.rest_seconds?.message}
+            suffix={<span className="text-xs">s</span>}
+            {...register('rest_seconds', { valueAsNumber: true })}
+          />
 
           {/* Notes */}
           <Textarea

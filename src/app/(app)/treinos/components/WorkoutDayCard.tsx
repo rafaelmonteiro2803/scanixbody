@@ -78,7 +78,7 @@ function ExerciseRow({
         </span>
         {exercise.load != null && (
           <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary rounded-md px-2 py-1">
-            {exercise.load} kg
+            {exercise.load} kg{exercise.load_type === 'per_side' ? ' /lado' : ''}
           </span>
         )}
         {exercise.rest_seconds != null && (

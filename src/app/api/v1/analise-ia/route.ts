@@ -55,14 +55,14 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
     }
 
     // Build checklist status (which modules have data)
-    const [profileResult, sessionsResult, mealsResult, cardioResult, medsResult, examsResult] =
+    const [profileResult, workoutDaysResult, mealsResult, cardioResult, medsResult, examsResult] =
       await Promise.all([
         supabase
           .from('athlete_profiles')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId),
         supabase
-          .from('workout_sessions')
+          .from('workout_days')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId)
           .is('deleted_at', null),
@@ -90,7 +90,7 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
 
     const checklistStatus = {
       hasProfile: (profileResult.count ?? 0) > 0,
-      hasSessions: (sessionsResult.count ?? 0) > 0,
+      hasWorkoutDays: (workoutDaysResult.count ?? 0) > 0,
       hasMeals: (mealsResult.count ?? 0) > 0,
       hasCardio: (cardioResult.count ?? 0) > 0,
       hasMedications: (medsResult.count ?? 0) > 0,
@@ -105,7 +105,9 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
       const changeChecks = await Promise.all([
         supabase.from('meals').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
-        supabase.from('workout_sessions').select('id', { count: 'exact', head: true })
+        supabase.from('workout_days').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('workout_exercises').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
         supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId).eq('is_active', true).gt('created_at', since),
@@ -147,6 +149,7 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
       profileResult,
       sessionsResult,
       workoutDaysResult,
+      workoutExercisesResult,
       mealsResult,
       cardioResult,
       medsResult,
@@ -168,7 +171,12 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
         .limit(60),
       supabase
         .from('workout_days')
-        .select('*')
+        .select('id, name, muscle_groups')
+        .eq('user_id', ctx.userId)
+        .is('deleted_at', null),
+      supabase
+        .from('workout_exercises')
+        .select('workout_day_id, name, sets, target_reps, load, notes')
         .eq('user_id', ctx.userId)
         .is('deleted_at', null),
       supabase
@@ -203,6 +211,7 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
       (profileResult.error?.code === 'PGRST116' ? null : null)
     const sessions = sessionsResult.data ?? []
     const workoutDays = workoutDaysResult.data ?? []
+    const workoutExercises = workoutExercisesResult.data ?? []
     const meals = mealsResult.data ?? []
     const cardioProfile =
       cardioResult.data ??
@@ -277,8 +286,14 @@ export const POST = withAuth(async (request: NextRequest, ctx: AuthContext) => {
         : null
 
     const workoutContext =
-      sessions.length > 0
-        ? `${sessions.length} sessões registradas recentemente; ${workoutDays.length} dias de treino configurados`
+      workoutDays.length > 0
+        ? [
+            `Programa: ${workoutDays.map((d) => d.name).join(', ')} (${workoutDays.length} dias de treino)`,
+            `Total de ${workoutExercises.length} exercícios configurados`,
+            sessions.length > 0
+              ? `${sessions.length} sessões registradas recentemente`
+              : 'Sem sessões registradas — análise baseada na estrutura do programa',
+          ].join('; ')
         : null
 
     const dietContext =
