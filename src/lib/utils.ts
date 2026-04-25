@@ -123,6 +123,30 @@ export function truncate(str: string, maxLength: number): string {
 }
 
 // ---------------------------------------------------------------------------
+// Environment helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the value of an environment variable, throwing a descriptive error
+ * if it is missing or empty.  Use this instead of `process.env.FOO!` to
+ * surface misconfiguration at startup rather than with a cryptic runtime crash.
+ *
+ * @example
+ *   const key = requireEnv('ANTHROPIC_API_KEY')
+ *   const url = requireEnv('NEXT_PUBLIC_APP_URL')
+ */
+export function requireEnv(name: string): string {
+  const value = process.env[name]
+  if (!value) {
+    throw new Error(
+      `[SCANIX BODY] Missing required environment variable: ${name}. ` +
+        'Check your .env.local file or deployment environment settings.',
+    )
+  }
+  return value
+}
+
+// ---------------------------------------------------------------------------
 // Async helpers
 // ---------------------------------------------------------------------------
 

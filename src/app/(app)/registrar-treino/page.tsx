@@ -394,6 +394,7 @@ export default function RegistrarTreinoPage() {
                   <Timer className="w-4 h-4 text-text-muted ml-3 flex-shrink-0" />
                   <input
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     max="600"
                     step="1"

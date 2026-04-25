@@ -375,6 +375,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Peso"
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="80"
             suffix={<span className="text-xs text-text-muted">kg</span>}
@@ -384,6 +385,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Altura"
             type="number"
+            inputMode="numeric"
             step="1"
             placeholder="175"
             suffix={<span className="text-xs text-text-muted">cm</span>}
@@ -393,6 +395,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Idade"
             type="number"
+            inputMode="numeric"
             step="1"
             placeholder="30"
             suffix={<span className="text-xs text-text-muted">anos</span>}
@@ -445,6 +448,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Gordura corporal"
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="18.5"
             suffix={<span className="text-xs text-text-muted">%</span>}
@@ -454,6 +458,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Massa gorda"
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="15.2"
             suffix={<span className="text-xs text-text-muted">kg</span>}
@@ -463,6 +468,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Massa muscular esq."
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="35.4"
             suffix={<span className="text-xs text-text-muted">kg</span>}
@@ -472,6 +478,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Massa magra"
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="64.8"
             suffix={<span className="text-xs text-text-muted">kg</span>}
@@ -482,6 +489,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Água corporal"
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="47.4"
             suffix={<span className="text-xs text-text-muted">L</span>}
@@ -491,6 +499,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Massa proteica"
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="12.6"
             suffix={<span className="text-xs text-text-muted">kg</span>}
@@ -500,6 +509,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Massa mineral"
             type="number"
+            inputMode="decimal"
             step="0.1"
             placeholder="3.8"
             suffix={<span className="text-xs text-text-muted">kg</span>}
@@ -539,6 +549,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Input
               label="Gordura visceral"
               type="number"
+              inputMode="numeric"
               step="1"
               min="1"
               max="20"
@@ -564,6 +575,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Cintura"
             type="number"
+            inputMode="decimal"
             step="0.5"
             placeholder="85"
             suffix={<span className="text-xs text-text-muted">cm</span>}
@@ -576,6 +588,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Input
               label="Quadril"
               type="number"
+              inputMode="decimal"
               step="0.5"
               placeholder="96"
               suffix={<span className="text-xs text-text-muted">cm</span>}
@@ -595,6 +608,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Input
               label="Score InBody"
               type="number"
+              inputMode="numeric"
               step="1"
               min="0"
               max="100"
@@ -651,6 +665,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Período da meta"
             type="number"
+            inputMode="numeric"
             step="1"
             min="1"
             max="104"
@@ -663,6 +678,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
             <Input
               label="Água diária"
               type="number"
+              inputMode="decimal"
               step="0.01"
               placeholder={suggestedWaterLiters?.toString() ?? '2.8'}
               suffix={<span className="text-xs text-text-muted">L</span>}
@@ -674,6 +690,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
           <Input
             label="Horas de sono"
             type="number"
+            inputMode="decimal"
             step="0.5"
             min="0"
             max="24"
@@ -736,6 +753,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                   <Input
                     label="Massa magra"
                     type="number"
+                    inputMode="decimal"
                     step="0.01"
                     placeholder="0.0"
                     suffix={<span className="text-xs text-text-muted">kg</span>}
@@ -747,6 +765,7 @@ export function BodyProfileForm({ initialProfile, initialSegments, initialFullNa
                   <Input
                     label="Massa gorda"
                     type="number"
+                    inputMode="decimal"
                     step="0.01"
                     placeholder="0.0"
                     suffix={<span className="text-xs text-text-muted">kg</span>}

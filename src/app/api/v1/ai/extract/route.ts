@@ -45,17 +45,25 @@ Formato de saída:
 }
 Retorne APENAS o JSON, sem explicações, sem markdown.`,
 
-  diet: `Analise este plano alimentar/dieta e extraia as refeições em JSON:
+  diet: `Você é um nutricionista especializado. Analise este plano alimentar ou descrição de refeições e extraia as refeições em JSON.
+
+REGRAS OBRIGATÓRIAS:
+1. SEMPRE estime calorias e macros (proteína, carboidrato, gordura) para CADA refeição, mesmo que o documento não forneça esses dados. Use tabelas nutricionais padrão brasileiras como referência.
+2. Se o documento já tiver os valores, use-os. Se não tiver, estime com base nos alimentos descritos em "items".
+3. Nunca retorne null, 0 ou omita os campos de macros — sempre calcule uma estimativa realista.
+4. Os totais devem ser a soma exata de todas as refeições.
+
+Formato de saída:
 {
   "meals": [
     {
       "mealName": "Café da manhã",
       "time": "07:00",
-      "items": "Ovos mexidos, pão integral, suco de laranja",
-      "calories": 450,
-      "proteinG": 25,
-      "carbsG": 50,
-      "fatG": 12
+      "items": "3 ovos mexidos, 2 fatias pão integral, café com leite",
+      "calories": 520,
+      "proteinG": 32,
+      "carbsG": 48,
+      "fatG": 16
     }
   ],
   "totalCalories": 2800,
