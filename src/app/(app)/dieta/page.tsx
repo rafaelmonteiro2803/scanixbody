@@ -111,17 +111,38 @@ export default function DietaPage() {
   const handleAddMeal = useCallback(async (dto: CreateMealDTO) => {
     setFormLoading(true);
     try {
+      // Auto-estimate macros when items text is present but all macro values are empty
+      let finalDto = dto;
+      const hasMacros = dto.calories || dto.protein_g || dto.carbs_g || dto.fat_g;
+      if (dto.items?.trim() && !hasMacros) {
+        try {
+          const result = await importDiet(`${dto.meal_name}: ${dto.items}`);
+          if (result.success && result.data?.meals?.length) {
+            const m = result.data.meals[0];
+            finalDto = {
+              ...dto,
+              calories: m.calories ?? undefined,
+              protein_g: m.proteinG ?? undefined,
+              carbs_g: m.carbsG ?? undefined,
+              fat_g: m.fatG ?? undefined,
+            };
+          }
+        } catch {
+          // non-fatal: save without macros if AI estimation fails
+        }
+      }
+
       const method = editingMeal ? 'PUT' : 'POST';
       const url = editingMeal ? `/api/v1/dieta/${editingMeal.id}` : '/api/v1/dieta';
       await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mealDate: dto.meal_date, mealName: dto.meal_name,
-          time: dto.time, items: dto.items,
-          calories: dto.calories, proteinG: dto.protein_g,
-          carbsG: dto.carbs_g, fatG: dto.fat_g,
-          source: dto.source ?? 'manual', notes: dto.notes,
+          mealDate: finalDto.meal_date, mealName: finalDto.meal_name,
+          time: finalDto.time, items: finalDto.items,
+          calories: finalDto.calories, proteinG: finalDto.protein_g,
+          carbsG: finalDto.carbs_g, fatG: finalDto.fat_g,
+          source: finalDto.source ?? 'manual', notes: finalDto.notes,
         }),
       });
       await loadMeals();

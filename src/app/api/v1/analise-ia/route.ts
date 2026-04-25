@@ -59,58 +59,72 @@ export const GET = withAuth(async (_request: NextRequest, ctx: AuthContext) => {
       await Promise.all([
         supabase
           .from('athlete_profiles')
-          .select('id')
-          .eq('user_id', ctx.userId)
-          .limit(1)
-          .single(),
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId),
         supabase
           .from('workout_sessions')
-          .select('id')
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId)
-          .is('deleted_at', null)
-          .limit(1)
-          .single(),
+          .is('deleted_at', null),
         supabase
           .from('meals')
-          .select('id')
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId)
-          .is('deleted_at', null)
-          .limit(1)
-          .single(),
+          .is('deleted_at', null),
         supabase
           .from('cardio_profiles')
-          .select('id')
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId)
-          .limit(1)
-          .single(),
+          .eq('is_active', true),
         supabase
           .from('medication_entries')
-          .select('id')
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId)
-          .is('deleted_at', null)
-          .limit(1)
-          .single(),
+          .eq('is_active', true),
         supabase
           .from('exam_reports')
-          .select('id')
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', ctx.userId)
-          .is('deleted_at', null)
-          .limit(1)
-          .single(),
+          .is('deleted_at', null),
       ])
 
     const checklistStatus = {
-      hasProfile: !!profileResult.data,
-      hasSessions: !!sessionsResult.data,
-      hasMeals: !!mealsResult.data,
-      hasCardio: !!cardioResult.data,
-      hasMedications: !!medsResult.data,
-      hasExams: !!examsResult.data,
+      hasProfile: (profileResult.count ?? 0) > 0,
+      hasSessions: (sessionsResult.count ?? 0) > 0,
+      hasMeals: (mealsResult.count ?? 0) > 0,
+      hasCardio: (cardioResult.count ?? 0) > 0,
+      hasMedications: (medsResult.count ?? 0) > 0,
+      hasExams: (examsResult.count ?? 0) > 0,
+    }
+
+    // Determine if the user can rerun the analysis
+    // (allowed only if data has changed since the last report)
+    let canRerun = true
+    if (report) {
+      const since = report.generated_at
+      const changeChecks = await Promise.all([
+        supabase.from('meals').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('workout_sessions').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).gt('created_at', since),
+        supabase.from('medication_entries').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).gt('created_at', since),
+        supabase.from('exam_reports').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).is('deleted_at', null).gt('created_at', since),
+        supabase.from('athlete_profiles').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).gt('updated_at', since),
+        supabase.from('cardio_profiles').select('id', { count: 'exact', head: true })
+          .eq('user_id', ctx.userId).gt('updated_at', since),
+      ])
+      canRerun = changeChecks.some((r) => (r.count ?? 0) > 0)
     }
 
     return createApiResponse({
       report: report ?? null,
       checklistStatus,
+      canRerun,
     })
   } catch (err) {
     console.error('[GET /analise-ia]', err)

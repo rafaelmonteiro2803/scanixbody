@@ -179,39 +179,44 @@ export default function AnaliseIAPage() {
   });
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [checklist, setChecklist] = useState<ApiChecklistStatus | null>(null);
+  const [canRerun, setCanRerun] = useState(true);
+  const [lastGeneratedAt, setLastGeneratedAt] = useState<string | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
+
+  const applyReport = (report: ApiReport) => {
+    setScores({
+      training: report.score_training ?? 0,
+      diet: report.score_diet ?? 0,
+      sleep: report.score_sleep ?? 0,
+      hydration: report.score_hydration ?? 0,
+      cardio: report.score_cardio ?? 0,
+      overall: report.score_overall ?? 0,
+    });
+    const rd = report.report_data ?? {};
+    setResult({
+      summary: typeof rd.summary === 'string' ? rd.summary : '',
+      strengths: Array.isArray(rd.strengths) ? rd.strengths as string[] : [],
+      improvements: Array.isArray(rd.improvements) ? rd.improvements as string[] : [],
+      recommendations: Array.isArray(report.recommendations) ? report.recommendations as string[] : [],
+      weeklyFocus: typeof rd.weeklyFocus === 'string' ? rd.weeklyFocus : '',
+      estimatedProgressTimeline: typeof rd.estimatedProgressTimeline === 'string' ? rd.estimatedProgressTimeline : null,
+      generatedAt: report.generated_at,
+    });
+    setLastGeneratedAt(report.generated_at);
+    setAnalysisState('done');
+  };
 
   // Load checklist status on mount
   useEffect(() => {
     fetch('/api/v1/analise-ia')
-      .then((r) => r.json() as Promise<{ checklistStatus?: ApiChecklistStatus; report?: ApiReport | null }>)
-      .then(({ checklistStatus, report }) => {
-        if (checklistStatus) setChecklist(checklistStatus);
-        // If there's a previous report, pre-populate scores (not result narrative)
-        if (report) {
-          setScores({
-            training: report.score_training ?? 0,
-            diet: report.score_diet ?? 0,
-            sleep: report.score_sleep ?? 0,
-            hydration: report.score_hydration ?? 0,
-            cardio: report.score_cardio ?? 0,
-            overall: report.score_overall ?? 0,
-          });
-          const rd = report.report_data ?? {};
-          setResult({
-            summary: typeof rd.summary === 'string' ? rd.summary : '',
-            strengths: Array.isArray(rd.strengths) ? rd.strengths as string[] : [],
-            improvements: Array.isArray(rd.improvements) ? rd.improvements as string[] : [],
-            recommendations: Array.isArray(report.recommendations) ? report.recommendations as string[] : [],
-            weeklyFocus: typeof rd.weeklyFocus === 'string' ? rd.weeklyFocus : '',
-            estimatedProgressTimeline: typeof rd.estimatedProgressTimeline === 'string' ? rd.estimatedProgressTimeline : null,
-            generatedAt: report.generated_at,
-          });
-          setAnalysisState('done');
-        }
+      .then((r) => r.json() as Promise<{ data?: { checklistStatus?: ApiChecklistStatus; report?: ApiReport | null; canRerun?: boolean } }>)
+      .then(({ data }) => {
+        if (data?.checklistStatus) setChecklist(data.checklistStatus);
+        if (typeof data?.canRerun === 'boolean') setCanRerun(data.canRerun);
+        if (data?.report) applyReport(data.report);
       })
       .catch(() => { /* non-fatal */ });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dynamically build checklist from real data
   const liveChecklist: ModuleChecklistConfig[] = checklist ? [
@@ -232,33 +237,12 @@ export default function AnaliseIAPage() {
     setResult(null);
     try {
       const res = await fetch('/api/v1/analise-ia', { method: 'POST' });
-      const report = await res.json() as ApiReport & { error?: string };
-      if (!res.ok) throw new Error(report.error ?? 'Erro ao gerar análise');
-
-      setScores({
-        training: report.score_training ?? 0,
-        diet: report.score_diet ?? 0,
-        sleep: report.score_sleep ?? 0,
-        hydration: report.score_hydration ?? 0,
-        cardio: report.score_cardio ?? 0,
-        overall: report.score_overall ?? 0,
-      });
-      const rd = report.report_data ?? {};
-      setResult({
-        summary: typeof rd.summary === 'string' ? rd.summary : '',
-        strengths: Array.isArray(rd.strengths) ? rd.strengths as string[] : [],
-        improvements: Array.isArray(rd.improvements) ? rd.improvements as string[] : [],
-        recommendations: Array.isArray(report.recommendations) ? report.recommendations as string[] : [],
-        weeklyFocus: typeof rd.weeklyFocus === 'string' ? rd.weeklyFocus : '',
-        estimatedProgressTimeline: typeof rd.estimatedProgressTimeline === 'string' ? rd.estimatedProgressTimeline : null,
-        generatedAt: report.generated_at,
-      });
-      setAnalysisState('done');
-      // Refresh checklist after generation
-      fetch('/api/v1/analise-ia')
-        .then((r) => r.json() as Promise<{ checklistStatus?: ApiChecklistStatus }>)
-        .then(({ checklistStatus }) => { if (checklistStatus) setChecklist(checklistStatus); })
-        .catch(() => {});
+      const json = await res.json() as { data?: ApiReport; error?: string };
+      if (!res.ok) throw new Error(json.error ?? 'Erro ao gerar análise');
+      if (json.data) {
+        applyReport(json.data);
+        setCanRerun(false); // lock rerun until data changes
+      }
     } catch (err) {
       setAnalysisError(err instanceof Error ? err.message : 'Erro desconhecido');
       setAnalysisState('error');
@@ -307,7 +291,7 @@ export default function AnaliseIAPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-            {MODULE_CHECKLIST.map((item) => (
+            {liveChecklist.map((item) => (
               <ChecklistItem
                 key={item.module}
                 module={item.module}
@@ -334,7 +318,7 @@ export default function AnaliseIAPage() {
               showLabel={false}
             />
             <p className="text-xs text-text-muted mt-2">
-              {completeCount} de {MODULE_CHECKLIST.length} módulos completos.
+              {completeCount} de {liveChecklist.length} módulos completos.
               {completeness < 100 && ' Complete todos os módulos para uma análise mais precisa.'}
             </p>
           </div>
@@ -400,10 +384,16 @@ export default function AnaliseIAPage() {
                   size="lg"
                   leftIcon={<Sparkles className="w-5 h-5" />}
                   onClick={handleGenerate}
+                  disabled={!canRerun}
                   className="mx-auto"
                 >
                   Gerar Análise com IA
                 </Button>
+                {!canRerun && (
+                  <p className="text-xs text-text-muted">
+                    Nenhuma alteração nos dados desde a última análise.
+                  </p>
+                )}
               </div>
             )}
 
@@ -463,17 +453,38 @@ export default function AnaliseIAPage() {
                   <CheckCircle2 className="w-7 h-7 text-[#00ff88]" />
                 </div>
                 <p className="text-base font-bold text-text-title">Análise concluída!</p>
-                <p className="text-sm text-text-muted">
-                  Veja os resultados detalhados abaixo
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleGenerate}
-                  className="mx-auto"
-                >
-                  Regenerar análise
-                </Button>
+                {lastGeneratedAt && (
+                  <p className="text-xs text-text-muted">
+                    Gerada em{' '}
+                    <span className="font-semibold text-text-secondary">
+                      {new Date(lastGeneratedAt).toLocaleDateString('pt-BR', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                      })}{' às '}
+                      {new Date(lastGeneratedAt).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit', minute: '2-digit',
+                      })}
+                    </span>
+                  </p>
+                )}
+                {canRerun ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-[#00ff88] bg-[#00ff88]/10 rounded-lg px-3 py-2">
+                      Novos dados detectados — você pode regenerar a análise.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleGenerate}
+                      className="mx-auto"
+                    >
+                      Regenerar análise
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-text-muted bg-surface-2 rounded-lg px-3 py-2">
+                    Nenhuma alteração nos dados desde a última análise. Atualize treinos, dieta, corpo, cardio, medicamentos ou exames para regenerar.
+                  </p>
+                )}
               </div>
             )}
           </div>
