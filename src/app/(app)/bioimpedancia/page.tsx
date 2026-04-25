@@ -112,6 +112,7 @@ function ReviewField({
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <input
           type="number"
+          inputMode="decimal"
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
           className="w-24 h-8 rounded-lg bg-background border border-border text-[#00ff88] text-sm font-semibold text-right px-2 focus:border-[#00ff88] focus:outline-none transition-colors"

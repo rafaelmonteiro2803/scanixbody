@@ -68,7 +68,8 @@ export default function DietaPage() {
   const loadMeals = useCallback(async () => {
     setMealsLoading(true);
     try {
-      const res = await fetch('/api/v1/dieta');
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const res = await fetch(`/api/v1/dieta?date=${today}`);
       const json = await res.json() as { data?: { meals?: MealsRow[] } };
       setMeals(json.data?.meals ?? []);
     } catch { /* non-fatal */ } finally {
@@ -162,6 +163,47 @@ export default function DietaPage() {
     await fetch(`/api/v1/dieta/${meal.id}`, { method: 'DELETE' });
     await loadMeals();
   }, [loadMeals]);
+
+  // ── Bulk macro estimation ──────────────────────────────────
+
+  const [estimatingMacros, setEstimatingMacros] = useState(false);
+
+  const mealsWithoutMacros = meals.filter(
+    (m) => m.calories == null && m.protein_g == null,
+  );
+
+  const handleEstimateMacros = useCallback(async () => {
+    if (mealsWithoutMacros.length === 0) return;
+    setEstimatingMacros(true);
+    try {
+      // Build a single description containing all meals so we do one AI call
+      const description = mealsWithoutMacros
+        .map((m) => `${m.meal_name}${m.items ? `: ${m.items}` : ''}`)
+        .join('\n');
+      const result = await importDiet(description);
+      if (!result.success || !result.data?.meals?.length) return;
+
+      const extracted = result.data.meals;
+      await Promise.all(
+        mealsWithoutMacros.map((meal, i) => {
+          const est = extracted[i] ?? extracted[0];
+          return fetch(`/api/v1/dieta/${meal.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              calories: est.calories ?? null,
+              proteinG: est.proteinG ?? null,
+              carbsG: est.carbsG ?? null,
+              fatG: est.fatG ?? null,
+            }),
+          });
+        }),
+      );
+      await loadMeals();
+    } catch { /* non-fatal */ } finally {
+      setEstimatingMacros(false);
+    }
+  }, [mealsWithoutMacros, loadMeals]);
 
   // ── AI Analysis ────────────────────────────────────────────
 
@@ -377,6 +419,29 @@ export default function DietaPage() {
                     Adicionar
                   </Button>
                 </div>
+
+                {/* Banner: meals missing macros */}
+                {mealsWithoutMacros.length > 0 && (
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
+                      <p className="text-xs text-text-secondary">
+                        <span className="font-semibold text-text-primary">{mealsWithoutMacros.length} refeição{mealsWithoutMacros.length !== 1 ? 'ões' : ''}</span> sem dados nutricionais. A IA pode estimar automaticamente.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      leftIcon={estimatingMacros ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bot className="w-3.5 h-3.5" />}
+                      onClick={handleEstimateMacros}
+                      loading={estimatingMacros}
+                      disabled={estimatingMacros}
+                      className="flex-shrink-0 border-primary/30 text-primary hover:bg-primary/10"
+                    >
+                      {estimatingMacros ? 'Estimando...' : 'Estimar macros'}
+                    </Button>
+                  </div>
+                )}
 
                 {meals.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-border bg-background-card p-10 text-center">

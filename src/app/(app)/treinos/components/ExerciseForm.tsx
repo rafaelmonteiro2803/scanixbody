@@ -132,6 +132,7 @@ export function ExerciseForm({
             <Input
               label="Séries"
               type="number"
+              inputMode="numeric"
               placeholder="3"
               error={errors.sets?.message}
               required
@@ -205,6 +206,7 @@ export function ExerciseForm({
           <Input
             label="Descanso (seg)"
             type="number"
+            inputMode="numeric"
             placeholder="60"
             error={errors.rest_seconds?.message}
             suffix={<span className="text-xs">s</span>}

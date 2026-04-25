@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Dumbbell,
   Salad,
@@ -183,6 +183,45 @@ export default function AnaliseIAPage() {
   const [lastGeneratedAt, setLastGeneratedAt] = useState<string | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
+  // ── Loading progress state ────────────────────────────────────
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [visibleSteps, setVisibleSteps] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const ANALYSIS_STEPS = [
+    'Calculando scores por dimensão',
+    'Processando composição corporal',
+    'Analisando padrão alimentar e macros',
+    'Gerando recomendações personalizadas com IA',
+  ] as const;
+
+  const startLoadingTimers = useCallback(() => {
+    setElapsedSeconds(0);
+    setVisibleSteps(1);
+    // Reveal one step every 3 s, capped at total steps
+    let step = 1;
+    const revealNext = () => {
+      step += 1;
+      if (step <= ANALYSIS_STEPS.length) {
+        setVisibleSteps(step);
+        stepTimerRef.current = setTimeout(revealNext, 3000);
+      }
+    };
+    stepTimerRef.current = setTimeout(revealNext, 3000);
+    // Elapsed-second counter
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds((s) => s + 1);
+    }, 1000);
+  }, []);
+
+  const stopLoadingTimers = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (stepTimerRef.current) clearTimeout(stepTimerRef.current);
+    timerRef.current = null;
+    stepTimerRef.current = null;
+  }, []);
+
   const applyReport = (report: ApiReport) => {
     setScores({
       training: report.score_training ?? 0,
@@ -205,6 +244,9 @@ export default function AnaliseIAPage() {
     setLastGeneratedAt(report.generated_at);
     setAnalysisState('done');
   };
+
+  // Cleanup timers on unmount
+  useEffect(() => () => stopLoadingTimers(), [stopLoadingTimers]);
 
   // Load checklist status on mount
   useEffect(() => {
@@ -235,15 +277,18 @@ export default function AnaliseIAPage() {
     setAnalysisState('loading');
     setAnalysisError(null);
     setResult(null);
+    startLoadingTimers();
     try {
       const res = await fetch('/api/v1/analise-ia', { method: 'POST' });
       const json = await res.json() as { data?: ApiReport; error?: string };
       if (!res.ok) throw new Error(json.error ?? 'Erro ao gerar análise');
       if (json.data) {
+        stopLoadingTimers();
         applyReport(json.data);
         setCanRerun(false); // lock rerun until data changes
       }
     } catch (err) {
+      stopLoadingTimers();
       setAnalysisError(err instanceof Error ? err.message : 'Erro desconhecido');
       setAnalysisState('error');
     }
@@ -405,35 +450,47 @@ export default function AnaliseIAPage() {
                 <div>
                   <p className="text-base font-bold text-text-title">Analisando seus dados...</p>
                   <p className="text-sm text-text-muted mt-1">
-                    Processando treinos, dieta, composição corporal e mais
+                    Isso pode levar até 15 segundos — não feche a página
                   </p>
+                  {elapsedSeconds > 0 && (
+                    <p className="text-xs text-text-faint mt-1">
+                      {elapsedSeconds}s{elapsedSeconds >= 15 ? ' — quase lá...' : ''}
+                    </p>
+                  )}
                 </div>
-                {/* Pulsing dots */}
-                <div className="flex items-center justify-center gap-2">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="w-2 h-2 rounded-full bg-[#00ff88]"
-                      style={{
-                        animation: `pulse 1.5s ease-in-out ${i * 0.25}s infinite`,
-                        opacity: 0.3,
-                      }}
-                    />
-                  ))}
+
+                {/* Progress steps — reveal one by one */}
+                <div className="text-left max-w-xs mx-auto space-y-2.5">
+                  {ANALYSIS_STEPS.map((step, i) => {
+                    const revealed = i < visibleSteps;
+                    const isActive = i === visibleSteps - 1;
+                    return (
+                      <div
+                        key={i}
+                        className={cn(
+                          'flex items-center gap-2.5 text-xs transition-opacity duration-500',
+                          revealed ? 'opacity-100' : 'opacity-0',
+                        )}
+                      >
+                        {isActive ? (
+                          <Loader2 className="w-3.5 h-3.5 text-[#00ff88] animate-spin flex-shrink-0" />
+                        ) : (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#00ff88]/60 flex-shrink-0" />
+                        )}
+                        <span className={isActive ? 'text-text-primary font-medium' : 'text-text-muted'}>
+                          {step}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-                {/* Progress steps */}
-                <div className="text-left max-w-xs mx-auto space-y-2">
-                  {[
-                    'Calculando scores por dimensão',
-                    'Processando composição corporal',
-                    'Analisando padrão alimentar',
-                    'Gerando recomendações personalizadas',
-                  ].map((step, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs">
-                      <Loader2 className="w-3.5 h-3.5 text-[#00ff88] animate-spin flex-shrink-0" />
-                      <span className="text-text-secondary">{step}</span>
-                    </div>
-                  ))}
+
+                {/* Thin animated progress bar */}
+                <div className="w-48 mx-auto h-0.5 bg-border rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[#00ff88] rounded-full transition-all duration-1000"
+                    style={{ width: `${Math.min((elapsedSeconds / 15) * 100, 95)}%` }}
+                  />
                 </div>
               </div>
             )}

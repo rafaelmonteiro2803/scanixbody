@@ -406,6 +406,12 @@ export const workoutSessionService = {
 
         if (setsError) {
           console.error('[log] sets insert failed:', setsError.message)
+          // Attempt cleanup: remove orphaned session + exercises before returning error
+          await supabase.from('workout_sessions').delete().eq('id', session.id)
+          return {
+            data: null,
+            error: `Erro ao salvar séries de "${exercise.exercise_name}": ${setsError.message}`,
+          }
         }
       }
     }

@@ -11,6 +11,7 @@
  */
 
 import { z } from 'zod'
+import { requireEnv } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,10 +72,7 @@ interface ExtractApiResponse<T> {
 function extractUrl(): string {
   // Works both server-side (absolute) and client-side (relative)
   if (typeof window === 'undefined') {
-    const base =
-      process.env.NEXT_PUBLIC_APP_URL ??
-      process.env.NEXTAUTH_URL ??
-      'http://localhost:3000'
+    const base = requireEnv('NEXT_PUBLIC_APP_URL')
     return `${base}/api/v1/ai/extract`
   }
   return '/api/v1/ai/extract'

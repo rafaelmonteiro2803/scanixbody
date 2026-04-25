@@ -9,11 +9,16 @@
 
 | # | Problema | Arquivo(s) | Status |
 |---|---------|-----------|--------|
-| C1 | `ActivityLevel` desalinhado DB ↔ TS → TDEE = NaN | `domain.types.ts`, `body-calculations.ts`, migration 001 | 🔴 Aberto |
-| C2 | `MealSource` desalinhado DB ↔ TS → erro TS em dieta | `domain.types.ts`, `dieta/route.ts`, `dieta/[id]/route.ts` | 🔴 Aberto |
-| C3 | `UserRole: 'operator'` vs DB `'operador'` | `domain.types.ts`, `admin.validator.ts` | 🔴 Aberto |
-| C4 | `UserStatus` sem `'pending_verification'` | `domain.types.ts` | 🟡 Aberto |
-| C5 | N+1 query em `getSessionDetail` | `treinos.service.ts:502` | 🔴 Aberto |
+| C1 | `ActivityLevel` desalinhado DB ↔ TS → TDEE = NaN | `domain.types.ts`, `body-calculations.ts`, migration 001 | ✅ Resolvido (migration 010) |
+| C2 | `MealSource` desalinhado DB ↔ TS → erro TS em dieta | `domain.types.ts`, `dieta/route.ts`, `dieta/[id]/route.ts` | ✅ Resolvido (migration 010) |
+| C3 | `UserRole: 'operator'` vs DB `'operador'` | `domain.types.ts`, `admin.validator.ts` | ✅ Resolvido (migration 011) |
+| C4 | `UserStatus` sem `'pending_verification'` | `domain.types.ts` | ✅ Resolvido |
+| C5 | N+1 query em `getSessionDetail` | `treinos.service.ts:502` | ✅ Resolvido (nested select) |
+| M2 | Sem paginação com offset em listas | `sessoes`, `dieta`, `exames` routes | ✅ Resolvido (`.range()` + offset) |
+| M3 | Sem rate limiting nas rotas de IA | `analise-ia/route.ts`, `ai/extract/route.ts` | ✅ Resolvido (`rate-limiter.ts`) |
+| M4 | Fallback silencioso para localhost | `ai.service.ts` | ✅ Resolvido (`requireEnv()`) |
+| Perf | Indexes de performance ausentes | DB — 5 indexes | ✅ Resolvido (migration 012) |
+| L2 | `inputMode` ausente em inputs numéricos | Corpo, Treinos, Dieta, Cardio, Bioimpedância | ✅ Resolvido |
 
 ---
 
@@ -355,33 +360,33 @@ O nicho é único: único app brasileiro que integra treino + dieta + hormônios
 
 ### 🔴 CRÍTICO
 
-| # | Arquivo | Linha | Problema | Fix |
-|---|---------|-------|---------|-----|
-| C1 | `domain.types.ts` + `body-calculations.ts` | — | `ActivityLevel` desalinhado DB ↔ TS → TDEE = NaN | Migração SQL ou adapter |
-| C2 | `domain.types.ts` + `dieta/route.ts` | 93 | `MealSource` desalinhado DB ↔ TS | Corrigir enum em domain.types |
-| C3 | `domain.types.ts` + `admin.validator.ts` | — | `UserRole: 'operator'` vs DB `'operador'` | Corrigir enum + validator |
-| C4 | `treinos.service.ts` | 502 | N+1 query em getSessionDetail | Single join query |
+| # | Arquivo | Linha | Problema | Fix | Status |
+|---|---------|-------|---------|-----|--------|
+| C1 | `domain.types.ts` + `body-calculations.ts` | — | `ActivityLevel` desalinhado DB ↔ TS → TDEE = NaN | migration 010 + aliases | ✅ |
+| C2 | `domain.types.ts` + `dieta/route.ts` | 93 | `MealSource` desalinhado DB ↔ TS | migration 010 + domain.types | ✅ |
+| C3 | `domain.types.ts` + `admin.validator.ts` | — | `UserRole: 'operator'` vs DB `'operador'` | migration 011 RENAME VALUE | ✅ |
+| C4 | `treinos.service.ts` | 502 | N+1 query em getSessionDetail | `select('*, workout_session_sets(*)')` | ✅ |
 
 ### 🟡 MÉDIO
 
-| # | Arquivo | Linha | Problema | Fix |
-|---|---------|-------|---------|-----|
-| M1 | `domain.types.ts` | — | `UserStatus` sem `'pending_verification'` | Adicionar ao enum |
-| M2 | Todas as list APIs | — | Sem paginação com offset | Adicionar `.range()` em todos os list endpoints |
-| M3 | `analise-ia/route.ts` | — | Sem rate limiting na rota de IA | Rate limit por userId |
-| M4 | `ai.service.ts` | 73-79 | Fallback para localhost quando env ausente | `requireEnv()` helper |
-| M5 | `workout.service.ts` | 383 | Session delete sem tratamento de erro no rollback | Verificar erro do delete |
-| M6 | Múltiplos forms | — | Sem validação client-side (peso negativo, idade 0) | Zod + React Hook Form no client |
+| # | Arquivo | Linha | Problema | Fix | Status |
+|---|---------|-------|---------|-----|--------|
+| M1 | `domain.types.ts` | — | `UserStatus` sem `'pending_verification'` | Adicionado ao enum + UserStatusBadge | ✅ |
+| M2 | Todas as list APIs | — | Sem paginação com offset | `.range()` + offset em sessoes/dieta/exames | ✅ |
+| M3 | `analise-ia/route.ts` | — | Sem rate limiting na rota de IA | `rate-limiter.ts` sliding window | ✅ |
+| M4 | `ai.service.ts` | 73-79 | Fallback para localhost quando env ausente | `requireEnv()` em `utils.ts` | ✅ |
+| M5 | `workout.service.ts` | 383 | Session delete sem tratamento de erro no rollback | Aberto |
+| M6 | Múltiplos forms | — | Sem validação client-side (peso negativo, idade 0) | Aberto |
 
 ### 🟢 BAIXO
 
-| # | Arquivo | Linha | Problema |
-|---|---------|-------|---------|
-| L1 | `src/domain/` (todos) | — | Zero testes unitários em funções de domínio críticas |
-| L2 | Formulários de treino | — | `inputMode` ausente em inputs numéricos (mobile UX) |
-| L3 | `analise-ia/page.tsx` | — | Sem indicação de tempo estimado durante geração |
-| L4 | Dashboard | — | Skeleton loading inconsistente entre módulos |
-| L5 | `analise-ia/route.ts` | — | `coach_students` sem verificação de RLS nas migrations |
+| # | Arquivo | Linha | Problema | Status |
+|---|---------|-------|---------|--------|
+| L1 | `src/domain/` (todos) | — | Zero testes unitários em funções de domínio críticas | Aberto |
+| L2 | Formulários numéricos | — | `inputMode` ausente em inputs numéricos (mobile UX) | ✅ |
+| L3 | `analise-ia/page.tsx` | — | Sem indicação de tempo estimado durante geração | Aberto |
+| L4 | Dashboard | — | Skeleton loading inconsistente entre módulos | Aberto |
+| L5 | `analise-ia/route.ts` | — | `coach_students` sem verificação de RLS nas migrations | Aberto |
 
 ---
 
@@ -452,15 +457,18 @@ Para mitigar: mover inserts de audit para funções SECURITY DEFINER que validam
 ### Fase 1 — Estabilização (1-2 semanas, zero features novas)
 > Objetivo: tornar os dados confiáveis em produção
 
-- [ ] **Fix enum ActivityLevel** — migração SQL + corrigir domain.types + testar manualmente TDEE
-- [ ] **Fix enum MealSource** — domain.types + database.types
-- [ ] **Fix enum UserRole** — domain.types + admin.validator + database.types
-- [ ] **Fix UserStatus** — adicionar `'pending_verification'`
-- [ ] **Fix N+1 em getSessionDetail** — single join query
-- [ ] **Rate limiting em rotas de IA** — mínimo 1x/hora por usuário
-- [ ] **Indexes de performance** — 5 índices compostos
-- [ ] **`inputMode` em formulários mobile** — 10 minutos de trabalho
-- [ ] **`requireEnv()` helper** — prevenir fallback para localhost
+- [x] **Fix enum ActivityLevel** — migration 010 + aliases em body-calculations
+- [x] **Fix enum MealSource** — domain.types + database.types + migration 010
+- [x] **Fix enum UserRole** — migration 011 RENAME VALUE `'operador'` → `'operator'`
+- [x] **Fix UserStatus** — `'pending_verification'` adicionado ao enum + badge
+- [x] **Fix N+1 em getSessionDetail** — `select('*, workout_session_sets(*)')`
+- [x] **Rate limiting em rotas de IA** — `rate-limiter.ts` sliding window (3/10min analise, 10/60s extract)
+- [x] **Paginação com offset** — `.range()` em sessoes/dieta/exames + `?offset=` nas rotas API
+- [x] **Indexes de performance** — migration 012, 5 índices compostos + partial indexes
+- [x] **`inputMode` em formulários mobile** — Corpo, Treinos, Dieta, Cardio, Bioimpedância, Registrar Treino
+- [x] **`requireEnv()` helper** — `utils.ts`, aplicado em `ai.service.ts`
+- [x] **M5: Session delete rollback** — `workout.service.ts`: sets insert failure agora faz cleanup + retorna erro
+- [x] **L3: Indicação de tempo na análise IA** — revelação progressiva de passos + timer + barra de progresso
 
 ### Fase 2 — Retenção (1-2 meses)
 > Objetivo: reduzir churn de novos usuários

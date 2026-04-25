@@ -875,6 +875,7 @@ export default function CardioPage() {
                       <Input
                         label="Duração"
                         type="number"
+                        inputMode="numeric"
                         step="1"
                         min="1"
                         max="600"
@@ -887,6 +888,7 @@ export default function CardioPage() {
                       <Input
                         label="Frequência"
                         type="number"
+                        inputMode="numeric"
                         step="1"
                         min="1"
                         max="14"
@@ -1032,6 +1034,7 @@ export default function CardioPage() {
                   <Input
                     label="Duração (min)"
                     type="number"
+                    inputMode="numeric"
                     step="1"
                     min="1"
                     max="600"

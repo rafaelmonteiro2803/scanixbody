@@ -235,6 +235,7 @@ export function MealForm({
                 {...register('calories', { valueAsNumber: true })}
                 label="Calorias"
                 type="number"
+                inputMode="numeric"
                 min={0}
                 max={9999}
                 step={1}
@@ -254,6 +255,7 @@ export function MealForm({
               {...register('protein_g', { valueAsNumber: true })}
               label="Proteína"
               type="number"
+              inputMode="decimal"
               min={0}
               max={999}
               step={0.1}
@@ -272,6 +274,7 @@ export function MealForm({
               {...register('carbs_g', { valueAsNumber: true })}
               label="Carboidratos"
               type="number"
+              inputMode="decimal"
               min={0}
               max={999}
               step={0.1}
@@ -291,6 +294,7 @@ export function MealForm({
                 {...register('fat_g', { valueAsNumber: true })}
                 label="Gorduras"
                 type="number"
+                inputMode="decimal"
                 min={0}
                 max={999}
                 step={0.1}
