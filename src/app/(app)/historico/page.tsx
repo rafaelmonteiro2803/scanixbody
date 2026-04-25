@@ -12,6 +12,7 @@ import {
   Trophy,
   X,
   BarChart2,
+  ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -20,6 +21,8 @@ import { Spinner } from '@/components/ui/Spinner'
 import { workoutSessionService, type SessionWithDetails } from '@/services/workout.service'
 import { calculateSessionVolume } from '@/domain/workout-calculations'
 import { formatDate } from '@/lib/utils'
+
+const PAGE_SIZE = 20
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -271,6 +274,8 @@ function SessionCard({
 export default function HistoricoPage() {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -278,11 +283,12 @@ export default function HistoricoPage() {
   const loadSessions = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const { data, error: err } = await workoutSessionService.list()
+    const { data, error: err, hasMore: more } = await workoutSessionService.list({ limit: PAGE_SIZE, offset: 0 })
     if (err) {
       setError(err)
     } else {
       setSessions(data)
+      setHasMore(more)
     }
     setLoading(false)
   }, [])
@@ -290,6 +296,21 @@ export default function HistoricoPage() {
   useEffect(() => {
     void loadSessions()
   }, [loadSessions])
+
+  const handleLoadMore = useCallback(async () => {
+    setLoadingMore(true)
+    const { data, error: err, hasMore: more } = await workoutSessionService.list({
+      limit: PAGE_SIZE,
+      offset: sessions.length,
+    })
+    if (err) {
+      setError(err)
+    } else {
+      setSessions((prev) => [...prev, ...data])
+      setHasMore(more)
+    }
+    setLoadingMore(false)
+  }, [sessions.length])
 
   async function handleDelete() {
     if (!deleteId) return
@@ -357,6 +378,27 @@ export default function HistoricoPage() {
                 onDelete={(id) => setDeleteId(id)}
               />
             ))}
+
+            {/* Load more */}
+            {hasMore && (
+              <div className="pt-2 flex justify-center">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={loadingMore}
+                  rightIcon={<ChevronRight className="w-4 h-4" />}
+                  onClick={handleLoadMore}
+                >
+                  Carregar mais
+                </Button>
+              </div>
+            )}
+
+            {!hasMore && sessions.length >= PAGE_SIZE && (
+              <p className="text-center text-xs text-text-muted pt-2">
+                Todas as {sessions.length} sessões carregadas
+              </p>
+            )}
           </div>
         )}
       </div>

@@ -498,6 +498,7 @@ export default function RegistrarTreinoPage() {
             key={exercise.id}
             exercise={exercise}
             sets={setsMap[exercise.id] ?? buildInitialSets(exercise)}
+            bestLift={bestLifts[exercise.id]}
             onSetChange={handleSetChange}
             onAddSet={handleAddSet}
             onRemoveSet={handleRemoveSet}

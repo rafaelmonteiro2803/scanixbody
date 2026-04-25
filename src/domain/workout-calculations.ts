@@ -268,6 +268,63 @@ export function buildProgressionChart(
 }
 
 // ---------------------------------------------------------------------------
+// Streak calculations
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the ISO year-week key for a given date string ("YYYY-MM-DD").
+ * Uses UTC noon to avoid timezone edge-cases around midnight.
+ * @internal
+ */
+function isoWeekKey(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00Z')
+  // Shift to nearest Thursday (ISO week rule)
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`
+}
+
+/**
+ * Calculates the athlete's current consecutive-week training streak.
+ *
+ * A week "counts" if it contains at least one recorded session.
+ * Counting starts from the current week and walks backward: the streak
+ * breaks as soon as a week with no session is found.
+ *
+ * @param sessionDates - Array of "YYYY-MM-DD" session date strings
+ * @param today        - Reference date string "YYYY-MM-DD" (keeps the function pure)
+ * @returns Number of consecutive training weeks (≥ 0)
+ *
+ * @example
+ * calculateWeeklyStreak(['2024-04-15', '2024-04-08', '2024-03-31'], '2024-04-20')
+ * // → 3  (all three weeks have a session)
+ */
+export function calculateWeeklyStreak(
+  sessionDates: string[],
+  today: string,
+): number {
+  if (sessionDates.length === 0) return 0
+
+  const weekSet = new Set(sessionDates.map(isoWeekKey))
+
+  let streak = 0
+  let checkDate = today
+
+  for (let i = 0; i < 104; i++) {
+    const key = isoWeekKey(checkDate)
+    if (!weekSet.has(key)) break
+    streak++
+    // Walk back exactly 7 days
+    const d = new Date(checkDate + 'T12:00:00Z')
+    d.setUTCDate(d.getUTCDate() - 7)
+    checkDate = d.toISOString().slice(0, 10)
+  }
+
+  return streak
+}
+
+// ---------------------------------------------------------------------------
 // High-level aggregate helpers used by the dashboard
 // ---------------------------------------------------------------------------
 

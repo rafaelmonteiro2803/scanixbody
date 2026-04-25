@@ -99,7 +99,7 @@ export default function PrimeiroAcessoPage() {
 
     setSuccess(true)
     setTimeout(() => {
-      router.push('/dashboard')
+      router.push('/onboarding')
       router.refresh()
     }, 1800)
   }
