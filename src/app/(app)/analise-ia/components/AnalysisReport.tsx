@@ -290,6 +290,21 @@ export const AnalysisReport = forwardRef<HTMLDivElement, AnalysisReportProps>(
               </section>
             )}
 
+            {/* Disclaimer */}
+            <section className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4 flex items-start gap-3">
+              <span className="text-yellow-400 text-base leading-none mt-0.5 flex-shrink-0">⚠</span>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                <span className="font-bold text-text-title">Aviso importante:</span>{' '}
+                Este relatório foi gerado por inteligência artificial com base nas informações fornecidas, tendo caráter{' '}
+                <span className="font-bold">meramente informativo e estimativo</span>.{' '}
+                <span className="font-bold">Não substitui</span> o acompanhamento de profissionais habilitados.
+                Para orientação individualizada de treino, nutrição e uso de medicamentos — inclusive hormônios, peptídeos e outros compostos —
+                consulte{' '}
+                <span className="font-bold">médico, nutricionista e educador físico</span>{' '}
+                registrados em seus respectivos conselhos profissionais.
+              </p>
+            </section>
+
             {/* Footer */}
             <div className="pt-4 border-t border-border flex items-center justify-between">
               <p className="text-xs text-text-faint">

@@ -406,8 +406,12 @@ export default function AnaliseIAPage() {
   };
 
   const handleExport = () => {
-    // In production: generate PDF via html2canvas or similar
-    alert('Exportação de PDF disponível na versão completa.');
+    // Set document title for the saved PDF filename
+    const prevTitle = document.title
+    document.title = `SCANIX_BODY_Analise_${new Date().toISOString().slice(0, 10)}`
+    window.print()
+    // Restore title after print dialog closes
+    setTimeout(() => { document.title = prevTitle }, 500)
   };
 
   return (
