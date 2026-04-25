@@ -68,11 +68,11 @@ function useTheme() {
 const NAV_ITEMS = [
   { href: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { href: '/treinos',      icon: Dumbbell,        label: 'Treinos' },
+  { href: '/cardio',       icon: Heart,           label: 'Cardio' },
   { href: '/dieta',        icon: Utensils,        label: 'Dieta' },
   { href: '/corpo',        icon: Activity,        label: 'Composição' },
   { href: '/medicamentos', icon: Pill,            label: 'Medicamentos' },
   { href: '/exames',       icon: ClipboardList,   label: 'Exames' },
-  { href: '/cardio',       icon: Heart,           label: 'Cardio' },
   { href: '/analise-ia',   icon: Brain,           label: 'Análise IA' },
   { href: '/progresso',    icon: TrendingUp,      label: 'Progresso' },
 ]

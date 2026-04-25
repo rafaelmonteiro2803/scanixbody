@@ -682,7 +682,7 @@ export default function CardioPage() {
                     <Input
                       label="Duração"
                       type="number"
-                      step="5"
+                      step="1"
                       min="1"
                       max="600"
                       placeholder="30"
