@@ -517,3 +517,45 @@ CREATE POLICY "file_assets_update"
 -- =============================================================================
 
 GRANT EXECUTE ON FUNCTION is_coach_of(UUID) TO authenticated;
+
+
+-- =============================================================================
+-- FIX: handle_new_user trigger — migration 004 renamed profiles.name → full_name
+-- but the trigger function was never updated, causing "Database error creating
+-- new user" whenever auth.admin.createUser is called.
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+    INSERT INTO public.profiles (
+        user_id,
+        full_name,
+        email,
+        role,
+        status,
+        created_at,
+        updated_at
+    )
+    VALUES (
+        NEW.id,
+        COALESCE(
+            NEW.raw_user_meta_data ->> 'full_name',
+            NEW.raw_user_meta_data ->> 'name',
+            split_part(NEW.email, '@', 1)
+        ),
+        NEW.email,
+        'usuario_final',
+        'first_access',
+        NOW(),
+        NOW()
+    )
+    ON CONFLICT (user_id) DO NOTHING;
+
+    RETURN NEW;
+END;
+$$;
