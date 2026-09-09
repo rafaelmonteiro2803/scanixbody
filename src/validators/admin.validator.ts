@@ -30,7 +30,7 @@ const userStatusValues = [
 // ---------------------------------------------------------------------------
 
 export const createUserSchema = z.object({
-  fullName: z
+  full_name: z
     .string({ required_error: 'Nome completo é obrigatório' })
     .min(2, 'Nome deve ter pelo menos 2 caracteres')
     .max(150, 'Nome deve ter no máximo 150 caracteres'),
@@ -74,7 +74,7 @@ export type CreateUserInput = z.infer<typeof createUserSchema>
 // ---------------------------------------------------------------------------
 
 export const updateUserSchema = z.object({
-  fullName: z
+  full_name: z
     .string()
     .min(2, 'Nome deve ter pelo menos 2 caracteres')
     .max(150, 'Nome deve ter no máximo 150 caracteres')
