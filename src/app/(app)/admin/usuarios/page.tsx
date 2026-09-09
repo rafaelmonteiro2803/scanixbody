@@ -149,7 +149,7 @@ export default function UsuariosPage() {
       body: JSON.stringify(data),
     })
     const json = await res.json()
-    if (!res.ok) throw new Error(json.error ?? 'Erro ao criar usuário')
+    if (!res.ok) throw new Error(json.error?.message ?? json.error ?? 'Erro ao criar usuário')
 
     setPasswordModal({
       open: true,
@@ -168,7 +168,7 @@ export default function UsuariosPage() {
       body: JSON.stringify(data),
     })
     const json = await res.json()
-    if (!res.ok) throw new Error(json.error ?? 'Erro ao editar usuário')
+    if (!res.ok) throw new Error(json.error?.message ?? json.error ?? 'Erro ao editar usuário')
     setEditUser(null)
     setFormOpen(false)
     fetchUsers()
