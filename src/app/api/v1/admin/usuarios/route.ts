@@ -98,7 +98,7 @@ export const POST = withRole(
     try {
       const user = await adminService.createUser({
         email: input!.email,
-        full_name: input!.fullName,
+        full_name: input!.full_name,
         role: input!.role,
         status: input!.status,
         password: input!.password,
